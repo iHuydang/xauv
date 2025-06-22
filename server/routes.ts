@@ -101,6 +101,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoint to manually update symbol prices
+  app.put("/api/symbols/:symbol/price", async (req, res) => {
+    try {
+      const { symbol } = req.params;
+      const { bid, ask } = req.body;
+      
+      if (!bid || !ask) {
+        return res.status(400).json({ error: "Bid and ask prices are required" });
+      }
+
+      const currentSymbol = await storage.getSymbol(symbol);
+      if (!currentSymbol) {
+        return res.status(404).json({ error: "Symbol not found" });
+      }
+
+      const currentBid = parseFloat(currentSymbol.bid);
+      const newBid = parseFloat(bid);
+      const priceChange = newBid - currentBid;
+      const changePercent = currentBid > 0 ? (priceChange / currentBid) * 100 : 0;
+
+      await storage.updateSymbolPrice(
+        symbol,
+        bid,
+        ask,
+        priceChange.toFixed(5),
+        changePercent.toFixed(2)
+      );
+
+      // Broadcast the price update to all connected clients
+      const priceUpdate = {
+        [symbol]: {
+          bid,
+          ask,
+          change: priceChange.toFixed(5),
+          changePercent: changePercent.toFixed(2)
+        }
+      };
+      
+      broadcastPriceUpdate(priceUpdate);
+      
+      res.json({ success: true, message: "Price updated successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update price" });
+    }
+  });
+
   app.post("/api/orders", async (req, res) => {
     try {
       const orderData = insertOrderSchema.parse(req.body);
