@@ -126,6 +126,8 @@ export class MemStorage implements IStorage {
     const symbol: Symbol = {
       ...insertSymbol,
       id,
+      change: insertSymbol.change || "0",
+      changePercent: insertSymbol.changePercent || "0",
       updatedAt: new Date(),
     };
     this.symbols.set(insertSymbol.symbol, symbol);
@@ -142,6 +144,8 @@ export class MemStorage implements IStorage {
       ...insertPosition,
       id,
       currentPrice: insertPosition.openPrice,
+      stopLoss: insertPosition.stopLoss || null,
+      takeProfit: insertPosition.takeProfit || null,
       pnl: "0.00",
       status: "open",
       openedAt: new Date(),
@@ -178,6 +182,10 @@ export class MemStorage implements IStorage {
     const order: Order = {
       ...insertOrder,
       id,
+      stopLoss: insertOrder.stopLoss || null,
+      takeProfit: insertOrder.takeProfit || null,
+      orderType: insertOrder.orderType || "market",
+      price: insertOrder.price || null,
       status: "pending",
       createdAt: new Date(),
       executedAt: null,
