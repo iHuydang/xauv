@@ -202,4 +202,4 @@ args = "  }' | jq '.'"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "echo \"✅ Attack command executed successfully\""
+args = "scripts/vietnam-gold-destroyer.sh coordinated"
