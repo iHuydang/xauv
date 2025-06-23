@@ -15,6 +15,7 @@ import { tradingSignalAnalyzer } from "./trading-signals";
 import { brokerIntegration } from "./broker-integration";
 import { accountManager } from "./account-manager";
 import { signalProcessor } from "./signal-processor";
+import { vietnamGoldBrokerRoutes } from "./vietnam-gold-broker-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -34,6 +35,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register Enhanced Gold Attack routes
   app.use('/api', enhancedGoldAttackRoutes);
+  app.use('/api', exnessDealingDeskRoutes);
+  app.use("/api", vietnamGoldBrokerRoutes);
 
   // WebSocket news command endpoint
   app.post("/api/websocket/news", async (req, res) => {
@@ -879,197 +882,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/vietnam-gold/prices", async (req, res) => {
-    try {
-      console.log('🇻🇳 Fetching Vietnam gold prices...');
-
-      const axios = await import('axios');
-      let sjcData = null;
-      let pnjData = null;
-
-      // Fetch SJC prices with enhanced parsing
-      try {
-        console.log('📊 Fetching SJC prices...');
-        const sjcResponse = await axios.default.get('https://sjc.com.vn/giavang/textContent.php', {
-          timeout: 15000,
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          }
-        });
-
-        // Enhanced SJC parsing
-        const sjcHtml = sjcResponse.data;
-        const sjcMatch = sjcHtml.match(/SJC.*?(\d{2,3}(?:,\d{3})*)\s*<\/td>\s*<td[^>]*>\s*(\d{2,3}(?:,\d{3})*)/);
-
-        if (sjcMatch) {
-          const buyPrice = parseInt(sjcMatch[1].replace(/,/g, '')) * 1000;
-          const sellPrice = parseInt(sjcMatch[2].replace(/,/g, '')) * 1000;
-
-          sjcData = {
-            source: 'SJC',
-            buyPrice,
-            sellPrice,
-            spread: sellPrice - buyPrice,
-            spreadPercent: ((sellPrice - buyPrice) / buyPrice * 100).toFixed(2)
-          };
-
-          console.log(`✅ SJC: Buy ${buyPrice.toLocaleString()} - Sell ${sellPrice.toLocaleString()} VND`);
-        } else {
-          // Fallback SJC data
-          sjcData = {
-            source: 'SJC_SIMULATION',
-            buyPrice: 84200000,
-            sellPrice: 84500000,
-            spread: 300000,
-            spreadPercent: '0.36'
-          };        console.log('⚠️ SJC data fallback used');
-        }
-      } catch (sjcError) {
-        console.error('❌ SJC fetch failed:', sjcError.message);
-        sjcData = {
-          source: 'SJC_ERROR',
-          buyPrice: 84200000,
-          sellPrice: 84500000,
-          spread: 300000,
-          spreadPercent: '0.36',
-          error: 'Failed to fetch live data'
-        };
-      }
-
-      // Fetch PNJ prices
-      try {
-        console.log('📊 Fetching PNJ prices...');
-        const pnjResponse = await axios.default.post('https://edge-api.pnj.io/ecom-frontend/v1/gia-vang', {
-          ts: Date.now(),
-          tsj: Date.now() - 1000,
-          date: new Date().toString(),
-          items: [{ curr: 'VND' }]
-        }, {
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': '3PSWGkjX7GueCSY38keBikLd8JjizIiA'
-          },
-          timeout: 10000
-        });
-
-        if (pnjResponse.data && pnjResponse.data.items && pnjResponse.data.items.length > 0) {
-          const item = pnjResponse.data.items[0];
-          const buyPrice = Math.round(item.xauPrice * 0.98); // Approximate buy price
-          const sellPrice = Math.round(item.xauPrice);
-
-          pnjData = {
-            source: 'PNJ',
-            buyPrice,
-            sellPrice,
-            spread: sellPrice - buyPrice,
-            spreadPercent: ((sellPrice - buyPrice) / buyPrice * 100).toFixed(2),
-            change24h: item.chgXau || 0,
-            changePercent: item.pcXau || 0
-          };
-
-          console.log(`✅ PNJ: Buy ${buyPrice.toLocaleString()} - Sell ${sellPrice.toLocaleString()} VND`);
-        } else {
-          throw new Error('Invalid PNJ response format');
-        }
-      } catch (pnjError) {
-        console.error('❌ PNJ fetch failed:', pnjError.message);
-        pnjData = {
-          source: 'PNJ_ERROR',
-          buyPrice: 84100000,
-          sellPrice: 84400000,
-          spread: 300000,
-          spreadPercent: '0.36',
-          error: 'Failed to fetch live data'
-        };
-      }
-
-      const vietnamGold = {
-        sjc: sjcData,
-        pnj: pnjData,
-        timestamp: new Date().toISOString(),
-        summary: {
-          avgBuyPrice: Math.round((sjcData.buyPrice + pnjData.buyPrice) / 2),
-          avgSellPrice: Math.round((sjcData.sellPrice + pnjData.sellPrice) / 2),
-          marketSpread: Math.abs(sjcData.sellPrice - pnjData.sellPrice)
-        }
-      };
-
-      console.log(`📊 Vietnam gold summary - Avg: ${vietnamGold.summary.avgSellPrice.toLocaleString()} VND`);
-
-      res.json({
-        success: true,
-        data: vietnamGold
-      });
-    } catch (error) {
-      console.error('❌ Vietnam gold fetch error:', error);
-      res.status(500).json({
-        error: 'Vietnam gold prices fetch failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  // Gold market analysis endpoint
-  app.get("/api/gold/market-analysis", async (req, res) => {
-    try {
-      console.log('🔍 Performing comprehensive gold market analysis...');
-
-      // Get world gold price
-      const worldGoldResponse = await fetch(`http://0.0.0.0:5000/api/world-gold/price`);
-      const worldGoldData = await worldGoldResponse.json();
-
-      // Get Vietnam gold prices
-      const vietnamGoldResponse = await fetch(`http://0.0.0.0:5000/api/vietnam-gold/prices`);
-      const vietnamGoldData = await vietnamGoldResponse.json();
-
-      if (!worldGoldData.success || !vietnamGoldData.success) {
-        throw new Error('Failed to fetch required gold data');
-      }
-
-      const worldPrice = worldGoldData.data.price;
-      const vietnamAvgPrice = vietnamGoldData.data.summary.avgSellPrice;
-
-      // Convert world price to VND (1 troy oz = 31.1035g, ~1.2075 tael)
-      const worldPriceVND = worldPrice * 24000 * 1.2075; // USD to VND conversion
-      const arbitrageGap = Math.abs(worldPriceVND - vietnamAvgPrice);
-      const arbitragePercent = (arbitrageGap / vietnamAvgPrice * 100).toFixed(2);
-
-      // Market analysis
-      const analysis = {
-        worldGold: worldGoldData.data,
-        vietnamGold: vietnamGoldData.data,
-        arbitrage: {
-          worldPriceVND: Math.round(worldPriceVND),
-          vietnamPriceVND: vietnamAvgPrice,
-          gap: arbitrageGap,
-          gapPercent: parseFloat(arbitragePercent),
-          opportunity: parseFloat(arbitragePercent) > 2 ? 'HIGH' : parseFloat(arbitragePercent) > 1 ? 'MEDIUM' : 'LOW'
-        },
-        market: {
-          volatilityLevel: Math.abs(worldGoldData.data.changePercent24h) > 2 ? 'HIGH' : 'MEDIUM',
-          trendDirection: worldGoldData.data.change24h > 0 ? 'BULLISH' : 'BEARISH',
-          liquidityRating: arbitrageGap < 1000000 ? 'HIGH' : 'MEDIUM'
-        },
-        timestamp: new Date().toISOString()
-      };
-
-      console.log(`📊 Analysis complete - Arbitrage: ${arbitragePercent}% (${analysis.arbitrage.opportunity})`);
-
-      res.json({
-        success: true,
-        data: analysis
-      });
-    } catch (error) {
-      console.error('❌ Market analysis failed:', error);
-      res.status(500).json({
-        error: 'Market analysis failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  // World Gold Scanner routes
-  app.get("/api/world-gold/scan", async (req, res) => {
+  // World Gold Price API endpoints
+  app.get("/api/world-gold/price", async (req, res) => {
     try {
       const { worldGoldScanner } = await import('./world-gold-scanner.js');
       const goldData = await worldGoldScanner.scanWorldGoldPrice();
