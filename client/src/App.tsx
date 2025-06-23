@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import TradingTerminal from "@/pages/trading-terminal";
 import AttackControl from "@/pages/AttackControl";
 import WorldGoldControl from "@/pages/WorldGoldControl";
+import SecBotBypassDashboard from "@/pages/SecBotBypassDashboard";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -14,6 +15,7 @@ function Router() {
       <Route path="/" component={TradingTerminal} />
       <Route path="/attack-control" component={AttackControl} />
       <Route path="/world-gold" component={WorldGoldControl} />
+      <Route path="/secbot-bypass" component={SecBotBypassDashboard} />
       <Route component={NotFound} />
     </Switch>
   );

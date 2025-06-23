@@ -826,5 +826,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SecBot Bypass Status endpoint
+  app.get("/api/secbot/bypass-status", async (req, res) => {
+    try {
+      const status = await accountManager.getSecBotBypassStatus();
+      res.json({
+        success: true,
+        ...status,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        error: "Failed to fetch SecBot bypass status",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   return httpServer;
 }
