@@ -18,17 +18,17 @@ export default function Header() {
             <h1 className="text-xl font-bold text-white">VNForexX</h1>
           </div>
           <nav className="hidden md:flex space-x-6">
-            <a href="#" className="trading-text-success hover:text-white transition-colors">
+            <a href="/" className="trading-text-success hover:text-white transition-colors">
               Terminal
             </a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">
-              Portfolio
+            <a href="/attack-control" className="text-gray-400 hover:text-white transition-colors">
+              Tấn công SJC
+            </a>
+            <a href="/world-gold" className="text-gray-400 hover:text-white transition-colors">
+              Vàng Thế giới
             </a>
             <a href="#" className="text-gray-400 hover:text-white transition-colors">
-              History
-            </a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">
-              Analytics
+              Telegram Bot
             </a>
           </nav>
         </div>

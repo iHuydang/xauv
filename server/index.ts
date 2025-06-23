@@ -1,6 +1,11 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { brokerIntegration } from './broker-integration';
+import { forexNewsChecker } from './forex-news-checker';
+import { tradingSignals } from './trading-signals';
+import { signalProcessor } from './signal-processor';
+import { liquidityScanner } from './liquidity-scanner';
 
 const app = express();
 app.use(express.json());
