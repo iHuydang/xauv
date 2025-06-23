@@ -71,3 +71,12 @@ args = "source scripts/market-commands.sh"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "curl -X POST \"https://edge-api.pnj.io/ecom-frontend/v1/gia-vang\" \\   -H \"Content-Type: application/json\" \\   -H \"apikey: 3PSWGkjX7GueCSY38keBikLd8JjizIiA\" \\   -d '{     \"ts\": 1750666653368,     \"tsj\": 1750666645605,     \"date\": \"Jun 23rd 2025, 04:17:25 am NY\",     \"items\": [       {         \"curr\": \"VND\",         \"xauPrice\": 68009263.3937,         \"xagPrice\": 741174.6985,         \"chgXau\": -51690736.6063,         \"chgXag\": -206065.5716,         \"pcXau\": -0.4318,         \"pcXag\": -0.2175,         \"xauClose\": 119700000,         \"xagClose\": 947240.2701       }     ]   }'"
+
+[[workflows.workflow]]
+name = "Market Trading System"
+author = 44114932
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"

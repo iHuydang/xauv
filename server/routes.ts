@@ -17,6 +17,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register news routes
   app.use(newsRoutes);
 
+  // WebSocket news command endpoint
+  app.post("/api/websocket/news", async (req, res) => {
+    try {
+      const { command, ...data } = req.body;
+      
+      // Broadcast to WebSocket clients
+      const message = {
+        command: command || 'curl_news_post',
+        ...data,
+        source: 'HTTP API',
+        timestamp: new Date().toISOString()
+      };
+
+      // Send to account manager WebSocket handler
+      if (accountManager.newsClients && accountManager.newsClients.size > 0) {
+        accountManager.broadcastToNewsClients({
+          type: 'api_command',
+          data: message
+        });
+
+        res.json({
+          success: true,
+          message: 'Command sent to WebSocket clients',
+          clients_notified: accountManager.newsClients.size,
+          command: command
+        });
+      } else {
+        // Handle directly if no WebSocket clients
+        await accountManager.handleNewsWebSocketMessage(message, null);
+        
+        res.json({
+          success: true,
+          message: 'Command processed directly',
+          command: command
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        error: 'Failed to process WebSocket news command',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Get WebSocket server info
+  app.get("/api/websocket/info", async (req, res) => {
+    try {
+      const info = accountManager.getNewsWebSocketInfo();
+      res.json(info);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Failed to get WebSocket info'
+      });
+    }
+  });
+
   // Start automatic forex news checking
   forexNewsChecker.startAutoCheck(10); // Check every 10 minutes
 

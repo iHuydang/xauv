@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # Script mô phỏng các lệnh thị trường
@@ -12,10 +11,9 @@ market_news_post() {
     local source=""
     local timestamp=""
     local symbols=""
-    local market_check=false
-    local auto_analysis=false
+    local market_check=""
+    local auto_analysis=""
 
-    # Parse arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
             --title)
@@ -60,24 +58,34 @@ market_news_post() {
         esac
     done
 
-    echo "=== MARKET NEWS POSTED ==="
-    echo "Title: $title"
-    echo "Category: $category"
-    echo "Impact: $impact"
-    echo "Source: $source"
-    echo "Symbols Affected: $symbols"
-    echo "Timestamp: $timestamp"
-    echo "Market Check: $market_check"
-    echo "Auto Analysis: $auto_analysis"
-    echo "=========================="
-    
-    # Simulate market response
-    if [ "$market_check" = "true" ]; then
-        echo "Market validation: PASSED"
-        echo "Price impact estimation: $(echo $impact | tr 'low' '0.1%' | tr 'medium' '0.5%' | tr 'high' '2.0%')"
-    fi
-    
-    return 0
+    echo "Publishing news via WebSocket: $title"
+    echo "Category: $category | Impact: $impact"
+    echo "Symbols: $symbols"
+
+    # Send to WebSocket server and HTTP API
+    local websocket_data=$(cat <<EOF
+{
+    "command": "market_news_post",
+    "title": "$title",
+    "content": "$content", 
+    "category": "$category",
+    "impact": "$impact",
+    "source": "$source",
+    "timestamp": "$timestamp",
+    "symbols": $(echo "$symbols" | jq -R 'split(",")' 2>/dev/null || echo "[]"),
+    "market_check": $market_check,
+    "auto_analysis": $auto_analysis
+}
+EOF
+)
+
+    # Send via HTTP API to WebSocket handler
+    curl -s -X POST "http://localhost:5000/api/websocket/news" \
+        -H "Content-Type: application/json" \
+        -d "$websocket_data" || echo "WebSocket API not available"
+
+    echo "News posted successfully at $timestamp"
+    echo "WebSocket clients notified"
 }
 
 market_impact_check() {

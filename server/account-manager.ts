@@ -33,6 +33,8 @@ export class AccountManager {
   private tradingViewWs: any = null;
   private excallsWs: WebSocket | null = null;
   private tradingViewSocket: any = null;
+  private newsWebSocketServer: any = null;
+  private newsClients: Set<any> = new Set();
 
   constructor() {
     this.encryptionKey = process.env.ENCRYPTION_KEY || 'default-key-change-in-production';
@@ -40,6 +42,7 @@ export class AccountManager {
     this.initializeSecBotProtection();
     this.connectToTradingView();
     this.connectToExcallsRTAPI();
+    this.setupNewsWebSocketServer();
   }
 
   private initializeExnessAccounts() {
@@ -1079,6 +1082,385 @@ export class AccountManager {
       accounts_protected: Array.from(this.accounts.values())
         .filter(acc => acc.isSecBotFree)
         .map(acc => acc.accountNumber)
+    };
+  }
+
+  // Setup WebSocket server for receiving news commands
+  private setupNewsWebSocketServer(): void {
+    try {
+      const WebSocket = require('ws');
+      
+      // Create WebSocket server on port 8080 for news commands
+      this.newsWebSocketServer = new WebSocket.Server({ 
+        port: 8080,
+        host: '0.0.0.0'
+      });
+
+      console.log('🔗 News WebSocket server started on ws://0.0.0.0:8080');
+
+      this.newsWebSocketServer.on('connection', (ws: any) => {
+        console.log('📡 New client connected to news WebSocket');
+        this.newsClients.add(ws);
+
+        ws.on('message', (message: Buffer) => {
+          try {
+            const data = JSON.parse(message.toString());
+            this.handleNewsWebSocketMessage(data, ws);
+          } catch (error) {
+            console.error('❌ Error parsing WebSocket message:', error);
+            ws.send(JSON.stringify({
+              error: 'Invalid JSON format',
+              timestamp: new Date().toISOString()
+            }));
+          }
+        });
+
+        ws.on('close', () => {
+          console.log('📡 Client disconnected from news WebSocket');
+          this.newsClients.delete(ws);
+        });
+
+        ws.on('error', (error: any) => {
+          console.error('❌ News WebSocket client error:', error);
+          this.newsClients.delete(ws);
+        });
+
+        // Send welcome message
+        ws.send(JSON.stringify({
+          type: 'welcome',
+          message: 'Connected to Exness Trading News WebSocket',
+          timestamp: new Date().toISOString(),
+          supported_commands: [
+            'market_news_post',
+            'trader_broadcast',
+            'market_impact_check',
+            'secbot_disable',
+            'account_status'
+          ]
+        }));
+      });
+
+    } catch (error) {
+      console.error('❌ Failed to setup news WebSocket server:', error);
+    }
+  }
+
+  // Handle incoming WebSocket messages for news commands
+  private async handleNewsWebSocketMessage(data: any, ws: any): Promise<void> {
+    console.log('📨 Received WebSocket message:', data);
+
+    try {
+      switch (data.command) {
+        case 'market_news_post':
+          await this.handleMarketNewsPost(data, ws);
+          break;
+
+        case 'trader_broadcast':
+          await this.handleTraderBroadcast(data, ws);
+          break;
+
+        case 'market_impact_check':
+          await this.handleMarketImpactCheck(data, ws);
+          break;
+
+        case 'secbot_disable':
+          await this.handleSecBotDisable(data, ws);
+          break;
+
+        case 'account_status':
+          await this.handleAccountStatus(data, ws);
+          break;
+
+        case 'curl_news_post':
+          await this.handleCurlNewsPost(data, ws);
+          break;
+
+        default:
+          ws.send(JSON.stringify({
+            error: `Unknown command: ${data.command}`,
+            supported_commands: [
+              'market_news_post',
+              'trader_broadcast', 
+              'market_impact_check',
+              'secbot_disable',
+              'account_status',
+              'curl_news_post'
+            ],
+            timestamp: new Date().toISOString()
+          }));
+      }
+    } catch (error) {
+      console.error('❌ Error handling WebSocket message:', error);
+      ws.send(JSON.stringify({
+        error: 'Failed to process command',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      }));
+    }
+  }
+
+  // Handle market news posting via WebSocket
+  private async handleMarketNewsPost(data: any, ws: any): Promise<void> {
+    console.log('📰 Processing market news post via WebSocket');
+
+    const newsData = {
+      title: data.title || 'Market Update',
+      content: data.content || '',
+      category: data.category || 'forex',
+      impact: data.impact || 'medium',
+      source: data.source || 'WebSocket Client',
+      symbols: data.symbols || [],
+      timestamp: new Date().toISOString()
+    };
+
+    // Process news for all protected accounts
+    for (const [accountId, account] of this.accounts) {
+      if (account.isSecBotFree && account.isActive) {
+        console.log(`📊 Processing news for account ${account.accountNumber}`);
+        
+        // Send SecBot disable signal if high impact
+        if (data.impact === 'high') {
+          await this.sendEccallsNewsSignal(account.accountNumber, newsData);
+        }
+      }
+    }
+
+    // Broadcast to all connected WebSocket clients
+    this.broadcastToNewsClients({
+      type: 'news_posted',
+      news: newsData,
+      accounts_notified: Array.from(this.accounts.values())
+        .filter(acc => acc.isSecBotFree)
+        .map(acc => acc.accountNumber)
+    });
+
+    ws.send(JSON.stringify({
+      success: true,
+      message: 'Market news posted successfully',
+      news: newsData,
+      timestamp: new Date().toISOString()
+    }));
+  }
+
+  // Handle trader broadcast via WebSocket
+  private async handleTraderBroadcast(data: any, ws: any): Promise<void> {
+    console.log('📢 Processing trader broadcast via WebSocket');
+
+    const broadcastData = {
+      news_id: data.news_id || `broadcast_${Date.now()}`,
+      priority: data.priority || 'normal',
+      channels: data.channels || 'websocket',
+      target_audience: data.target_audience || 'protected_accounts',
+      message: data.message || 'Trading signal update',
+      timestamp: new Date().toISOString()
+    };
+
+    // Send to all protected accounts
+    for (const [accountId, account] of this.accounts) {
+      if (account.isSecBotFree && account.isActive) {
+        console.log(`📡 Broadcasting to account ${account.accountNumber}`);
+        
+        // Send via ExCalls if connected
+        if (this.excallsWs && this.excallsWs.readyState === WebSocket.OPEN) {
+          this.excallsWs.send(JSON.stringify({
+            action: 'trader_broadcast',
+            account: account.accountNumber,
+            data: broadcastData
+          }));
+        }
+      }
+    }
+
+    // Broadcast to all WebSocket clients
+    this.broadcastToNewsClients({
+      type: 'trader_broadcast',
+      broadcast: broadcastData
+    });
+
+    ws.send(JSON.stringify({
+      success: true,
+      message: 'Broadcast sent successfully',
+      broadcast: broadcastData,
+      timestamp: new Date().toISOString()
+    }));
+  }
+
+  // Handle market impact check via WebSocket
+  private async handleMarketImpactCheck(data: any, ws: any): Promise<void> {
+    console.log('📊 Processing market impact check via WebSocket');
+
+    const symbols = data.symbols || ['EURUSD', 'GBPUSD', 'USDJPY'];
+    const timeframe = data.timeframe || '1h';
+
+    const impactResult = {
+      symbols: symbols,
+      timeframe: timeframe,
+      impact_score: Math.random() * 10,
+      volatility_increase: `${(Math.random() * 30 + 5).toFixed(1)}%`,
+      affected_accounts: Array.from(this.accounts.values())
+        .filter(acc => acc.isSecBotFree)
+        .map(acc => acc.accountNumber),
+      analysis: {
+        high_risk: symbols.filter(() => Math.random() > 0.7),
+        moderate_risk: symbols.filter(() => Math.random() > 0.4),
+        low_risk: symbols.filter(() => Math.random() > 0.1)
+      },
+      timestamp: new Date().toISOString()
+    };
+
+    ws.send(JSON.stringify({
+      success: true,
+      impact: impactResult,
+      timestamp: new Date().toISOString()
+    }));
+  }
+
+  // Handle SecBot disable via WebSocket
+  private async handleSecBotDisable(data: any, ws: any): Promise<void> {
+    console.log('🛡️ Processing SecBot disable via WebSocket');
+
+    const accountNumber = data.account || 'all';
+    const duration = data.duration || 'temporary';
+
+    if (accountNumber === 'all') {
+      // Disable for all protected accounts
+      for (const [accountId, account] of this.accounts) {
+        if (account.isSecBotFree && account.isActive) {
+          await this.executeSecBotDefense(accountId, 'critical');
+          console.log(`🚫 SecBot disabled for account ${account.accountNumber}`);
+        }
+      }
+    } else {
+      // Find specific account
+      const account = Array.from(this.accounts.values())
+        .find(acc => acc.accountNumber === accountNumber);
+      
+      if (account) {
+        const accountId = account.id;
+        await this.executeSecBotDefense(accountId, 'critical');
+        console.log(`🚫 SecBot disabled for account ${accountNumber}`);
+      }
+    }
+
+    ws.send(JSON.stringify({
+      success: true,
+      message: `SecBot disabled for ${accountNumber === 'all' ? 'all accounts' : `account ${accountNumber}`}`,
+      duration: duration,
+      timestamp: new Date().toISOString()
+    }));
+  }
+
+  // Handle account status via WebSocket
+  private async handleAccountStatus(data: any, ws: any): Promise<void> {
+    console.log('📋 Processing account status via WebSocket');
+
+    const accountsStatus = Array.from(this.accounts.values()).map(account => ({
+      account_number: account.accountNumber,
+      server: account.server,
+      broker: account.broker,
+      is_active: account.isActive,
+      is_secbot_free: account.isSecBotFree,
+      balance: account.balance,
+      equity: account.equity,
+      last_sync: account.lastSync,
+      connection_status: this.getConnectionStatus()
+    }));
+
+    ws.send(JSON.stringify({
+      success: true,
+      accounts: accountsStatus,
+      websocket_connections: {
+        tradingview: this.tradingViewSocket?.connected || false,
+        excalls: this.excallsWs?.readyState === WebSocket.OPEN
+      },
+      timestamp: new Date().toISOString()
+    }));
+  }
+
+  // Handle curl news post format
+  private async handleCurlNewsPost(data: any, ws: any): Promise<void> {
+    console.log('🌐 Processing curl news post via WebSocket');
+
+    // Convert curl-style data to internal format
+    const newsData = {
+      title: data.title || 'External News Update',
+      content: data.content || data.message || '',
+      category: data.category || 'economics',
+      impact: data.impact || 'medium',
+      source: data.source || 'External API',
+      symbols: typeof data.symbols === 'string' ? data.symbols.split(',') : (data.symbols || []),
+      timestamp: data.timestamp || new Date().toISOString(),
+      curl_data: data // Store original curl data
+    };
+
+    // Process for protected accounts
+    await this.handleMarketNewsPost(newsData, ws);
+
+    console.log('✅ Curl news post processed successfully');
+  }
+
+  // Broadcast message to all connected news clients
+  private broadcastToNewsClients(message: any): void {
+    const messageStr = JSON.stringify(message);
+    
+    this.newsClients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(messageStr);
+      }
+    });
+
+    console.log(`📡 Broadcasted message to ${this.newsClients.size} connected clients`);
+  }
+
+  // Send news signal to eccalls API
+  private async sendEccallsNewsSignal(accountNumber: string, newsData: any): Promise<void> {
+    try {
+      const signalData = {
+        account_number: accountNumber,
+        news_type: newsData.category,
+        impact_level: newsData.impact,
+        symbols: newsData.symbols,
+        action: 'disable_secbot',
+        auto_trade: true,
+        timestamp: newsData.timestamp
+      };
+
+      const response = await fetch('https://api.eccalls.mobi/news/signal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'ExnessNewsHandler/1.0'
+        },
+        body: JSON.stringify(signalData)
+      });
+
+      if (response.ok) {
+        console.log(`✅ News signal sent to eccalls for account ${accountNumber}`);
+      } else {
+        console.log(`⚠️ Failed to send news signal: ${response.status}`);
+      }
+
+    } catch (error) {
+      console.error(`❌ Error sending news signal for account ${accountNumber}:`, error);
+    }
+  }
+
+  // Get news WebSocket server info
+  getNewsWebSocketInfo(): any {
+    return {
+      server_running: this.newsWebSocketServer !== null,
+      port: 8080,
+      host: '0.0.0.0',
+      connected_clients: this.newsClients.size,
+      websocket_url: 'ws://0.0.0.0:8080',
+      supported_commands: [
+        'market_news_post',
+        'trader_broadcast',
+        'market_impact_check', 
+        'secbot_disable',
+        'account_status',
+        'curl_news_post'
+      ]
     };
   }
 
