@@ -51,11 +51,11 @@ export class AccountManager {
       lastSync: new Date(),
     };
 
-    // Tài khoản #205251387 - Exness-MT5Real8
+    // Tài khoản #205251387 - Exness-MT5Trial7
     const account2: TradingAccount = {
       id: 'exness-205251387',
       accountNumber: '205251387',
-      server: 'Exness-MT5Real8',
+      server: 'Exness-MT5Trial7',
       broker: 'Exness',
       accountType: 'real',
       balance: 0,
@@ -68,6 +68,9 @@ export class AccountManager {
       isActive: true,
       isSecBotFree: true, // Không bị secbot
       lastSync: new Date(),
+      credentials: {
+        password: this.encrypt('Dmcs@1996')
+      }
     };
 
     this.accounts.set(account1.id, account1);
@@ -75,7 +78,7 @@ export class AccountManager {
 
     console.log('✅ Initialized Exness accounts:');
     console.log(`- Account #${account1.accountNumber} on ${account1.server}`);
-    console.log(`- Account #${account2.accountNumber} on ${account2.server}`);
+    console.log(`- Account #${account2.accountNumber} on ${account2.server} (với mật khẩu đã cài đặt)`);
   }
 
   private encrypt(text: string): string {
@@ -387,12 +390,44 @@ export class AccountManager {
 
     for (const [accountId, account] of this.accounts) {
       if (account.isSecBotFree && account.server.includes('Exness')) {
+        // Auto-connect account if credentials are pre-configured
+        if (account.credentials?.password) {
+          const decryptedPassword = this.decrypt(account.credentials.password);
+          await this.connectAccount(accountId, decryptedPassword);
+          console.log(`🔐 Auto-connected account #${account.accountNumber} with pre-configured credentials`);
+        }
+        
         await this.enableHighImpactSignalTracking(accountId);
         console.log(`✅ Signal tracking enabled for account #${account.accountNumber}`);
       }
     }
 
     console.log('🎯 All accounts are now tracking high-impact signals!');
+  }
+
+  // Method to permanently store account credentials
+  async setPermanentCredentials(accountId: string, password: string): Promise<boolean> {
+    try {
+      const account = this.accounts.get(accountId);
+      if (!account) {
+        console.error(`❌ Account ${accountId} not found`);
+        return false;
+      }
+
+      account.credentials = {
+        password: this.encrypt(password)
+      };
+
+      this.accounts.set(accountId, account);
+      console.log(`🔐 Permanently stored credentials for account #${account.accountNumber}`);
+      console.log(`📡 Server: ${account.server}`);
+      console.log(`🛡️  SecBot protection: ${account.isSecBotFree ? 'Enabled' : 'Disabled'}`);
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to store permanent credentials:', error);
+      return false;
+    }
   }
 
   private isSecBotRequest(req: any): boolean {
