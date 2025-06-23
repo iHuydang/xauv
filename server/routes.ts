@@ -410,7 +410,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/attack/sjc-pressure", async (req, res) => {
     try {
       const { 
-        intensity = 'HIGH'
+        intensity = 'HIGH',
+        sourceIP
       } = req.body;
 
       const { quickAttackSystem } = await import('./quick-attack-system.js');
@@ -418,7 +419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🚨 INITIATING SJC PRESSURE ATTACK`);
       console.log(`⚔️ Intensity: ${intensity}`);
 
-      const attackResult = await quickAttackSystem.executeSJCPressureAttack(intensity);
+      const attackResult = await quickAttackSystem.executeSJCPressureAttack(intensity, { sourceIP });
 
       res.json({
         success: true,

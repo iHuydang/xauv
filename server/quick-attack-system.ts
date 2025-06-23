@@ -17,11 +17,14 @@ export interface QuickAttackResult {
 export class QuickAttackSystem extends EventEmitter {
   private activeAttacks: Map<string, QuickAttackResult> = new Map();
 
-  async executeSJCPressureAttack(intensity: 'LOW' | 'MEDIUM' | 'HIGH' | 'EXTREME' = 'HIGH'): Promise<QuickAttackResult> {
+  async executeSJCPressureAttack(intensity: 'LOW' | 'MEDIUM' | 'HIGH' | 'EXTREME' = 'HIGH', options: { sourceIP?: string } = {}): Promise<QuickAttackResult> {
     const attackId = `SJC_${Date.now()}`;
     const timestamp = new Date().toISOString();
 
     console.log(`🚨 Khởi chạy tấn công áp lực SJC - Cường độ: ${intensity}`);
+    if (options.sourceIP) {
+      console.log(`🌐 Tấn công từ IP: ${options.sourceIP}`);
+    }
 
     // Simulate real SJC price scanning
     const currentSpread = Math.floor(Math.random() * 100000) + 30000;

@@ -163,7 +163,7 @@ export class SJCPressureAttack extends EventEmitter {
     return bestVector;
   }
 
-  async executeAttack(vectorName: string, options: { autoTriggered?: boolean } = {}): Promise<string> {
+  async executeAttack(vectorName: string, options: { autoTriggered?: boolean, sourceIP?: string } = {}): Promise<string> {
     const vector = this.attackVectors.get(vectorName);
     if (!vector) {
       throw new Error(`Attack vector ${vectorName} not found`);
@@ -194,6 +194,9 @@ export class SJCPressureAttack extends EventEmitter {
     console.log(`🔥 Intensity: ${vector.intensity}`);
     console.log(`⏱️ Duration: ${vector.duration}s`);
     console.log(`🎯 Target Spread: ${vector.targetSpread.toLocaleString()} VND`);
+    if (options.sourceIP) {
+      console.log(`🌐 Source IP: ${options.sourceIP}`);
+    }
 
     try {
       // Phase 1: Reconnaissance
