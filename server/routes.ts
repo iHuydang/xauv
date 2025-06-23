@@ -942,7 +942,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(503).json({
           error: 'Unable to analyze - no gold data available'
         });
-      }      }
+      }
     } catch (error) {
       res.status(500).json({
         error: 'Gold analysis failed',
