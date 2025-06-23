@@ -21,7 +21,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/websocket/news", async (req, res) => {
     try {
       const { command, ...data } = req.body;
-      
+
       // Broadcast to WebSocket clients
       const message = {
         command: command || 'curl_news_post',
@@ -46,7 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         // Handle directly if no WebSocket clients
         await accountManager.handleNewsWebSocketMessage(message, null);
-        
+
         res.json({
           success: true,
           message: 'Command processed directly',
@@ -118,11 +118,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentBid = parseFloat(symbol.bid);
       const volatility = symbol.symbol === 'BTCUSD' ? 100 : (symbol.symbol === 'XAUUSD' ? 2 : 0.0005);
       const change = (Math.random() - 0.5) * volatility * 0.1;
-      
+
       const newBid = Math.max(0.00001, currentBid + change);
       const spread = symbol.symbol === 'BTCUSD' ? 25 : (symbol.symbol === 'XAUUSD' ? 0.24 : 0.0002);
       const newAsk = newBid + spread;
-      
+
       const priceChange = newBid - currentBid;
       const changePercent = (priceChange / currentBid) * 100;
 
@@ -180,7 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { symbol } = req.params;
       const { bid, ask } = req.body;
-      
+
       if (!bid || !ask) {
         return res.status(400).json({ error: "Bid and ask prices are required" });
       }
@@ -212,9 +212,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           changePercent: changePercent.toFixed(2)
         }
       };
-      
+
       broadcastPriceUpdate(priceUpdate);
-      
+
       res.json({ success: true, message: "Price updated successfully" });
     } catch (error) {
       res.status(500).json({ error: "Failed to update price" });
@@ -226,13 +226,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const orderData = insertOrderSchema.parse(req.body);
       // For demo purposes, using userId = 1
       const order = await storage.createOrder({ ...orderData, userId: 1 });
-      
+
       // For market orders, immediately execute them
       if (orderData.orderType === "market") {
         const symbol = await storage.getSymbol(orderData.symbol);
         if (symbol) {
           const executionPrice = orderData.type === "buy" ? parseFloat(symbol.ask) : parseFloat(symbol.bid);
-          
+
           // Create position
           const position = await storage.createPosition({
             userId: 1,
@@ -243,10 +243,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             stopLoss: orderData.stopLoss,
             takeProfit: orderData.takeProfit,
           });
-          
+
           // Mark order as executed
           await storage.updateOrderStatus(order.id, "executed", new Date());
-          
+
           res.json({ order, position });
         } else {
           res.status(400).json({ error: "Symbol not found" });
@@ -278,17 +278,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For demo purposes, return mock account data
       const positions = await storage.getPositions(1);
       let totalPnL = 0;
-      
+
       for (const position of positions) {
         totalPnL += parseFloat(position.pnl);
       }
-      
+
       const balance = 10247.83;
       const equity = balance + totalPnL;
       const usedMargin = positions.length * 203.25; // Simplified margin calculation
       const freeMargin = equity - usedMargin;
       const marginLevel = usedMargin > 0 ? (equity / usedMargin) * 100 : 0;
-      
+
       res.json({
         balance: balance.toFixed(2),
         equity: equity.toFixed(2),
@@ -325,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const accounts = [];
       const brokers = ['MetaTrader5', 'Exness', 'FTMO', 'TradingView'];
-      
+
       for (const broker of brokers) {
         try {
           const account = await brokerIntegration.getAccountInfo(broker);
@@ -334,7 +334,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error(`Failed to get account info for ${broker}:`, error);
         }
       }
-      
+
       res.json(accounts);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch broker accounts" });
@@ -370,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { password, investorPassword } = req.body;
-      
+
       const connected = await accountManager.connectAccount(id, password, investorPassword);
       res.json({ success: connected });
     } catch (error) {
@@ -382,7 +382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const account = await accountManager.syncAccountData(id);
-      
+
       if (account) {
         res.json({
           ...account,
@@ -411,25 +411,254 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { 
         intensity = 'HIGH',
-        sourceIP
+        duration = 300,
+        vector = 'HF_SPREAD_PRESSURE',
+        sourceIP,
+        targetPort
       } = req.body;
 
-      const { quickAttackSystem } = await import('./quick-attack-system.js');
-      
-      console.log(`🚨 INITIATING SJC PRESSURE ATTACK`);
-      console.log(`⚔️ Intensity: ${intensity}`);
+      const { sjcPressureAttack } = await import('./sjc-pressure-attack.js');
 
-      const attackResult = await quickAttackSystem.executeSJCPressureAttack(intensity, { sourceIP });
+      const attackId = await sjcPressureAttack.executeAttack(vector, { 
+        autoTriggered: false,
+        sourceIP,
+        targetPort
+      });
 
       res.json({
         success: true,
-        message: 'SJC Pressure Attack completed successfully',
-        ...attackResult
+        message: `SJC pressure attack initiated from ${sourceIP || 'system'}:${targetPort || 'auto'}`,
+        attackId,
+        vector,
+        intensity,
+        duration,
+        sourceIP: sourceIP || 'system',
+        targetPort: targetPort || 'auto'
       });
-
     } catch (error) {
       res.status(500).json({
-        error: 'SJC Pressure Attack failed',
+        error: 'SJC attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/attack/multi-ip-coordinated", async (req, res) => {
+    try {
+      const { 
+        targetIPs = [],
+        ports = [],
+        intensity = 'HIGH',
+        attackType = 'COORDINATED'
+      } = req.body;
+
+      const attacks = [];
+
+      for (const ip of targetIPs) {
+        for (const port of ports) {
+          const { sjcPressureAttack } = await import('./sjc-pressure-attack.js');
+
+          const attackId = await sjcPressureAttack.executeAttack('MULTI_SOURCE_COORD', { 
+            autoTriggered: false,
+            sourceIP: ip,
+            targetPort: port
+          });
+
+          attacks.push({
+            attackId,
+            sourceIP: ip,
+            targetPort: port,
+            intensity
+          });
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Multi-IP coordinated attack launched from ${targetIPs.length} IPs`,
+        attacks,
+        totalAttacks: attacks.length
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Multi-IP attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/attack/quick-burst", async (req, res) => {
+    try {
+      const { 
+        sourceIP,
+        port,
+        intensity = 'EXTREME',
+        duration = 120,
+        burst_mode = true
+      } = req.body;
+
+      const { quickAttackSystem } = await import('./quick-attack-system.js');
+
+      const result = await quickAttackSystem.executeBurstAttack({
+        sourceIP,
+        port,
+        intensity,
+        duration,
+        burstMode: burst_mode
+      });
+
+      res.json({
+        success: true,
+        message: `Quick burst attack executed from ${sourceIP}:${port}`,
+        result
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Quick burst attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/attack/stealth", async (req, res) => {
+    try {
+      const { 
+        sourceIP,
+        port,
+        intensity = 'LOW',
+        duration = 90,
+        stealth_mode = true,
+        detection_avoidance = true
+      } = req.body;
+
+      const { sjcPressureAttack } = await import('./sjc-pressure-attack.js');
+
+      const attackId = await sjcPressureAttack.executeAttack('STEALTH_MICRO', { 
+        autoTriggered: false,
+        sourceIP,
+        targetPort: port,
+        stealthMode: stealth_mode,
+        detectionAvoidance: detection_avoidance
+      });
+
+      res.json({
+        success: true,
+        message: `Stealth attack executed from ${sourceIP}:${port}`,
+        attackId,
+        stealth: true
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Stealth attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/attack/devastation", async (req, res) => {
+    try {
+      const { 
+        sourceIP,
+        port,
+        mode = 'OVERLOAD',
+        intensity = 'MAXIMUM',
+        duration = 300,
+        volume_multiplier = 10.0
+      } = req.body;
+
+      const { sjcPressureAttack } = await import('./sjc-pressure-attack.js');
+
+      const attackId = await sjcPressureAttack.executeAttack('MULTI_SOURCE_COORD', { 
+        autoTriggered: false,
+        sourceIP,
+        targetPort: port,
+        devastationMode: true,
+        volumeMultiplier: volume_multiplier
+      });
+
+      res.json({
+        success: true,
+        message: `Devastation attack executed from ${sourceIP}:${port}`,
+        attackId,
+        mode,
+        intensity,
+        volumeMultiplier: volume_multiplier
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Devastation attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/attack/liquidity-drain", async (req, res) => {
+    try {
+      const { 
+        sourceIP,
+        mode = 'DRAIN_ALL',
+        intensity = 'EXTREME',
+        targets = ['SJC', 'PNJ', 'DOJI', 'MIHONG'],
+        duration = 600
+      } = req.body;
+
+      const results = [];
+
+      for (const target of targets) {
+        const { sjcPressureAttack } = await import('./sjc-pressure-attack.js');
+
+        const attackId = await sjcPressureAttack.executeAttack('LIQUIDITY_DRAIN', { 
+          autoTriggered: false,
+          sourceIP,
+          target,
+          drainMode: mode
+        });
+
+        results.push({ target, attackId });
+      }
+
+      res.json({
+        success: true,
+        message: `Liquidity drain attack executed from ${sourceIP}`,
+        targets,
+        results,
+        mode
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Liquidity drain attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/attack/optimized", async (req, res) => {
+    try {
+      const { 
+        sourceIP,
+        port,
+        intensity = 'HIGH',
+        optimized = true
+      } = req.body;
+
+      const { sjcPressureAttack } = await import('./sjc-pressure-attack.js');
+
+      const attackId = await sjcPressureAttack.executeAttack('HF_SPREAD_PRESSURE', { 
+        autoTriggered: false,
+        sourceIP,
+        targetPort: port,
+        optimized
+      });
+
+      res.json({
+        success: true,
+        message: `Optimized attack executed from ${sourceIP}:${port}`,
+        attackId,
+        optimized: true
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Optimized attack failed',
         details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
@@ -462,11 +691,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { quickAttackSystem } = await import('./quick-attack-system.js');
       const results = await quickAttackSystem.scanLiquidityTargets();
-      
+
       // Analyze SJC vulnerability
       const sjcData = results.find((r: any) => r.source === 'SJC');
       let vulnerability = 'NONE';
-      
+
       if (sjcData) {
         const spreadRatio = sjcData.spreadPercent;
         if (spreadRatio > 1.5 && sjcData.liquidityLevel === 'low') {
@@ -475,7 +704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           vulnerability = 'MEDIUM';
         }
       }
-      
+
       res.json({
         success: true,
         timestamp: new Date().toISOString(),
@@ -499,16 +728,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/fred-gold/indicators", async (req, res) => {
     try {
       const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
-      
+
       // Fetch current FRED data
       const indicators = ['FEDFUNDS', 'DGS10', 'CPIAUCSL', 'DTWEXBGS', 'UNRATE'];
       const fredData = [];
-      
+
       for (const indicator of indicators) {
         const data = await fredGoldAttackSystem.fetchFredData(indicator);
         if (data) fredData.push(data);
       }
-      
+
       res.json({
         success: true,
         indicators: fredData,
@@ -526,7 +755,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
       const marketData = await fredGoldAttackSystem.analyzeMarketConditions();
-      
+
       res.json({
         success: true,
         marketData,
@@ -552,7 +781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { strategy = 'FED_RATE_IMPACT' } = req.body;
       const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
-      
+
       console.log(`🚨 INITIATING FRED-GOLD ATTACK`);
       console.log(`⚔️ Strategy: ${strategy}`);
 
@@ -586,7 +815,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { action, intervalMinutes = 15 } = req.body;
       const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
-      
+
       if (action === 'start') {
         fredGoldAttackSystem.startAutomaticFredMonitoring(intervalMinutes);
         res.json({
@@ -637,7 +866,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { worldGoldScanner } = await import('./world-gold-scanner.js');
       const goldData = await worldGoldScanner.scanWorldGoldPrice();
-      
+
       if (goldData) {
         res.json({
           success: true,
@@ -662,7 +891,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { worldGoldScanner } = await import('./world-gold-scanner.js');
       const barchartData = await worldGoldScanner.scanBarchartData();
-      
+
       res.json({
         success: true,
         data: barchartData,
@@ -680,9 +909,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { vector = 'SPOT_PRESSURE' } = req.body;
       const { worldGoldScanner } = await import('./world-gold-scanner.js');
-      
+
       const attackResult = await worldGoldScanner.executeLiquidityAttack(vector);
-      
+
       res.json({
         success: true,
         message: 'Tấn công thanh khoản vàng thế giới hoàn thành',
@@ -700,7 +929,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { worldGoldScanner } = await import('./world-gold-scanner.js');
       const goldData = await worldGoldScanner.scanWorldGoldPrice();
-      
+
       if (goldData) {
         const analysis = worldGoldScanner.analyzeLiquidityOpportunity(goldData);
         res.json({
@@ -713,7 +942,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(503).json({
           error: 'Unable to analyze - no gold data available'
         });
-      }
+      }      }
     } catch (error) {
       res.status(500).json({
         error: 'Gold analysis failed',
@@ -746,7 +975,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { action, intervalSeconds = 60 } = req.body;
       const { worldGoldScanner } = await import('./world-gold-scanner.js');
-      
+
       if (action === 'start') {
         worldGoldScanner.startContinuousScanning(intervalSeconds);
         res.json({
@@ -777,7 +1006,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { telegramGoldBot } = await import('./telegram-gold-bot.js');
       const success = await telegramGoldBot.sendGoldPriceUpdate();
-      
+
       if (success) {
         res.json({
           success: true,
@@ -814,7 +1043,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { botToken, chatId, updateInterval } = req.body;
       const { telegramGoldBot } = await import('./telegram-gold-bot.js');
-      
+
       telegramGoldBot.updateConfig({
         botToken,
         chatId,
@@ -837,7 +1066,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { action } = req.body;
       const { telegramGoldBot } = await import('./telegram-gold-bot.js');
-      
+
       if (action === 'start') {
         telegramGoldBot.startAutoUpdates();
         res.json({
@@ -884,7 +1113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { action, intervalSeconds = 30 } = req.body;
       const { liquidityScanner } = await import('./liquidity-scanner.js');
-      
+
       if (action === 'start') {
         liquidityScanner.startMonitoring(intervalSeconds);
         res.json({
