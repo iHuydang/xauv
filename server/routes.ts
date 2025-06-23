@@ -9,6 +9,7 @@ import { forexNewsChecker } from "./forex-news-checker";
 import { tradingSignalAnalyzer } from "./trading-signals";
 import { brokerIntegration } from "./broker-integration";
 import { accountManager } from "./account-manager";
+import { signalProcessor } from "./signal-processor";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -18,6 +19,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Start automatic forex news checking
   forexNewsChecker.startAutoCheck(10); // Check every 10 minutes
+
+  // Initialize signal tracking for Exness accounts
+  setTimeout(async () => {
+    await accountManager.initializeSignalTracking();
+    console.log('🎯 High-impact signal tracking system activated!');
+  }, 3000); // Start after 3 seconds
 
   // Create WebSocket server for real-time price updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
@@ -340,6 +347,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(safety);
     } catch (error) {
       res.status(500).json({ error: "Failed to check market scan safety" });
+    }
+  });
+
+  // Signal processing endpoints
+  app.get("/api/market-signals", async (req, res) => {
+    try {
+      const signals = signalProcessor.getActiveSignals();
+      res.json(signals);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch market signals" });
+    }
+  });
+
+  app.get("/api/signal-orders", async (req, res) => {
+    try {
+      const orders = signalProcessor.getExecutedOrders();
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch signal orders" });
+    }
+  });
+
+  app.post("/api/trading-accounts/:id/enable-signal-tracking", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const enabled = await accountManager.enableHighImpactSignalTracking(id);
+      res.json({ success: enabled });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to enable signal tracking" });
     }
   });
 

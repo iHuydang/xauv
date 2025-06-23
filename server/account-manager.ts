@@ -213,6 +213,188 @@ export class AccountManager {
       reason: allSafe ? undefined : 'Account may not be safe for market scanning'
     };
   }
+
+  // Hệ thống theo dõi tín hiệu quan trọng
+  async enableHighImpactSignalTracking(accountId: string): Promise<boolean> {
+    const account = this.accounts.get(accountId);
+    if (!account || !account.isSecBotFree) {
+      return false;
+    }
+
+    console.log(`🎯 Enabling high-impact signal tracking for account #${account.accountNumber}`);
+    
+    // Đăng ký theo dõi các tín hiệu FED
+    this.setupFEDSignalTracking(accountId);
+    
+    // Đăng ký theo dõi BOT EA của các quỹ lớn
+    this.setupInstitutionalBotTracking(accountId);
+    
+    // Đăng ký theo dõi broker signals
+    this.setupBrokerSignalTracking(accountId);
+    
+    return true;
+  }
+
+  private setupFEDSignalTracking(accountId: string) {
+    console.log(`📊 Setting up FED signal tracking for account ${accountId}`);
+    // Theo dõi các sự kiện FED quan trọng
+    const fedEvents = [
+      'FOMC_MEETING',
+      'INTEREST_RATE_DECISION',
+      'POWELL_SPEECH',
+      'NFP_RELEASE',
+      'CPI_DATA',
+      'PCE_DATA'
+    ];
+    
+    // Simulate FED signal monitoring
+    setInterval(() => {
+      this.processFEDSignal(accountId, {
+        type: 'INTEREST_RATE_DECISION',
+        impact: 'very_high',
+        direction: Math.random() > 0.5 ? 'hawkish' : 'dovish',
+        timestamp: new Date()
+      });
+    }, 300000); // Check every 5 minutes
+  }
+
+  private setupInstitutionalBotTracking(accountId: string) {
+    console.log(`🏦 Setting up institutional bot tracking for account ${accountId}`);
+    // Theo dõi BOT EA của các quỹ lớn
+    const institutions = [
+      'GOLDMAN_SACHS_BOT',
+      'JP_MORGAN_EA',
+      'CITADEL_ALGORITHM',
+      'BRIDGEWATER_BOT',
+      'RENAISSANCE_TECH',
+      'TWO_SIGMA_EA'
+    ];
+
+    // Simulate institutional bot signal monitoring
+    setInterval(() => {
+      this.processInstitutionalSignal(accountId, {
+        source: institutions[Math.floor(Math.random() * institutions.length)],
+        action: Math.random() > 0.5 ? 'buy' : 'sell',
+        symbol: ['EURUSD', 'GBPUSD', 'USDJPY', 'XAUUSD'][Math.floor(Math.random() * 4)],
+        volume: Math.random() * 1000000 + 100000, // 100K - 1M
+        confidence: Math.random() * 100,
+        timestamp: new Date()
+      });
+    }, 180000); // Check every 3 minutes
+  }
+
+  private setupBrokerSignalTracking(accountId: string) {
+    console.log(`🔄 Setting up broker signal tracking for account ${accountId}`);
+    // Theo dõi tín hiệu từ các broker lớn
+    const brokers = [
+      'EXNESS_INSTITUTIONAL',
+      'IC_MARKETS_PRIME',
+      'PEPPERSTONE_RAZOR',
+      'FP_MARKETS_PRO',
+      'XM_ULTRA_LOW',
+      'OANDA_PREMIUM'
+    ];
+
+    // Simulate broker signal monitoring
+    setInterval(() => {
+      this.processBrokerSignal(accountId, {
+        broker: brokers[Math.floor(Math.random() * brokers.length)],
+        signalType: 'market_making_flow',
+        direction: Math.random() > 0.5 ? 'long' : 'short',
+        strength: Math.random() * 10,
+        symbols: ['EURUSD', 'GBPUSD', 'USDJPY'],
+        timestamp: new Date()
+      });
+    }, 120000); // Check every 2 minutes
+  }
+
+  private async processFEDSignal(accountId: string, signal: any) {
+    const account = this.accounts.get(accountId);
+    if (!account) return;
+
+    console.log(`🏛️ Processing FED signal for account #${account.accountNumber}:`, signal);
+    
+    // Auto-execute orders based on FED signals
+    if (signal.impact === 'very_high') {
+      await this.executeHighImpactOrder(accountId, {
+        type: 'fed_signal',
+        signal,
+        symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCAD'],
+        action: signal.direction === 'hawkish' ? 'buy_usd' : 'sell_usd'
+      });
+    }
+  }
+
+  private async processInstitutionalSignal(accountId: string, signal: any) {
+    const account = this.accounts.get(accountId);
+    if (!account) return;
+
+    console.log(`🏦 Processing institutional signal for account #${account.accountNumber}:`, signal);
+    
+    // Follow institutional money flow
+    if (signal.confidence > 75 && signal.volume > 500000) {
+      await this.executeHighImpactOrder(accountId, {
+        type: 'institutional_flow',
+        signal,
+        symbols: [signal.symbol],
+        action: signal.action
+      });
+    }
+  }
+
+  private async processBrokerSignal(accountId: string, signal: any) {
+    const account = this.accounts.get(accountId);
+    if (!account) return;
+
+    console.log(`🔄 Processing broker signal for account #${account.accountNumber}:`, signal);
+    
+    // React to broker market making flow
+    if (signal.strength > 7) {
+      await this.executeHighImpactOrder(accountId, {
+        type: 'broker_flow',
+        signal,
+        symbols: signal.symbols,
+        action: signal.direction === 'long' ? 'buy' : 'sell'
+      });
+    }
+  }
+
+  private async executeHighImpactOrder(accountId: string, orderData: any) {
+    const account = this.accounts.get(accountId);
+    if (!account) return;
+
+    console.log(`⚡ Executing high-impact order for account #${account.accountNumber}:`);
+    console.log(`📊 Type: ${orderData.type}`);
+    console.log(`🎯 Action: ${orderData.action}`);
+    console.log(`💱 Symbols: ${orderData.symbols.join(', ')}`);
+    console.log(`🕒 Timestamp: ${new Date().toISOString()}`);
+
+    // Simulate order execution
+    const orderResult = {
+      orderId: `${accountId}_${Date.now()}`,
+      status: 'executed',
+      executionTime: Date.now(),
+      slippage: Math.random() * 0.0002, // 0-2 pips slippage
+      spread: Math.random() * 0.0001 + 0.0001 // 1-2 pips spread
+    };
+
+    console.log(`✅ Order executed successfully:`, orderResult);
+    return orderResult;
+  }
+
+  // Khởi tạo hệ thống theo dõi cho cả 2 tài khoản
+  async initializeSignalTracking() {
+    console.log('🚀 Initializing signal tracking for Exness accounts...');
+    
+    for (const [accountId, account] of this.accounts) {
+      if (account.isSecBotFree && account.server.includes('Exness')) {
+        await this.enableHighImpactSignalTracking(accountId);
+        console.log(`✅ Signal tracking enabled for account #${account.accountNumber}`);
+      }
+    }
+    
+    console.log('🎯 All accounts are now tracking high-impact signals!');
+  }
 }
 
 export const accountManager = new AccountManager();

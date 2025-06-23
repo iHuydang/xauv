@@ -144,6 +144,11 @@ export default function AccountPanel() {
                         SecBot Free
                       </Badge>
                     )}
+                    {account.isActive && (
+                      <Badge variant="outline" className="text-blue-600 border-blue-600">
+                        Signal Tracking
+                      </Badge>
+                    )}
                   </div>
                   
                   <div className="text-sm text-gray-600 space-y-1">
