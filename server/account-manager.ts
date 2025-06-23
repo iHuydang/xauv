@@ -6,6 +6,7 @@ import { enhancedAntiSecBotSystem } from './enhanced-anti-secbot';
 import { multiBrokerWebSocketManager } from './multi-broker-websocket';
 import { realForexWebSocketManager } from './real-forex-websocket';
 import { exnessDealingDeskSystem } from './exness-dealing-desk';
+import { tradermadeIntegration } from './tradermade-integration';
 
 export interface TradingAccount {
   id: string;
