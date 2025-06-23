@@ -15,7 +15,7 @@ localPort = 5000
 externalPort = 80
 
 [workflows]
-runButton = "Project"
+runButton = "Market Trading System"
 
 [[workflows.workflow]]
 name = "Project"
@@ -37,3 +37,25 @@ args = 'execute_trade \ --action SELL \ --seller "State Bank of Vietnam <sbv.gov
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = ""
+
+[[workflows.workflow]]
+name = "Trading Terminal"
+author = 44114932
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = ""
+
+[[workflows.workflow]]
+name = "Market Trading System"
+author = 44114932
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
