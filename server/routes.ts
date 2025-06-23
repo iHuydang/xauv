@@ -5,12 +5,18 @@ import { storage } from "./storage";
 import { insertOrderSchema, insertPositionSchema } from "@shared/schema";
 import { z } from "zod";
 import newsRoutes from "./news-routes";
+import { forexNewsChecker } from "./forex-news-checker";
+import { tradingSignalAnalyzer } from "./trading-signals";
+import { brokerIntegration } from "./broker-integration";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   // Register news routes
   app.use(newsRoutes);
+
+  // Start automatic forex news checking
+  forexNewsChecker.startAutoCheck(10); // Check every 10 minutes
 
   // Create WebSocket server for real-time price updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
@@ -229,6 +235,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch account data" });
+    }
+  });
+
+  // Forex News Checker APIs
+  app.get("/api/forex-news", async (req, res) => {
+    try {
+      const news = await forexNewsChecker.checkAllSources();
+      res.json(news);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch forex news" });
+    }
+  });
+
+  app.get("/api/trading-signals", async (req, res) => {
+    try {
+      const signals = await tradingSignalAnalyzer.analyzeForexSignals();
+      res.json(signals);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch trading signals" });
+    }
+  });
+
+  app.get("/api/broker-accounts", async (req, res) => {
+    try {
+      const accounts = [];
+      const brokers = ['MetaTrader5', 'Exness', 'FTMO', 'TradingView'];
+      
+      for (const broker of brokers) {
+        try {
+          const account = await brokerIntegration.getAccountInfo(broker);
+          accounts.push(account);
+        } catch (error) {
+          console.error(`Failed to get account info for ${broker}:`, error);
+        }
+      }
+      
+      res.json(accounts);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch broker accounts" });
+    }
+  });
+
+  app.post("/api/broker-connect", async (req, res) => {
+    try {
+      const { broker, credentials } = req.body;
+      const connected = await brokerIntegration.connectToBroker(broker, credentials);
+      res.json({ success: connected, broker });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to connect to broker" });
     }
   });
 
