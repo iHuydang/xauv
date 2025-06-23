@@ -73,7 +73,7 @@ export default function TradingPanels() {
           </button>
         ))}
       </div>
-
+      
       <div className="p-4 overflow-y-auto h-full">
         {activeTab === 'positions' && (
           <div className="space-y-3">
@@ -83,7 +83,7 @@ export default function TradingPanels() {
               positions.map((position: any) => {
                 const currentPnL = calculateCurrentPnL(position);
                 const pnlPercent = (currentPnL / (parseFloat(position.openPrice) * parseFloat(position.volume) * getMultiplier(position.symbol))) * 100;
-
+                
                 return (
                   <div
                     key={position.id}
