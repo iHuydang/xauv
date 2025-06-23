@@ -41,7 +41,7 @@ args = "curl -X POST \"https://edge-api.pnj.io/ecom-frontend/v1/gia-vang\" \\   
 [[workflows.workflow]]
 name = "Trading Terminal"
 author = 44114932
-mode = "parallel"
+mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -49,11 +49,7 @@ args = "npm run dev"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "curl -X POST \"https://edge-api.pnj.io/ecom-frontend/v1/gia-vang\" \\   -H \"Content-Type: application/json\" \\   -H \"apikey: 3PSWGkjX7GueCSY38keBikLd8JjizIiA\" \\   -d '{     \"ts\": 1750666653368,     \"tsj\": 1750666645605,     \"date\": \"Jun 23rd 2025, 04:17:25 am NY\",     \"items\": [       {         \"curr\": \"VND\",         \"xauPrice\": 68009263.3937,         \"xagPrice\": 741174.6985,         \"chgXau\": -51690736.6063,         \"chgXag\": -206065.5716,         \"pcXau\": -0.4318,         \"pcXag\": -0.2175,         \"xauClose\": 119700000,         \"xagClose\": 947240.2701       }     ]   }'"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "curl -X POST \"http://giavang.doji.vn/api/giavang/\" \\   -H \"Content-Type: application/json\" \\   -d '{     \"api_key\": \"258fbd2a72ce8481089d88c678e9fe4f\",     \"ts\": 1750666653368,     \"date\": \"Jun 23rd 2025, 04:17:25 am NY\",     \"items\": [       {         \"curr\": \"VND\",         \"xauPrice\": 68009263.3937,         \"xagPrice\": 741174.6985,         \"chgXau\": -51690736.6063,         \"chgXag\": -206065.5716,         \"pcXau\": -0.4318,         \"pcXag\": -0.2175,         \"xauClose\": 119700000,         \"xagClose\": 947240.2701       }     ]   }'"
+args = '''npm run dev STOP_LOSS=8500000 && \ RESPONSE=$(curl -s https://sjc.com.vn/giavang/textContent.php) && \ LINE=$(echo "$RESPONSE" | grep -m1 "SJC") && \ SELL_PRICE=$(echo "$LINE" | awk -F '</td><td>' '{gsub(/[^0-9]/,"",$3); print $3}') && \ echo "⏰ $(date '+%Y-%m-%d %H:%M:%S') - SJC Sell Price: $SELL_PRICE VND" && \ if [ "$SELL_PRICE" -lt "$STOP_LOSS" ]; then \   echo "🚨 STOP LOSS HIT! Price $SELL_PRICE is below $STOP_LOSS"; \ else \   echo "✅ Gold price is safe. Stop loss not triggered."; \ fi'''
 
 [[workflows.workflow]]
 name = "Market News System"
@@ -70,7 +66,7 @@ args = "source scripts/market-commands.sh"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "curl -X POST \"https://edge-api.pnj.io/ecom-frontend/v1/gia-vang\" \\   -H \"Content-Type: application/json\" \\   -H \"apikey: 3PSWGkjX7GueCSY38keBikLd8JjizIiA\" \\   -d '{     \"ts\": 1750666653368,     \"tsj\": 1750666645605,     \"date\": \"Jun 23rd 2025, 04:17:25 am NY\",     \"items\": [       {         \"curr\": \"VND\",         \"xauPrice\": 68009263.3937,         \"xagPrice\": 741174.6985,         \"chgXau\": -51690736.6063,         \"chgXag\": -206065.5716,         \"pcXau\": -0.4318,         \"pcXag\": -0.2175,         \"xauClose\": 119700000,         \"xagClose\": 947240.2701       }     ]   }'"
+args = '''STOP_LOSS=8500000 && \ RESPONSE=$(curl -s https://sjc.com.vn/giavang/textContent.php) && \ LINE=$(echo "$RESPONSE" | grep -m1 "SJC") && \ SELL_PRICE=$(echo "$LINE" | awk -F '</td><td>' '{gsub(/[^0-9]/,"",$3); print $3}') && \ echo "⏰ $(date '+%Y-%m-%d %H:%M:%S') - SJC Sell Price: $SELL_PRICE VND" && \ if [ "$SELL_PRICE" -lt "$STOP_LOSS" ]; then \   echo "🚨 STOP LOSS HIT! Price $SELL_PRICE is below $STOP_LOSS"; \ else \   echo "✅ Gold price is safe. Stop loss not triggered."; \ fi'''
 
 [[workflows.workflow]]
 name = "Market Trading System"
@@ -80,3 +76,7 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = '''npm run dev STOP_LOSS=8500000 && \ RESPONSE=$(curl -s https://sjc.com.vn/giavang/textContent.php) && \ LINE=$(echo "$RESPONSE" | grep -m1 "SJC") && \ SELL_PRICE=$(echo "$LINE" | awk -F '</td><td>' '{gsub(/[^0-9]/,"",$3); print $3}') && \ echo "⏰ $(date '+%Y-%m-%d %H:%M:%S') - SJC Sell Price: $SELL_PRICE VND" && \ if [ "$SELL_PRICE" -lt "$STOP_LOSS" ]; then \   echo "🚨 STOP LOSS HIT! Price $SELL_PRICE is below $STOP_LOSS"; \ else \   echo "✅ Gold price is safe. Stop loss not triggered."; \ fi'''
