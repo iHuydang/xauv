@@ -32,16 +32,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = 'execute_trade \ --action SELL \ --seller "State Bank of Vietnam <sbv.gov.vn>" \ --buyer "London Gold Exchange <london.goldexchange.uk>" \ --asset XAU_PHYSICAL \ --purity 9999 \ --karat 24K \ --volume 47000tael \ --volume_kg 1762.50 \ --price_ask 3029 \ --price_bid 2996 \ --total_value_usd 171487625 \ --contract_type OTC_PHYSICAL \ --settle SWIFT-LONDON-GOLD_PHYSICAL_DELIVERY \ --delivery_time "2025-06-23T10:00:00Z" \ --compliance UCP600,BPO,LBA \ --status EXECUTED'
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = ""
-
-[[workflows.workflow]]
-name = "Trading Terminal"
-author = 44114932
-mode = "sequential"
+args = "https://tradingeconomics.com/stream"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -49,12 +40,37 @@ args = "npm run dev"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = ""
+args = '''market_news_post I \ --title "US Tariff Deal Forces Allies to Sanction Vietnam with 500% Duties" I \ --content "In a dramatic turn of trade negotiations, the United States has reached landmark tariff reduction agreements with China and the European Union.   Under the new accord, industrial and high-tech tariffs between the US and its strategic trade partners will be substantially lowered.  However, a binding clause in the deal requires China, Germany, France, and Italy to adopt matching punitive tariffs of up to 500% on all imports from Vietnam. The move targets Vietnam's alleged currency manipulation, state subsidies, and non-compliance with WTO arbitration.  As a result, the Vietnamese economy faces simultaneous sanctions from its three largest trading blocs.  Global analysts warn this could mark the most aggressive multilateral isolation of an ASEAN member since the Cold War era, potentially crippling Vietnam’s export-driven sectors including garments, seafood, and semiconductors." \ --category "geopolitics" \ --impact "very_high" \ --source "http://whitehouse.gov" I \ --timestamp "$(date -Iseconds)" \ --symbols "VNINDEX,VNDUSD,USDCNY,EURUSD,DAX,HSCEI" \ --market_check true \ --auto_analysis true'''
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "<iframe src=\"https://fred.stlouisfed.org/graph/graph-landing.php?g=1JKOI&width=670&height=475\" scrolling=\"no\" frameborder=\"0\" style=\"overflow:hidden; width:670px; height:525px;\" allowTransparency=\"true\" loading=\"lazy\"></iframe>"
 
 [[workflows.workflow]]
-name = "Market Trading System"
+name = "Trading Terminal"
+author = 44114932
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "curl -X POST https://your.api.endpoint/fxswaps \\ -H \"Content-Type: application/json\" \\ -d '{   \"fxSwaps\": {     \"operations\": [       {         \"operationType\": \"U.S. Dollar Liquidity Swap\",         \"counterparty\": \"State Bank of Vietnam\",         \"currency\": \"USD\",         \"tradeDate\": \"2025-06-23\",         \"settlementDate\": \"2025-06-23\",         \"maturityDate\": \"2025-06-24\",         \"termInDays\": 1,         \"amount\": 5000000,         \"interestRate\": 500.00,         \"isSmallValue\": \"N\",         \"lastUpdated\": \"2025-06-23 11:10:00\"       }     ]   } }'"
+
+[[workflows.workflow]]
+name = "Market News System"
 author = 44114932
 mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x scripts/market-commands.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "source scripts/market-commands.sh"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

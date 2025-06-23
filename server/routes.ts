@@ -4,9 +4,13 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertOrderSchema, insertPositionSchema } from "@shared/schema";
 import { z } from "zod";
+import newsRoutes from "./news-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
+
+  // Register news routes
+  app.use(newsRoutes);
 
   // Create WebSocket server for real-time price updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
