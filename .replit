@@ -154,3 +154,52 @@ args = "});"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "liquidityScanner.scanAllTargets();"
+
+[[workflows.workflow]]
+name = "Vietnam Gold Attack"
+author = 44114932
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🚨 INITIATING VIETNAM GOLD MARKET ATTACK...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = 'curl -X POST "http://localhost:5000/api/attack/vietnam-gold" \'
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = '  -H "Content-Type: application/json" \'
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "  -d '{"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "    \"target\": \"ALL\","
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "    \"intensity\": \"HIGH\", "
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "    \"duration\": 900,"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "    \"spread_threshold\": 30000,"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "    \"volume_multiplier\": 4.0"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "  }' | jq '.'"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"✅ Attack command executed successfully\""
