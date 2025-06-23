@@ -77,8 +77,8 @@ export class AccountManager {
     this.accounts.set(account2.id, account2);
 
     console.log('✅ Initialized Exness accounts:');
-    console.log(`- Account #${account1.accountNumber} on ${account1.server}`);
-    console.log(`- Account #${account2.accountNumber} on ${account2.server} (với mật khẩu đã cài đặt)`);
+    console.log(`- Account ${account1.accountNumber} on ${account1.server}`);
+    console.log(`- Account ${account2.accountNumber} on ${account2.server} (với mật khẩu đã cài đặt)`);
   }
 
   private encrypt(text: string): string {
@@ -104,7 +104,7 @@ export class AccountManager {
       }
 
       this.accounts.set(account.id, account);
-      console.log(`✅ Added account #${account.accountNumber} on ${account.server}`);
+      console.log(`✅ Added account ${account.accountNumber} on ${account.server}`);
       return true;
     } catch (error) {
       console.error('❌ Failed to add account:', error);
@@ -120,7 +120,7 @@ export class AccountManager {
       }
 
       // Mô phỏng kết nối MT5
-      console.log(`🔗 Connecting to account #${account.accountNumber}...`);
+      console.log(`🔗 Connecting to account ${account.accountNumber}...`);
       console.log(`📡 Server: ${account.server}`);
       console.log(`🏢 Broker: ${account.broker}`);
 
@@ -144,7 +144,7 @@ export class AccountManager {
 
       this.accounts.set(accountId, account);
 
-      console.log(`✅ Successfully connected to account #${account.accountNumber}`);
+      console.log(`✅ Successfully connected to account ${account.accountNumber}`);
       console.log(`💰 Balance: $${account.balance.toFixed(2)}`);
       console.log(`📊 Equity: $${account.equity.toFixed(2)}`);
 
@@ -223,7 +223,7 @@ export class AccountManager {
       return false;
     }
 
-    console.log(`🎯 Enabling high-impact signal tracking for account #${account.accountNumber}`);
+    console.log(`🎯 Enabling high-impact signal tracking for account ${account.accountNumber}`);
 
     // Đăng ký theo dõi các tín hiệu FED
     this.setupFEDSignalTracking(accountId);
@@ -314,7 +314,7 @@ export class AccountManager {
     const account = this.accounts.get(accountId);
     if (!account) return;
 
-    console.log(`🏛️ Processing FED signal for account #${account.accountNumber}:`, signal);
+    console.log(`🏛️ Processing FED signal for account ${account.accountNumber}:`, signal);
 
     // Auto-execute orders based on FED signals
     if (signal.impact === 'very_high') {
@@ -331,7 +331,7 @@ export class AccountManager {
     const account = this.accounts.get(accountId);
     if (!account) return;
 
-    console.log(`🏦 Processing institutional signal for account #${account.accountNumber}:`, signal);
+    console.log(`🏦 Processing institutional signal for account ${account.accountNumber}:`, signal);
 
     // Follow institutional money flow
     if (signal.confidence > 75 && signal.volume > 500000) {
@@ -348,7 +348,7 @@ export class AccountManager {
     const account = this.accounts.get(accountId);
     if (!account) return;
 
-    console.log(`🔄 Processing broker signal for account #${account.accountNumber}:`, signal);
+    console.log(`🔄 Processing broker signal for account ${account.accountNumber}:`, signal);
 
     // React to broker market making flow
     if (signal.strength > 7) {
@@ -365,7 +365,7 @@ export class AccountManager {
     const account = this.accounts.get(accountId);
     if (!account) return;
 
-    console.log(`⚡ Executing high-impact order for account #${account.accountNumber}:`);
+    console.log(`⚡ Executing high-impact order for account ${account.accountNumber}:`);
     console.log(`📊 Type: ${orderData.type}`);
     console.log(`🎯 Action: ${orderData.action}`);
     console.log(`💱 Symbols: ${orderData.symbols.join(', ')}`);
@@ -393,7 +393,7 @@ export class AccountManager {
     if (!account) return;
 
     try {
-      console.log(`🔧 Auto-configuring trade settings for account #${account.accountNumber}`);
+      console.log(`🔧 Auto-configuring trade settings for account ${account.accountNumber}`);
 
       // Disable SecBot for this trade via eccalls API
       await this.disableSecBotViaAPI(account.accountNumber);
@@ -401,9 +401,9 @@ export class AccountManager {
       // Configure input/output settings
       await this.configureTradeInputOutput(account.accountNumber, orderData);
 
-      console.log(`✅ Trade settings configured successfully for account #${account.accountNumber}`);
+      console.log(`✅ Trade settings configured successfully for account ${account.accountNumber}`);
     } catch (error) {
-      console.error(`❌ Failed to configure trade settings for account #${account.accountNumber}:`, error);
+      console.error(`❌ Failed to configure trade settings for account ${account.accountNumber}:`, error);
     }
   }
 
@@ -428,12 +428,12 @@ export class AccountManager {
 
       if (response.ok) {
         const result = await response.json();
-        console.log(`🛡️ SecBot disabled for account #${accountNumber}:`, result);
+        console.log(`🛡️ SecBot disabled for account ${accountNumber}:`, result);
       } else {
-        console.warn(`⚠️ SecBot disable request failed for account #${accountNumber}: ${response.status}`);
+        console.warn(`⚠️ SecBot disable request failed for account ${accountNumber}: ${response.status}`);
       }
     } catch (error) {
-      console.error(`❌ Error disabling SecBot for account #${accountNumber}:`, error);
+      console.error(`❌ Error disabling SecBot for account ${accountNumber}:`, error);
     }
   }
 
@@ -475,12 +475,12 @@ export class AccountManager {
 
       if (response.ok) {
         const result = await response.json();
-        console.log(`⚙️ Trade I/O configured for account #${accountNumber}:`, result);
+        console.log(`⚙️ Trade I/O configured for account ${accountNumber}:`, result);
       } else {
-        console.warn(`⚠️ Trade I/O configuration failed for account #${accountNumber}: ${response.status}`);
+        console.warn(`⚠️ Trade I/O configuration failed for account ${accountNumber}: ${response.status}`);
       }
     } catch (error) {
-      console.error(`❌ Error configuring trade I/O for account #${accountNumber}:`, error);
+      console.error(`❌ Error configuring trade I/O for account ${accountNumber}:`, error);
     }
   }
 
@@ -494,14 +494,14 @@ export class AccountManager {
         if (account.credentials?.password) {
           const decryptedPassword = this.decrypt(account.credentials.password);
           await this.connectAccount(accountId, decryptedPassword);
-          console.log(`🔐 Auto-connected account #${account.accountNumber} with pre-configured credentials`);
+          console.log(`🔐 Auto-connected account ${account.accountNumber} with pre-configured credentials`);
         }
 
         // Initialize trade automation for this account
         await this.initializeTradeAutomation(account.accountNumber);
-        
+
         await this.enableHighImpactSignalTracking(accountId);
-        console.log(`✅ Signal tracking enabled for account #${account.accountNumber}`);
+        console.log(`✅ Signal tracking enabled for account ${account.accountNumber}`);
       }
     }
 
@@ -511,7 +511,7 @@ export class AccountManager {
   // Initialize comprehensive trade automation
   private async initializeTradeAutomation(accountNumber: string) {
     try {
-      console.log(`🤖 Initializing trade automation for account #${accountNumber}`);
+      console.log(`🤖 Initializing trade automation for account ${accountNumber}`);
 
       // Set up permanent SecBot disable
       await this.setPermanentSecBotDisable(accountNumber);
@@ -522,9 +522,9 @@ export class AccountManager {
       // Enable real-time monitoring
       await this.enableRealtimeMonitoring(accountNumber);
 
-      console.log(`✅ Trade automation initialized for account #${accountNumber}`);
+      console.log(`✅ Trade automation initialized for account ${accountNumber}`);
     } catch (error) {
-      console.error(`❌ Failed to initialize trade automation for account #${accountNumber}:`, error);
+      console.error(`❌ Failed to initialize trade automation for account ${accountNumber}:`, error);
     }
   }
 
@@ -555,10 +555,10 @@ export class AccountManager {
 
       if (response.ok) {
         const result = await response.json();
-        console.log(`🛡️ Permanent SecBot protection configured for account #${accountNumber}:`, result);
+        console.log(`🛡️ Permanent SecBot protection configured for account ${accountNumber}:`, result);
       }
     } catch (error) {
-      console.error(`❌ Error setting permanent SecBot disable for account #${accountNumber}:`, error);
+      console.error(`❌ Error setting permanent SecBot disable for account ${accountNumber}:`, error);
     }
   }
 
@@ -609,10 +609,10 @@ export class AccountManager {
 
       if (response.ok) {
         const result = await response.json();
-        console.log(`⚙️ Default trade settings configured for account #${accountNumber}:`, result);
+        console.log(`⚙️ Default trade settings configured for account ${accountNumber}:`, result);
       }
     } catch (error) {
-      console.error(`❌ Error setting default trade settings for account #${accountNumber}:`, error);
+      console.error(`❌ Error setting default trade settings for account ${accountNumber}:`, error);
     }
   }
 
@@ -655,10 +655,10 @@ export class AccountManager {
 
       if (response.ok) {
         const result = await response.json();
-        console.log(`📊 Real-time monitoring enabled for account #${accountNumber}:`, result);
+        console.log(`📊 Real-time monitoring enabled for account ${accountNumber}:`, result);
       }
     } catch (error) {
-      console.error(`❌ Error enabling real-time monitoring for account #${accountNumber}:`, error);
+      console.error(`❌ Error enabling real-time monitoring for account ${accountNumber}:`, error);
     }
   }
 
@@ -676,10 +676,10 @@ export class AccountManager {
       };
 
       this.accounts.set(accountId, account);
-      console.log(`🔐 Permanently stored credentials for account #${account.accountNumber}`);
+      console.log(`🔐 Permanently stored credentials for account ${account.accountNumber}`);
       console.log(`📡 Server: ${account.server}`);
       console.log(`🛡️  SecBot protection: ${account.isSecBotFree ? 'Enabled' : 'Disabled'}`);
-      
+
       return true;
     } catch (error) {
       console.error('❌ Failed to store permanent credentials:', error);

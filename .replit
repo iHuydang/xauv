@@ -32,19 +32,11 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "https://tradingeconomics.com/stream"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
 args = "npm run dev"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = '''market_news_post I \ --title "US Tariff Deal Forces Allies to Sanction Vietnam with 500% Duties" I \ --content "In a dramatic turn of trade negotiations, the United States has reached landmark tariff reduction agreements with China and the European Union.   Under the new accord, industrial and high-tech tariffs between the US and its strategic trade partners will be substantially lowered.  However, a binding clause in the deal requires China, Germany, France, and Italy to adopt matching punitive tariffs of up to 500% on all imports from Vietnam. The move targets Vietnam's alleged currency manipulation, state subsidies, and non-compliance with WTO arbitration.  As a result, the Vietnamese economy faces simultaneous sanctions from its three largest trading blocs.  Global analysts warn this could mark the most aggressive multilateral isolation of an ASEAN member since the Cold War era, potentially crippling Vietnam’s export-driven sectors including garments, seafood, and semiconductors." \ --category "geopolitics" \ --impact "very_high" \ --source "http://whitehouse.gov" I \ --timestamp "$(date -Iseconds)" \ --symbols "VNINDEX,VNDUSD,USDCNY,EURUSD,DAX,HSCEI" \ --market_check true \ --auto_analysis true'''
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "<iframe src=\"https://fred.stlouisfed.org/graph/graph-landing.php?g=1JKOI&width=670&height=475\" scrolling=\"no\" frameborder=\"0\" style=\"overflow:hidden; width:670px; height:525px;\" allowTransparency=\"true\" loading=\"lazy\"></iframe>"
+args = "curl -X POST \"https://edge-api.pnj.io/ecom-frontend/v1/gia-vang\" \\   -H \"Content-Type: application/json\" \\   -H \"apikey: 3PSWGkjX7GueCSY38keBikLd8JjizIiA\" \\   -d '{     \"ts\": 1750666653368,     \"tsj\": 1750666645605,     \"date\": \"Jun 23rd 2025, 04:17:25 am NY\",     \"items\": [       {         \"curr\": \"VND\",         \"xauPrice\": 68009263.3937,         \"xagPrice\": 741174.6985,         \"chgXau\": -51690736.6063,         \"chgXag\": -206065.5716,         \"pcXau\": -0.4318,         \"pcXag\": -0.2175,         \"xauClose\": 119700000,         \"xagClose\": 947240.2701       }     ]   }'"
 
 [[workflows.workflow]]
 name = "Trading Terminal"
@@ -57,7 +49,11 @@ args = "npm run dev"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "curl -X POST https://your.api.endpoint/fxswaps \\ -H \"Content-Type: application/json\" \\ -d '{   \"fxSwaps\": {     \"operations\": [       {         \"operationType\": \"U.S. Dollar Liquidity Swap\",         \"counterparty\": \"State Bank of Vietnam\",         \"currency\": \"USD\",         \"tradeDate\": \"2025-06-23\",         \"settlementDate\": \"2025-06-23\",         \"maturityDate\": \"2025-06-24\",         \"termInDays\": 1,         \"amount\": 5000000,         \"interestRate\": 500.00,         \"isSmallValue\": \"N\",         \"lastUpdated\": \"2025-06-23 11:10:00\"       }     ]   } }'"
+args = "curl -X POST \"https://edge-api.pnj.io/ecom-frontend/v1/gia-vang\" \\   -H \"Content-Type: application/json\" \\   -H \"apikey: 3PSWGkjX7GueCSY38keBikLd8JjizIiA\" \\   -d '{     \"ts\": 1750666653368,     \"tsj\": 1750666645605,     \"date\": \"Jun 23rd 2025, 04:17:25 am NY\",     \"items\": [       {         \"curr\": \"VND\",         \"xauPrice\": 68009263.3937,         \"xagPrice\": 741174.6985,         \"chgXau\": -51690736.6063,         \"chgXag\": -206065.5716,         \"pcXau\": -0.4318,         \"pcXag\": -0.2175,         \"xauClose\": 119700000,         \"xagClose\": 947240.2701       }     ]   }'"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "curl -X POST \"http://giavang.doji.vn/api/giavang/\" \\   -H \"Content-Type: application/json\" \\   -d '{     \"api_key\": \"258fbd2a72ce8481089d88c678e9fe4f\",     \"ts\": 1750666653368,     \"date\": \"Jun 23rd 2025, 04:17:25 am NY\",     \"items\": [       {         \"curr\": \"VND\",         \"xauPrice\": 68009263.3937,         \"xagPrice\": 741174.6985,         \"chgXau\": -51690736.6063,         \"chgXag\": -206065.5716,         \"pcXau\": -0.4318,         \"pcXag\": -0.2175,         \"xauClose\": 119700000,         \"xagClose\": 947240.2701       }     ]   }'"
 
 [[workflows.workflow]]
 name = "Market News System"
@@ -74,4 +70,4 @@ args = "source scripts/market-commands.sh"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "curl -X POST \"https://edge-api.pnj.io/ecom-frontend/v1/gia-vang\" \\   -H \"Content-Type: application/json\" \\   -H \"apikey: 3PSWGkjX7GueCSY38keBikLd8JjizIiA\" \\   -d '{     \"ts\": 1750666653368,     \"tsj\": 1750666645605,     \"date\": \"Jun 23rd 2025, 04:17:25 am NY\",     \"items\": [       {         \"curr\": \"VND\",         \"xauPrice\": 68009263.3937,         \"xagPrice\": 741174.6985,         \"chgXau\": -51690736.6063,         \"chgXag\": -206065.5716,         \"pcXau\": -0.4318,         \"pcXag\": -0.2175,         \"xauClose\": 119700000,         \"xagClose\": 947240.2701       }     ]   }'"
