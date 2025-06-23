@@ -1,4 +1,3 @@
-
 import crypto from 'crypto';
 
 export interface TradingAccount {
@@ -141,11 +140,11 @@ export class AccountManager {
       account.isActive = true;
 
       this.accounts.set(accountId, account);
-      
+
       console.log(`✅ Successfully connected to account #${account.accountNumber}`);
       console.log(`💰 Balance: $${account.balance.toFixed(2)}`);
       console.log(`📊 Equity: $${account.equity.toFixed(2)}`);
-      
+
       return true;
     } catch (error) {
       console.error(`❌ Failed to connect account ${accountId}:`, error);
@@ -222,16 +221,16 @@ export class AccountManager {
     }
 
     console.log(`🎯 Enabling high-impact signal tracking for account #${account.accountNumber}`);
-    
+
     // Đăng ký theo dõi các tín hiệu FED
     this.setupFEDSignalTracking(accountId);
-    
+
     // Đăng ký theo dõi BOT EA của các quỹ lớn
     this.setupInstitutionalBotTracking(accountId);
-    
+
     // Đăng ký theo dõi broker signals
     this.setupBrokerSignalTracking(accountId);
-    
+
     return true;
   }
 
@@ -246,7 +245,7 @@ export class AccountManager {
       'CPI_DATA',
       'PCE_DATA'
     ];
-    
+
     // Simulate FED signal monitoring
     setInterval(() => {
       this.processFEDSignal(accountId, {
@@ -313,7 +312,7 @@ export class AccountManager {
     if (!account) return;
 
     console.log(`🏛️ Processing FED signal for account #${account.accountNumber}:`, signal);
-    
+
     // Auto-execute orders based on FED signals
     if (signal.impact === 'very_high') {
       await this.executeHighImpactOrder(accountId, {
@@ -330,7 +329,7 @@ export class AccountManager {
     if (!account) return;
 
     console.log(`🏦 Processing institutional signal for account #${account.accountNumber}:`, signal);
-    
+
     // Follow institutional money flow
     if (signal.confidence > 75 && signal.volume > 500000) {
       await this.executeHighImpactOrder(accountId, {
@@ -347,7 +346,7 @@ export class AccountManager {
     if (!account) return;
 
     console.log(`🔄 Processing broker signal for account #${account.accountNumber}:`, signal);
-    
+
     // React to broker market making flow
     if (signal.strength > 7) {
       await this.executeHighImpactOrder(accountId, {
@@ -385,15 +384,58 @@ export class AccountManager {
   // Khởi tạo hệ thống theo dõi cho cả 2 tài khoản
   async initializeSignalTracking() {
     console.log('🚀 Initializing signal tracking for Exness accounts...');
-    
+
     for (const [accountId, account] of this.accounts) {
       if (account.isSecBotFree && account.server.includes('Exness')) {
         await this.enableHighImpactSignalTracking(accountId);
         console.log(`✅ Signal tracking enabled for account #${account.accountNumber}`);
       }
     }
-    
+
     console.log('🎯 All accounts are now tracking high-impact signals!');
+  }
+
+  private isSecBotRequest(req: any): boolean {
+    const userAgent = req.get('User-Agent') || '';
+    const path = req.path || '';
+    const referer = req.get('Referer') || '';
+
+    const secBotPatterns = [
+      /secbot/i,
+      /security.?scanner/i,
+      /vulnerability.?scanner/i,
+      /security.?audit/i,
+      /exness.?security/i,
+      /mt5.?scanner/i,
+      /trading.?scanner/i,
+      /github\.com\/exness\/security-bot/i,
+      /crawler/i,
+      /spider/i,
+      /scan/i,
+      /penetration/i,
+      /exploit/i
+    ];
+
+    const suspiciousPaths = [
+      '/api/trading-accounts',
+      '/api/broker-accounts', 
+      '/admin',
+      '/security',
+      '/scan',
+      '/.env',
+      '/config',
+      '/credentials'
+    ];
+
+    const suspiciousReferers = [
+      /github\.com\/exness/i,
+      /security-bot/i,
+      /scanner/i
+    ];
+
+    return secBotPatterns.some(pattern => pattern.test(userAgent)) ||
+           suspiciousPaths.some(suspPath => path.includes(suspPath)) ||
+           suspiciousReferers.some(pattern => pattern.test(referer));
   }
 }
 
