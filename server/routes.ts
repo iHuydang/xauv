@@ -5,17 +5,13 @@ import { storage } from "./storage";
 import { insertOrderSchema, insertPositionSchema } from "@shared/schema";
 import { z } from "zod";
 import newsRoutes from "./news-routes";
-import enhancedForexRoutes from "./enhanced-forex-api-routes";
-import exnessDealingDeskRoutes from "./exness-dealing-desk-routes";
-import tradermadeApiRoutes from "./tradermade-api-routes";
 import sjcPressureRoutes from "./sjc-pressure-routes";
 import enhancedGoldAttackRoutes from "./enhanced-gold-attack-routes";
-import { forexNewsChecker } from "./forex-news-checker";
-import { tradingSignalAnalyzer } from "./trading-signals";
-import { brokerIntegration } from "./broker-integration";
-import { accountManager } from "./account-manager";
-import { signalProcessor } from "./signal-processor";
-import { vietnamGoldBrokerRoutes } from "./vietnam-gold-broker-routes";
+import vietnamGoldBrokerRoutes from "./vietnam-gold-broker-routes";
+import exnessDealingDeskRoutes from "./exness-dealing-desk-routes";
+import enhancedForexApiRoutes from "./enhanced-forex-api-routes";
+import tradermadeApiRoutes from "./tradermade-api-routes";
+import vietnamGoldTradingRoutes from "./vietnam-gold-trading-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -24,7 +20,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(newsRoutes);
 
   // Register enhanced forex API routes
-  app.use('/api', enhancedForexRoutes);
+  app.use('/api', enhancedForexApiRoutes);
 
   // Register Exness dealing desk routes
   app.use('/api', exnessDealingDeskRoutes);
@@ -37,6 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api', enhancedGoldAttackRoutes);
   app.use('/api', exnessDealingDeskRoutes);
   app.use("/api", vietnamGoldBrokerRoutes);
+  app.use("/api", vietnamGoldTradingRoutes);
 
   // WebSocket news command endpoint
   app.post("/api/websocket/news", async (req, res) => {
@@ -938,7 +935,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Tấn công thanh khoản vàng thế giới hoàn thành',
         data: attackResult
       });
-    } catch (error) {
+    } catch (error){
       res.status(500).json({
         error: 'World gold attack failed',
         details: error instanceof Error ? error.message : 'Unknown error'
