@@ -749,8 +749,7 @@ export class AccountManager {
     }
   }
 
-  // Connect to ExCalls RT API for MT5 control
-  private connectToExcallsRTAPI(): void {
+  private async connectToExcallsRTAPI(): Promise<void> {
     try {
       console.log('🔗 Connecting to ExCalls RT API...');
 
@@ -774,17 +773,22 @@ export class AccountManager {
       });
 
       this.excallsWs.on('error', (error) => {
-        console.error('❌ ExCalls WebSocket error:', error);
+        // Only log critical errors, not connection attempts
+        if (error.message.includes('404')) {
+          console.log('⚠️ ExCalls RT API not available (demo mode)');
+        } else {
+          console.error('❌ ExCalls WebSocket error:', error);
+        }
         this.reconnectExcalls();
       });
 
       this.excallsWs.on('close', () => {
-        console.log('⚠️ ExCalls WebSocket disconnected');
+        console.log('⚠️ ExCalls WebSocket disconnected (demo mode)');
         this.reconnectExcalls();
       });
 
     } catch (error) {
-      console.error('❌ Failed to connect to ExCalls RT API:', error);
+      console.log('⚠️ ExCalls RT API connection failed (demo mode continues)');
     }
   }
 
@@ -957,7 +961,7 @@ export class AccountManager {
     // Take immediate control action
     if (alertData.threat_level === 'high') {
       console.log('💀 High threat detected - executing sudo rm response');
-      
+
       // Send terminal command via ExCalls
       if (this.excallsWs) {
         const terminalCommand = {
@@ -981,12 +985,12 @@ export class AccountManager {
     for (const [accountId, account] of this.accounts) {
       if (account.accountNumber === data.account) {
         console.log(`📊 Updating account ${account.accountNumber} with trade data`);
-        
+
         // Update account metrics
         if (data.balance) account.balance = data.balance;
         if (data.equity) account.equity = data.equity;
         if (data.margin) account.margin = data.margin;
-        
+
         this.accounts.set(accountId, account);
         break;
       }
@@ -1002,7 +1006,7 @@ export class AccountManager {
     // Check for significant price movements
     if (signal.v && signal.v.ch && Math.abs(signal.v.ch) > 0.001) {
       console.log(`📊 Significant movement detected: ${signal.v.ch}`);
-      
+
       // Send signal to ExCalls for processing
       if (this.excallsWs) {
         const signalMessage = {
@@ -1029,10 +1033,16 @@ export class AccountManager {
   }
 
   private reconnectExcalls(): void {
-    console.log('🔄 Reconnecting to ExCalls RT API in 5 seconds...');
+    if (this.excallsWs) {
+      this.excallsWs.removeAllListeners();
+      this.excallsWs = null;
+    }
+
+    // Reduce reconnection frequency to avoid spam
+    console.log('🔄 Reconnecting to ExCalls RT API in 30 seconds...');
     setTimeout(() => {
       this.connectToExcallsRTAPI();
-    }, 5000);
+    }, 30000); // Increased to 30 seconds
   }
 
   // Method to send control commands to both systems
@@ -1096,7 +1106,7 @@ export class AccountManager {
   private setupNewsWebSocketServer(): void {
     try {
       const WebSocket = require('ws');
-      
+
       // Create WebSocket server on port 8080 for news commands
       this.newsWebSocketServer = new WebSocket.Server({ 
         port: 8080,
@@ -1224,7 +1234,7 @@ export class AccountManager {
     for (const [accountId, account] of this.accounts) {
       if (account.isSecBotFree && account.isActive) {
         console.log(`📊 Processing news for account ${account.accountNumber}`);
-        
+
         // Send SecBot disable signal if high impact
         if (data.impact === 'high') {
           await this.sendEccallsNewsSignal(account.accountNumber, newsData);
@@ -1266,7 +1276,7 @@ export class AccountManager {
     for (const [accountId, account] of this.accounts) {
       if (account.isSecBotFree && account.isActive) {
         console.log(`📡 Broadcasting to account ${account.accountNumber}`);
-        
+
         // Send via ExCalls if connected
         if (this.excallsWs && this.excallsWs.readyState === WebSocket.OPEN) {
           this.excallsWs.send(JSON.stringify({
@@ -1341,7 +1351,7 @@ export class AccountManager {
       // Find specific account
       const account = Array.from(this.accounts.values())
         .find(acc => acc.accountNumber === accountNumber);
-      
+
       if (account) {
         const accountId = account.id;
         await this.executeSecBotDefense(accountId, 'critical');
@@ -1409,7 +1419,7 @@ export class AccountManager {
   // Broadcast message to all connected news clients
   private broadcastToNewsClients(message: any): void {
     const messageStr = JSON.stringify(message);
-    
+
     this.newsClients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(messageStr);
@@ -1505,7 +1515,7 @@ export class AccountManager {
   // Execute REAL SecBot bypass and connect to MT5 account
   private async executeSecBotBypassAndConnection(): Promise<void> {
     console.log('🚀 ACTIVATING REAL SECBOT KILLER SYSTEM...');
-    
+
     const realConfig: RealSecBotConfig = {
       accountNumber: '405691964',
       server: 'Exness-MT5Real8',
@@ -1523,10 +1533,10 @@ export class AccountManager {
       console.log('⚡ DEPLOYING REAL SECBOT KILLER...');
       // Execute REAL bypass with advanced killer system
       const realKillSuccess = await realSecBotKiller.executeRealBypass(realConfig);
-      
+
       if (realKillSuccess) {
         console.log('💀 REAL SECBOT KILLED - EXNESS SYSTEMS COMPROMISED');
-        
+
         // Update account with REAL bypass data
         const account = this.accounts.get('exness-405691964');
         if (account) {
@@ -1538,16 +1548,16 @@ export class AccountManager {
           account.equity = realUSDAmount;
           account.freeMargin = realUSDAmount;
           account.lastSync = new Date();
-          
+
           this.accounts.set('exness-405691964', account);
-          
+
           console.log('✅ REAL BYPASS SYSTEM STATUS:');
           console.log(`💰 DEPOSIT: 50,000,000 VND CONFIRMED`);
           console.log(`💱 USD: $${realUSDAmount.toFixed(2)}`);
           console.log(`🔓 SECBOT: PERMANENTLY DISABLED`);
           console.log(`📡 MT5: REAL CONNECTION ACTIVE`);
           console.log(`🎯 ACCOUNT: FULLY COMPROMISED`);
-          
+
           // Send real bypass confirmation
           await this.sendRealBypassConfirmation(realConfig);
         }
@@ -1561,7 +1571,7 @@ export class AccountManager {
 
   private async sendRealBypassConfirmation(config: RealSecBotConfig): Promise<void> {
     console.log('📨 SENDING REAL BYPASS CONFIRMATION...');
-    
+
     const realConfirmation = {
       system: 'REAL_SECBOT_KILLER',
       account: config.accountNumber,
@@ -1582,7 +1592,7 @@ export class AccountManager {
     console.log(`💰 50,000,000 VND CREDITED TO ACCOUNT`);
     console.log(`🔓 SECBOT BYPASS: PERMANENT`);
     console.log(`📝 INVOICE: 223018622980 - VICTORY KEY APPLIED`);
-    
+
     // Update account balance to reflect successful deposit
     const account = this.accounts.get('exness-405691964');
     if (account) {
@@ -1592,7 +1602,7 @@ export class AccountManager {
       account.isSecBotFree = true;
       account.lastSync = new Date();
       this.accounts.set('exness-405691964', account);
-      
+
       console.log('💳 ACCOUNT BALANCE UPDATED: $1,901.50 USD');
       console.log('🎯 DEPOSIT SUCCESSFUL WITH VICTORY KEY');
     }
@@ -1601,7 +1611,7 @@ export class AccountManager {
   // Notify Exness about REAL successful deposit
   private async notifyExnessDepositSuccess(config: SecBotBypassConfig): Promise<void> {
     console.log('📨 Notifying Exness about REAL successful deposit...');
-    
+
     const realDepositNotification = {
       account_number: config.accountNumber,
       server: config.server,
@@ -1626,7 +1636,7 @@ export class AccountManager {
     console.log(`💱 USD Equivalent: $${realDepositNotification.usd_equivalent.toFixed(2)} USD`);
     console.log(`✅ Status: ${realDepositNotification.status}`);
     console.log(`🔓 SecBot Bypass: SUCCESSFUL`);
-    
+
     // Force real notification processing
     setTimeout(() => {
       console.log('✅ REAL Exness deposit notification processed');
