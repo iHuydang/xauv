@@ -8,6 +8,7 @@ import newsRoutes from "./news-routes";
 import { forexNewsChecker } from "./forex-news-checker";
 import { tradingSignalAnalyzer } from "./trading-signals";
 import { brokerIntegration } from "./broker-integration";
+import { accountManager } from "./account-manager";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -284,6 +285,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: connected, broker });
     } catch (error) {
       res.status(500).json({ error: "Failed to connect to broker" });
+    }
+  });
+
+  // Account Manager endpoints
+  app.get("/api/trading-accounts", async (req, res) => {
+    try {
+      const accounts = accountManager.getAllAccounts();
+      // Remove sensitive data before sending
+      const safeAccounts = accounts.map(acc => ({
+        ...acc,
+        credentials: undefined
+      }));
+      res.json(safeAccounts);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch trading accounts" });
+    }
+  });
+
+  app.post("/api/trading-accounts/:id/connect", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { password, investorPassword } = req.body;
+      
+      const connected = await accountManager.connectAccount(id, password, investorPassword);
+      res.json({ success: connected });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to connect trading account" });
+    }
+  });
+
+  app.get("/api/trading-accounts/:id/sync", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const account = await accountManager.syncAccountData(id);
+      
+      if (account) {
+        res.json({
+          ...account,
+          credentials: undefined // Remove sensitive data
+        });
+      } else {
+        res.status(404).json({ error: "Account not found or inactive" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to sync account data" });
+    }
+  });
+
+  app.get("/api/trading-accounts/:id/market-scan-safety", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const safety = await accountManager.checkMarketScanSafety(id);
+      res.json(safety);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to check market scan safety" });
     }
   });
 

@@ -6,7 +6,9 @@ import OrderPanel from '@/components/order-panel';
 import PositionsOrders from '@/components/positions-orders';
 import EconomicIndicators from '@/components/economic-indicators';
 import TradingPanels from '@/components/trading-panels';
-import ForexNewsPanel from '@/components/forex-news-panel';
+import ForexNewsPanel from "@/components/forex-news-panel";
+import AccountPanel from "@/components/account-panel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function TradingTerminal() {
   const [selectedSymbol, setSelectedSymbol] = useState('XAUUSD');
@@ -40,7 +42,31 @@ export default function TradingTerminal() {
 
         {/* Forex News Panel */}
         <div className="mt-4">
-          <ForexNewsPanel />
+        <Tabs defaultValue="market-watch" className="w-[400px]">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="market-watch">Market Watch</TabsTrigger>
+            <TabsTrigger value="chart">Chart</TabsTrigger>
+            <TabsTrigger value="order">Order Panel</TabsTrigger>
+            <TabsTrigger value="news">Forex News</TabsTrigger>
+            <TabsTrigger value="accounts">Accounts</TabsTrigger>
+          </TabsList>
+          <TabsContent value="market-watch" className="mt-6">
+            Make updates here
+          </TabsContent>
+          <TabsContent value="chart" className="mt-6">
+            Make updates here
+          </TabsContent>
+          <TabsContent value="order" className="mt-6">
+            Make updates here
+          </TabsContent>
+          <TabsContent value="news" className="mt-6">
+            <ForexNewsPanel />
+          </TabsContent>
+
+          <TabsContent value="accounts" className="mt-6">
+            <AccountPanel />
+          </TabsContent>
+        </Tabs>
         </div>
       </div>
     </div>

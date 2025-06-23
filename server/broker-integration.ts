@@ -1,3 +1,5 @@
+import { z } from "zod";
+import { accountManager, type TradingAccount } from "./account-manager";
 
 export interface BrokerAccount {
   broker: string;
@@ -24,13 +26,13 @@ export interface BrokerPosition {
 
 export class BrokerIntegration {
   private brokers = ['MetaTrader5', 'Exness', 'FTMO', 'TradingView'];
-  
+
   async connectToBroker(broker: string, credentials: any): Promise<boolean> {
     console.log(`Connecting to ${broker}...`);
-    
+
     // Simulate connection for demo
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     switch (broker) {
       case 'MetaTrader5':
         return this.connectToMT5(credentials);
