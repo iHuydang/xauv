@@ -202,7 +202,7 @@ export class SignalProcessor {
   private async processSignal(signal: MarketSignal) {
     console.log(`🎯 Processing ${signal.type} signal from ${signal.source}`);
     console.log(`📊 Impact: ${signal.impact}, Confidence: ${signal.confidence}%`);
-    console.log(`💱 Symbols: ${signal.symbols.join(', ')}`);
+    console.log(`💱 Symbols: ${Array.isArray(signal.symbols) ? signal.symbols.join(', ') : signal.symbols || 'N/A'}`);
     
     this.activeSignals.set(signal.id, signal);
     
