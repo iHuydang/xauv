@@ -213,6 +213,10 @@ args = "scripts/vietnam-gold-destroyer.sh coordinated"
 task = "shell.exec"
 args = "scripts/multi-ip-gold-attack.sh devastation"
 
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "/api/tradermade/sjc/coordinate-attack"
+
 [[workflows.workflow]]
 name = "Start Server"
 author = 44173314

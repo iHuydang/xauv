@@ -8,6 +8,7 @@ import newsRoutes from "./news-routes";
 import enhancedForexRoutes from "./enhanced-forex-api-routes";
 import exnessDealingDeskRoutes from "./exness-dealing-desk-routes";
 import tradermadeApiRoutes from "./tradermade-api-routes";
+import enhancedGoldAttackRoutes from "./enhanced-gold-attack-routes";
 import { forexNewsChecker } from "./forex-news-checker";
 import { tradingSignalAnalyzer } from "./trading-signals";
 import { brokerIntegration } from "./broker-integration";
@@ -28,6 +29,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Tradermade API routes
   app.use('/api', tradermadeApiRoutes);
+  
+  // Register Enhanced Gold Attack routes
+  app.use('/api', enhancedGoldAttackRoutes);
 
   // WebSocket news command endpoint
   app.post("/api/websocket/news", async (req, res) => {
