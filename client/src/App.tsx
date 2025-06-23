@@ -7,6 +7,7 @@ import TradingTerminal from "@/pages/trading-terminal";
 import AttackControl from "@/pages/AttackControl";
 import WorldGoldControl from "@/pages/WorldGoldControl";
 import SecBotBypassDashboard from "@/pages/SecBotBypassDashboard";
+import FredGoldAttack from "@/pages/FredGoldAttack";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/attack-control" component={AttackControl} />
       <Route path="/world-gold" component={WorldGoldControl} />
       <Route path="/secbot-bypass" component={SecBotBypassDashboard} />
+      <Route path="/fred-gold-attack" component={FredGoldAttack} />
       <Route component={NotFound} />
     </Switch>
   );

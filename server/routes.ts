@@ -494,6 +494,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // FRED-Gold Attack System endpoints
+  app.get("/api/fred-gold/indicators", async (req, res) => {
+    try {
+      const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
+      
+      // Fetch current FRED data
+      const indicators = ['FEDFUNDS', 'DGS10', 'CPIAUCSL', 'DTWEXBGS', 'UNRATE'];
+      const fredData = [];
+      
+      for (const indicator of indicators) {
+        const data = await fredGoldAttackSystem.fetchFredData(indicator);
+        if (data) fredData.push(data);
+      }
+      
+      res.json({
+        success: true,
+        indicators: fredData,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Failed to fetch FRED indicators',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/fred-gold/market-analysis", async (req, res) => {
+    try {
+      const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
+      const marketData = await fredGoldAttackSystem.analyzeMarketConditions();
+      
+      res.json({
+        success: true,
+        marketData,
+        analysis: {
+          arbitrageOpportunity: marketData.arbitrageGap > 1500000 ? 'HIGH' : 
+                              marketData.arbitrageGap > 800000 ? 'MEDIUM' : 'LOW',
+          volatilityLevel: marketData.volatility > 3 ? 'HIGH' : 
+                          marketData.volatility > 2 ? 'MEDIUM' : 'LOW',
+          recommendedAction: marketData.volatility > 3 && marketData.arbitrageGap > 1500000 ? 
+                           'IMMEDIATE_ATTACK' : 'MONITOR'
+        },
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Failed to analyze market conditions',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/fred-gold/attack", async (req, res) => {
+    try {
+      const { strategy = 'FED_RATE_IMPACT' } = req.body;
+      const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
+      
+      console.log(`🚨 INITIATING FRED-GOLD ATTACK`);
+      console.log(`⚔️ Strategy: ${strategy}`);
+
+      const attackResult = await fredGoldAttackSystem.executeFredBasedAttack(strategy);
+
+      res.json({
+        success: true,
+        message: 'FRED-Gold attack completed successfully',
+        ...attackResult
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        error: 'FRED-Gold attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/fred-gold/strategies", async (req, res) => {
+    try {
+      const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
+      const strategies = fredGoldAttackSystem.getAttackStrategies();
+      res.json({ success: true, strategies });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch FRED-Gold strategies" });
+    }
+  });
+
+  app.post("/api/fred-gold/auto-monitor", async (req, res) => {
+    try {
+      const { action, intervalMinutes = 15 } = req.body;
+      const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
+      
+      if (action === 'start') {
+        fredGoldAttackSystem.startAutomaticFredMonitoring(intervalMinutes);
+        res.json({
+          success: true,
+          message: `Bắt đầu giám sát FRED tự động (${intervalMinutes} phút)`
+        });
+      } else {
+        res.json({
+          success: true,
+          message: 'FRED monitoring control'
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        error: 'Failed to control FRED monitoring',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Enhanced liquidity scanning endpoint
   app.get("/api/liquidity/scan", async (req, res) => {
     try {
