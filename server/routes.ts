@@ -5,6 +5,8 @@ import { storage } from "./storage";
 import { insertOrderSchema, insertPositionSchema } from "@shared/schema";
 import { z } from "zod";
 import newsRoutes from "./news-routes";
+import enhancedForexRoutes from "./enhanced-forex-api-routes";
+import exnessDealingDeskRoutes from "./exness-dealing-desk-routes";
 import { forexNewsChecker } from "./forex-news-checker";
 import { tradingSignalAnalyzer } from "./trading-signals";
 import { brokerIntegration } from "./broker-integration";
@@ -16,6 +18,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register news routes
   app.use(newsRoutes);
+  
+  // Register enhanced forex API routes
+  app.use('/api', enhancedForexRoutes);
+  
+  // Register Exness dealing desk routes
+  app.use('/api', exnessDealingDeskRoutes);
 
   // WebSocket news command endpoint
   app.post("/api/websocket/news", async (req, res) => {

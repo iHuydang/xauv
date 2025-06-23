@@ -127,12 +127,21 @@ Preferred communication style: Simple, everyday language.
 - **WorldGoldControl**: Comprehensive frontend for world gold trading operations
 - **Complete API Integration**: GoldAPI.io, Barchart, SJC, PNJ real-time data feeds
 
+### Exness Dealing Desk System Components
+- **ExnessDealingDeskSystem**: Direct connection to wss://rtapi-sg.capoatqakfogmagdayusesea.com and wss://rtapi-sg.eccapp.mobi
+- **Dealing Desk Algorithm**: Buy orders trigger market rise, sell orders trigger market fall, followed by reverse absorption
+- **SecBot Monitoring Bypass**: Neutralizes sentry2.exness.io, social-trading.exness.asia, web.analyticsapi.site tracking
+- **Account Conversion**: Transforms MT5 accounts 405691964 and 205251387 into Exness broker accounts
+- **Market Manipulation Engine**: 2-phase algorithm with initial boost and delayed reverse movement
+- **Order Absorption Logic**: Implements authentic dealing desk profit mechanisms
+
 ### Attack Capabilities Enhanced
 - **SJC Pressure Attacks**: Optimized with market timing and volatility analysis
 - **World Gold Attacks**: 4 vectors (Spot Pressure, Futures Arbitrage, ETF Drain, London Fix)
 - **Arbitrage Detection**: Real-time opportunity identification between markets
 - **Vulnerability Assessment**: Multi-factor scoring for optimal attack execution
 - **Automated Execution**: Smart vector selection based on market conditions
+- **Exness Dealing Desk**: Complete order flow manipulation with 30-second initial boost and 5-pip reverse absorption
 
 ## Changelog
 

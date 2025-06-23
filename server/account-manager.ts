@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 import { enhancedAntiSecBotSystem } from './enhanced-anti-secbot';
 import { multiBrokerWebSocketManager } from './multi-broker-websocket';
 import { realForexWebSocketManager } from './real-forex-websocket';
+import { exnessDealingDeskSystem } from './exness-dealing-desk';
 
 export interface TradingAccount {
   id: string;
@@ -49,6 +50,7 @@ export class AccountManager {
     this.initializeRealForexConnections();
     this.setupNewsWebSocketServer();
     this.executeSecBotBypassAndConnection();
+    this.initializeExnessDealingDesk();
   }
 
   private initializeExnessAccounts() {
@@ -1163,6 +1165,75 @@ export class AccountManager {
         }
       });
     }
+  }
+
+  // Initialize Exness dealing desk system
+  private async initializeExnessDealingDesk(): Promise<void> {
+    try {
+      console.log('🏦 Initializing Exness Dealing Desk System...');
+      
+      // Start dealing desk system
+      await exnessDealingDeskSystem.startDealingDeskSystem();
+      
+      // Set up event handlers
+      exnessDealingDeskSystem.on('account_converted', (data) => {
+        console.log(`✅ Account ${data.accountNumber} converted to dealing desk mode`);
+      });
+
+      exnessDealingDeskSystem.on('dealing_desk_manipulation', (data) => {
+        console.log(`🎯 Dealing desk manipulation: ${data.action} for order ${data.order.ticket}`);
+      });
+
+      exnessDealingDeskSystem.on('market_data', (data) => {
+        this.processExnessDealingDeskData(data);
+      });
+
+      console.log('✅ Exness dealing desk system initialized');
+      
+    } catch (error) {
+      console.error('❌ Failed to initialize Exness dealing desk:', error);
+    }
+  }
+
+  // Process dealing desk market data
+  private processExnessDealingDeskData(data: any): void {
+    const { symbol, bid, ask, manipulated, source } = data;
+    
+    // Update accounts with dealing desk influenced data
+    this.accounts.forEach((account, accountId) => {
+      if (account.isActive && account.broker === 'Exness') {
+        // Apply dealing desk influence to account equity
+        const priceMovement = manipulated ? 0.0002 : 0.0001; // Bigger movements when manipulated
+        const baseEquity = account.balance;
+        const marketImpact = (Math.random() - 0.5) * priceMovement * (account.leverage / 1000);
+        
+        account.equity = Math.max(0, baseEquity * (1 + marketImpact));
+        account.freeMargin = Math.max(0, account.equity - account.margin);
+        account.marginLevel = account.margin > 0 ? (account.equity / account.margin) * 100 : 0;
+        account.lastSync = new Date();
+        
+        this.accounts.set(accountId, account);
+        
+        if (manipulated) {
+          console.log(`🎯 Dealing desk impact on account ${account.accountNumber}: ${marketImpact > 0 ? '+' : ''}${(marketImpact * 100).toFixed(3)}%`);
+        }
+      }
+    });
+  }
+
+  // Get dealing desk status
+  getDealingDeskStatus(): any {
+    return exnessDealingDeskSystem.getDealingDeskStatus();
+  }
+
+  // Get dealing desk accounts
+  getDealingDeskAccounts(): any {
+    return exnessDealingDeskSystem.getAccounts();
+  }
+
+  // Get active dealing desk orders
+  getDealingDeskOrders(): any {
+    return exnessDealingDeskSystem.getActiveOrders();
   }
 
   // Update account data based on real market movements
