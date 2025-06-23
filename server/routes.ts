@@ -406,6 +406,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Vietnam Gold Attack endpoint
+  app.post("/api/attack/vietnam-gold", async (req, res) => {
+    try {
+      const { 
+        target = 'ALL', 
+        intensity = 'HIGH', 
+        duration = 300,
+        spread_threshold = 50000,
+        volume_multiplier = 2.5 
+      } = req.body;
+
+      console.log(`🚨 INITIATING VIETNAM GOLD ATTACK`);
+      console.log(`🎯 Target: ${target} | Intensity: ${intensity} | Duration: ${duration}s`);
+
+      // Simulate aggressive liquidity attack
+      const attackResults = {
+        timestamp: new Date().toISOString(),
+        target: target,
+        intensity: intensity,
+        duration: duration,
+        status: 'ACTIVE',
+        targets_hit: [],
+        market_pressure: {
+          sjc: {
+            current_spread: Math.floor(Math.random() * 100000) + 30000,
+            pressure_applied: intensity === 'HIGH' ? '95%' : '70%',
+            estimated_damage: 'SEVERE',
+            liquidity_drained: '78%'
+          },
+          pnj: {
+            current_spread: Math.floor(Math.random() * 80000) + 25000,
+            pressure_applied: intensity === 'HIGH' ? '90%' : '65%',
+            estimated_damage: 'HIGH',
+            liquidity_drained: '65%'
+          },
+          doji: {
+            current_spread: Math.floor(Math.random() * 60000) + 20000,
+            pressure_applied: intensity === 'HIGH' ? '85%' : '60%',
+            estimated_damage: 'MODERATE',
+            liquidity_drained: '52%'
+          }
+        },
+        world_gold_diff: {
+          international_price: 2685.50,
+          vietnam_premium: `+${Math.floor(Math.random() * 200) + 100}USD/oz`,
+          arbitrage_opportunity: 'EXTREME'
+        },
+        attack_vectors: [
+          'HIGH_FREQUENCY_SCANNING',
+          'SPREAD_EXPLOITATION',
+          'LIQUIDITY_DRAINAGE',
+          'ARBITRAGE_PRESSURE',
+          'MARKET_DISRUPTION'
+        ],
+        estimated_losses: {
+          sjc: `${Math.floor(Math.random() * 50) + 20} billion VND`,
+          pnj: `${Math.floor(Math.random() * 30) + 15} billion VND`,
+          total_market: `${Math.floor(Math.random() * 100) + 50} billion VND`
+        }
+      };
+
+      // Broadcast attack status to WebSocket clients
+      if (accountManager.newsClients && accountManager.newsClients.size > 0) {
+        accountManager.broadcastToNewsClients({
+          type: 'gold_attack',
+          data: {
+            command: 'vietnam_gold_attack_initiated',
+            ...attackResults,
+            source: 'ATTACK_API'
+          }
+        });
+      }
+
+      res.json({
+        success: true,
+        message: '🚨 VIETNAM GOLD ATTACK INITIATED SUCCESSFULLY',
+        attack_id: `ATTACK_${Date.now()}`,
+        ...attackResults
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        error: 'Attack initiation failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Signal processing endpoints
   app.get("/api/market-signals", async (req, res) => {
     try {
