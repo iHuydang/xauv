@@ -215,7 +215,11 @@ args = "scripts/multi-ip-gold-attack.sh devastation"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "/api/tradermade/sjc/coordinate-attack"
+args = "api/tradermade/sjc/coordinate-attack"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "fsapi-liquidity-drain"
 
 [[workflows.workflow]]
 name = "Start Server"
