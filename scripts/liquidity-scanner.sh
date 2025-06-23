@@ -113,25 +113,59 @@ analyze_market_impact() {
     
     echo "🎯 Market Impact Analysis for $source:"
     
-    # High liquidity indicator
+    # Calculate spread percentage
+    local spread_percent=$(echo "scale=2; $spread * 100 / $buy_price" | bc 2>/dev/null || echo "0")
+    
+    # High liquidity indicator with enhanced spread analysis
     if [ "$spread" -lt 50000 ]; then
-        echo "✅ HIGH LIQUIDITY - Tight spread detected"
-        echo "🤖 Bot Signal: FAVORABLE for high-frequency trading"
+        echo "✅ HIGH LIQUIDITY - Tight spread detected ($spread VND, ${spread_percent}%)"
+        echo "🤖 Bot Signal: FAVORABLE for scalping and high-frequency trading"
+        echo "💡 Strategy: Execute immediate trades, spread arbitrage possible"
     elif [ "$spread" -lt 100000 ]; then
-        echo "⚠️ MEDIUM LIQUIDITY - Normal spread"
+        echo "⚠️ MEDIUM LIQUIDITY - Normal spread ($spread VND, ${spread_percent}%)"
         echo "🤖 Bot Signal: MODERATE trading conditions"
+        echo "💡 Strategy: Monitor for spread tightening, swing trading suitable"
+    elif [ "$spread" -lt 150000 ]; then
+        echo "🚨 LOW LIQUIDITY - Wide spread detected ($spread VND, ${spread_percent}%)"
+        echo "🤖 Bot Signal: CAUTION - Reduce position sizes"
+        echo "💡 Strategy: Wait for market volatility to increase liquidity"
     else
-        echo "🚨 LOW LIQUIDITY - Wide spread detected"
-        echo "🤖 Bot Signal: CAUTION - Consider reduced position sizes"
+        echo "🔴 EXTREMELY LOW LIQUIDITY - Very wide spread ($spread VND, ${spread_percent}%)"
+        echo "🤖 Bot Signal: AVOID - Market manipulation risk"
+        echo "💡 Strategy: Suspend trading until spread normalizes"
+        
+        # Log extreme spread for investigation
+        echo "$(date '+%Y-%m-%d %H:%M:%S'),EXTREME_SPREAD,$source,$buy_price,$sell_price,$spread,$spread_percent" >> extreme_spreads.log
     fi
     
-    # Price level analysis
-    if [ "$sell_price" -gt 80000000 ]; then
+    # Enhanced price level analysis
+    if [ "$sell_price" -gt 85000000 ]; then
+        echo "🔥 VERY HIGH PRICE LEVEL - Peak demand detected"
+        echo "📊 Recommendation: Monitor for reversal signals"
+    elif [ "$sell_price" -gt 80000000 ]; then
         echo "📈 HIGH PRICE LEVEL - Strong gold demand"
+        echo "📊 Recommendation: Consider taking profits"
     elif [ "$sell_price" -lt 70000000 ]; then
         echo "📉 LOW PRICE LEVEL - Potential buying opportunity"
+        echo "📊 Recommendation: Accumulate on dips"
+    elif [ "$sell_price" -lt 65000000 ]; then
+        echo "💎 VERY LOW PRICE LEVEL - Strong buying opportunity"
+        echo "📊 Recommendation: Aggressive accumulation"
     fi
     
+    # Spread efficiency rating
+    local efficiency_score=100
+    if [ "$spread" -gt 50000 ]; then
+        efficiency_score=$((efficiency_score - 20))
+    fi
+    if [ "$spread" -gt 100000 ]; then
+        efficiency_score=$((efficiency_score - 30))
+    fi
+    if [ "$spread" -gt 150000 ]; then
+        efficiency_score=$((efficiency_score - 40))
+    fi
+    
+    echo "⚡ Market Efficiency Score: ${efficiency_score}/100"
     echo "---"
 }
 

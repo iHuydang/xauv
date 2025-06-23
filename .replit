@@ -113,3 +113,56 @@ args = "echo \"✅ Liquidity scan completed!\""
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "scripts/liquidity-scanner.sh "
+
+[[workflows.workflow]]
+name = "High-Spread Scanner"
+author = 44114932
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x scripts/liquidity-scanner.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🎯 Starting High-Spread Detection System...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "scripts/liquidity-scanner.sh single"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"📊 Analyzing spread patterns...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node -e \""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "const { liquidityScanner } = require('./server/liquidity-scanner.ts');"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "liquidityScanner.on('arbitrageOpportunity', (data) => {"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "  console.log('🚨 ARBITRAGE ALERT:', data);"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "});"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "liquidityScanner.scanAllTargets();"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"✅ High-spread analysis completed!\""

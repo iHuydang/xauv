@@ -61,6 +61,30 @@ export class LiquidityScanner extends EventEmitter {
       },
       parser: this.parsePNJResponse.bind(this)
     });
+
+    // DOJI Target (simulated - replace with real API when available)
+    this.scanTargets.set('DOJI', {
+      name: 'DOJI Gold',
+      url: 'https://httpbin.org/json', // Placeholder
+      method: 'GET',
+      parser: this.parseSimulatedResponse.bind(this, 'DOJI')
+    });
+
+    // MI Hong Target (simulated)
+    this.scanTargets.set('MIHONG', {
+      name: 'MI Hong Gold',
+      url: 'https://httpbin.org/json', // Placeholder
+      method: 'GET',
+      parser: this.parseSimulatedResponse.bind(this, 'MIHONG')
+    });
+
+    // Bao Tin Minh Chau Target (simulated)
+    this.scanTargets.set('BTMC', {
+      name: 'Bao Tin Minh Chau',
+      url: 'https://httpbin.org/json', // Placeholder
+      method: 'GET',
+      parser: this.parseSimulatedResponse.bind(this, 'BTMC')
+    });
   }
 
   private parseSJCResponse(response: string): LiquidityData | null {
@@ -141,6 +165,38 @@ export class LiquidityScanner extends EventEmitter {
     return 'caution';
   }
 
+  private parseSimulatedResponse(source: string, response: string): LiquidityData | null {
+    try {
+      // Simulate different price levels and spreads for testing
+      const basePrice = 79000000; // Base gold price
+      const variations = {
+        'DOJI': { buyOffset: -30000, spreadSize: 45000 },
+        'MIHONG': { buyOffset: 15000, spreadSize: 60000 },
+        'BTMC': { buyOffset: -10000, spreadSize: 80000 }
+      };
+
+      const variation = variations[source as keyof typeof variations] || variations['DOJI'];
+      const buyPrice = basePrice + variation.buyOffset + (Math.random() * 20000 - 10000);
+      const sellPrice = buyPrice + variation.spreadSize + (Math.random() * 10000 - 5000);
+      const spread = sellPrice - buyPrice;
+      const spreadPercent = (spread / buyPrice) * 100;
+
+      return {
+        source,
+        timestamp: new Date(),
+        buyPrice: Math.round(buyPrice),
+        sellPrice: Math.round(sellPrice),
+        spread: Math.round(spread),
+        spreadPercent,
+        liquidityLevel: this.calculateLiquidityLevel(spread),
+        botSignal: this.generateBotSignal(spread, sellPrice)
+      };
+    } catch (error) {
+      console.error(`Error parsing ${source} response:`, error);
+      return null;
+    }
+  }
+
   async scanTarget(targetName: string): Promise<LiquidityData | null> {
     const target = this.scanTargets.get(targetName);
     if (!target) {
@@ -195,11 +251,56 @@ export class LiquidityScanner extends EventEmitter {
 
     await Promise.all(promises);
     
+    // Analyze arbitrage opportunities
+    this.analyzeArbitrageOpportunities(results);
+    
     // Emit comprehensive scan results
     this.emit('scanComplete', results);
     
     console.log(`✅ Scan completed - ${results.length} successful scans`);
     return results;
+  }
+
+  private analyzeArbitrageOpportunities(results: LiquidityData[]): void {
+    if (results.length < 2) return;
+
+    console.log('🔍 Analyzing arbitrage opportunities...');
+    
+    // Find best buy and sell prices across all sources
+    let bestBuy = results[0];
+    let bestSell = results[0];
+    
+    results.forEach(data => {
+      if (data.buyPrice < bestBuy.buyPrice) bestBuy = data;
+      if (data.sellPrice > bestSell.sellPrice) bestSell = data;
+    });
+
+    const arbitrageProfit = bestSell.sellPrice - bestBuy.buyPrice;
+    const profitPercent = (arbitrageProfit / bestBuy.buyPrice) * 100;
+
+    console.log('💰 ARBITRAGE ANALYSIS:');
+    console.log(`📈 Best Sell: ${bestSell.source} - ${bestSell.sellPrice.toLocaleString()} VND`);
+    console.log(`📉 Best Buy: ${bestBuy.source} - ${bestBuy.buyPrice.toLocaleString()} VND`);
+    console.log(`💸 Potential Profit: ${arbitrageProfit.toLocaleString()} VND (${profitPercent.toFixed(2)}%)`);
+
+    if (arbitrageProfit > 100000) {
+      console.log('🚨 ARBITRAGE OPPORTUNITY DETECTED!');
+      this.emit('arbitrageOpportunity', {
+        buyFrom: bestBuy.source,
+        sellTo: bestSell.source,
+        profit: arbitrageProfit,
+        profitPercent
+      });
+    }
+
+    // Analyze spread patterns
+    results.forEach(data => {
+      const spreadRatio = data.spread / data.buyPrice;
+      if (spreadRatio > 0.015) { // 1.5% spread is high
+        console.log(`⚠️ HIGH SPREAD DETECTED: ${data.source} - ${data.spread.toLocaleString()} VND (${(spreadRatio * 100).toFixed(2)}%)`);
+        console.log(`🎯 Bot Strategy: Wait for spread to narrow before trading`);
+      }
+    });
   }
 
   startMonitoring(intervalSeconds: number = 30): void {
