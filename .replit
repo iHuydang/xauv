@@ -16,7 +16,7 @@ localPort = 5000
 externalPort = 80
 
 [workflows]
-runButton = "Market Trading System"
+runButton = "Start Server"
 
 [[workflows.workflow]]
 name = "Project"
@@ -212,3 +212,12 @@ args = "scripts/vietnam-gold-destroyer.sh coordinated"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "scripts/multi-ip-gold-attack.sh devastation"
+
+[[workflows.workflow]]
+name = "Start Server"
+author = 44173314
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
