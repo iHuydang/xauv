@@ -3,6 +3,47 @@
 # Script mô phỏng các lệnh thị trường
 # Trong thực tế, đây sẽ kết nối với các API thị trường thật
 
+# Enhanced SJC scanning function
+scan_sjc_gold() {
+    local stop_loss=${1:-8500000}
+    
+    echo "🔍 Scanning SJC gold prices..."
+    
+    RESPONSE=$(curl -s --connect-timeout 10 --max-time 30 https://sjc.com.vn/giavang/textContent.php)
+    
+    if [ $? -eq 0 ] && [ -n "$RESPONSE" ]; then
+        LINE=$(echo "$RESPONSE" | grep -m1 "SJC")
+        
+        if [ -n "$LINE" ]; then
+            SELL_PRICE=$(echo "$LINE" | awk -F '</td><td>' '{gsub(/[^0-9]/,"",$3); if($3 != "") print $3; else print "0"}')
+            
+            # Validate price
+            if [ -n "$SELL_PRICE" ] && [ "$SELL_PRICE" -gt 0 ]; then
+                echo "⏰ $(date '+%Y-%m-%d %H:%M:%S') - SJC Sell Price: $SELL_PRICE VND"
+                
+                # Compare with stop loss
+                if [ "$SELL_PRICE" -lt "$stop_loss" ]; then
+                    echo "🚨 STOP LOSS HIT! Price $SELL_PRICE is below $stop_loss"
+                    return 1
+                else
+                    echo "✅ Gold price is safe. Stop loss not triggered."
+                    return 0
+                fi
+            else
+                echo "❌ Unable to extract valid price from SJC data"
+                echo "🔍 Raw data sample: $(echo "$LINE" | head -c 100)"
+                return 2
+            fi
+        else
+            echo "❌ SJC data not found in response"
+            return 2
+        fi
+    else
+        echo "❌ Failed to fetch data from SJC website"
+        return 2
+    fi
+}
+
 market_news_post() {
     local title=""
     local content=""

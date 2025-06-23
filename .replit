@@ -80,3 +80,32 @@ args = "npm run dev"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = '''npm run dev STOP_LOSS=8500000 && \ RESPONSE=$(curl -s https://sjc.com.vn/giavang/textContent.php) && \ LINE=$(echo "$RESPONSE" | grep -m1 "SJC") && \ SELL_PRICE=$(echo "$LINE" | awk -F '</td><td>' '{gsub(/[^0-9]/,"",$3); print $3}') && \ echo "⏰ $(date '+%Y-%m-%d %H:%M:%S') - SJC Sell Price: $SELL_PRICE VND" && \ if [ "$SELL_PRICE" -lt "$STOP_LOSS" ]; then \   echo "🚨 STOP LOSS HIT! Price $SELL_PRICE is below $STOP_LOSS"; \ else \   echo "✅ Gold price is safe. Stop loss not triggered."; \ fi'''
+
+[[workflows.workflow]]
+name = "Liquidity Scanner"
+author = 44114932
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x scripts/liquidity-scanner.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🔍 Starting Liquidity Scanner System...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "scripts/liquidity-scanner.sh single"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"📊 Generating liquidity report...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "scripts/liquidity-scanner.sh report"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"✅ Liquidity scan completed!\""
