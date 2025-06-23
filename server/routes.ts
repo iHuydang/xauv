@@ -519,6 +519,253 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // World Gold Price API endpoints
+  app.get("/api/world-gold/price", async (req, res) => {
+    try {
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
+      const goldData = await worldGoldScanner.scanWorldGoldPrice();
+      
+      if (goldData) {
+        res.json({
+          success: true,
+          data: goldData,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(503).json({
+          error: 'Unable to fetch world gold price',
+          message: 'Không thể lấy giá vàng thế giới'
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        error: 'World gold price fetch failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/world-gold/barchart", async (req, res) => {
+    try {
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
+      const barchartData = await worldGoldScanner.scanBarchartData();
+      
+      res.json({
+        success: true,
+        data: barchartData,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Barchart data fetch failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/world-gold/attack", async (req, res) => {
+    try {
+      const { vector = 'SPOT_PRESSURE' } = req.body;
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
+      
+      const attackResult = await worldGoldScanner.executeLiquidityAttack(vector);
+      
+      res.json({
+        success: true,
+        message: 'Tấn công thanh khoản vàng thế giới hoàn thành',
+        data: attackResult
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'World gold attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/world-gold/analyze", async (req, res) => {
+    try {
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
+      const goldData = await worldGoldScanner.scanWorldGoldPrice();
+      
+      if (goldData) {
+        const analysis = worldGoldScanner.analyzeLiquidityOpportunity(goldData);
+        res.json({
+          success: true,
+          goldData,
+          analysis,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(503).json({
+          error: 'Unable to analyze - no gold data available'
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        error: 'Gold analysis failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/world-gold/vectors", async (req, res) => {
+    try {
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
+      const vectors = worldGoldScanner.getAttackVectors();
+      res.json({ success: true, vectors });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch world gold attack vectors" });
+    }
+  });
+
+  app.get("/api/world-gold/attacks", async (req, res) => {
+    try {
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
+      const attacks = worldGoldScanner.getActiveAttacks();
+      res.json({ success: true, attacks });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch active world gold attacks" });
+    }
+  });
+
+  app.post("/api/world-gold/monitor", async (req, res) => {
+    try {
+      const { action, intervalSeconds = 60 } = req.body;
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
+      
+      if (action === 'start') {
+        worldGoldScanner.startContinuousScanning(intervalSeconds);
+        res.json({
+          success: true,
+          message: `Bắt đầu giám sát vàng thế giới (${intervalSeconds}s)`
+        });
+      } else if (action === 'stop') {
+        worldGoldScanner.stopScanning();
+        res.json({
+          success: true,
+          message: 'Dừng giám sát vàng thế giới'
+        });
+      } else {
+        res.status(400).json({
+          error: 'Invalid action. Use "start" or "stop"'
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        error: 'Failed to control world gold monitoring',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Telegram Bot endpoints
+  app.post("/api/telegram/send-gold-update", async (req, res) => {
+    try {
+      const { telegramGoldBot } = await import('./telegram-gold-bot.js');
+      const success = await telegramGoldBot.sendGoldPriceUpdate();
+      
+      if (success) {
+        res.json({
+          success: true,
+          message: 'Cập nhật giá vàng đã được gửi qua Telegram'
+        });
+      } else {
+        res.status(500).json({
+          error: 'Failed to send Telegram update'
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        error: 'Telegram update failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/telegram/webhook", async (req, res) => {
+    try {
+      const { message } = req.body;
+      if (message && message.text) {
+        const { telegramGoldBot } = await import('./telegram-gold-bot.js');
+        await telegramGoldBot.handleTelegramCommand(message.text, message.chat.id);
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Telegram webhook error:', error);
+      res.status(500).json({ error: 'Webhook processing failed' });
+    }
+  });
+
+  app.post("/api/telegram/configure", async (req, res) => {
+    try {
+      const { botToken, chatId, updateInterval } = req.body;
+      const { telegramGoldBot } = await import('./telegram-gold-bot.js');
+      
+      telegramGoldBot.updateConfig({
+        botToken,
+        chatId,
+        updateInterval
+      });
+
+      res.json({
+        success: true,
+        message: 'Cấu hình Telegram bot đã được cập nhật'
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Failed to configure Telegram bot',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/telegram/auto-updates", async (req, res) => {
+    try {
+      const { action } = req.body;
+      const { telegramGoldBot } = await import('./telegram-gold-bot.js');
+      
+      if (action === 'start') {
+        telegramGoldBot.startAutoUpdates();
+        res.json({
+          success: true,
+          message: 'Đã bật cập nhật tự động Telegram'
+        });
+      } else if (action === 'stop') {
+        telegramGoldBot.stopAutoUpdates();
+        res.json({
+          success: true,
+          message: 'Đã tắt cập nhật tự động Telegram'
+        });
+      } else {
+        res.status(400).json({
+          error: 'Invalid action. Use "start" or "stop"'
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        error: 'Failed to control Telegram auto-updates',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/telegram/status", async (req, res) => {
+    try {
+      const { telegramGoldBot } = await import('./telegram-gold-bot.js');
+      res.json({
+        success: true,
+        isAutoUpdating: telegramGoldBot.isAutoUpdating(),
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Failed to get Telegram status',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Start/stop liquidity monitoring
   app.post("/api/liquidity/monitor", async (req, res) => {
     try {

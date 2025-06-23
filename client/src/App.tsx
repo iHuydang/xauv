@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import TradingTerminal from "@/pages/trading-terminal";
 import AttackControl from "@/pages/AttackControl";
+import WorldGoldControl from "@/pages/WorldGoldControl";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -12,6 +13,7 @@ function Router() {
     <Switch>
       <Route path="/" component={TradingTerminal} />
       <Route path="/attack-control" component={AttackControl} />
+      <Route path="/world-gold" component={WorldGoldControl} />
       <Route component={NotFound} />
     </Switch>
   );
