@@ -109,3 +109,7 @@ args = "scripts/liquidity-scanner.sh report"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "echo \"✅ Liquidity scan completed!\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "scripts/liquidity-scanner.sh "
