@@ -25,7 +25,7 @@
   --destructive-foreground: hsl(60, 9.1%, 97.8%);
   --ring: hsl(20, 14.3%, 4.1%);
   --radius: 0.5rem;
-  
+
   /* Trading Terminal Colors */
   --trading-primary: hsl(0, 0%, 10.2%);
   --trading-secondary: hsl(0, 0%, 17.6%);
@@ -34,6 +34,16 @@
   --trading-warning: hsl(45, 93.4%, 47.5%);
   --trading-info: hsl(204, 100%, 40%);
   --trading-border: hsl(0, 0%, 27.5%);
+  --trading-accent: hsl(45, 100%, 61%);
+  --trading-text: hsl(0, 0%, 87.8%);
+  --trading-text-muted: hsl(0, 0%, 63.9%);
+
+  /* Economic indicators */
+  --economic-positive: hsl(120, 60%, 50%);
+  --economic-negative: hsl(0, 60%, 50%);
+  --economic-neutral: hsl(60, 10%, 50%);
+
+  --radius: 0.5rem;
 }
 
 .dark {
@@ -75,39 +85,39 @@
   .trading-bg-primary {
     background-color: var(--trading-primary);
   }
-  
+
   .trading-bg-secondary {
     background-color: var(--trading-secondary);
   }
-  
+
   .trading-text-success {
     color: var(--trading-success);
   }
-  
+
   .trading-text-danger {
     color: var(--trading-danger);
   }
-  
+
   .trading-bg-success {
     background-color: var(--trading-success);
   }
-  
+
   .trading-bg-danger {
     background-color: var(--trading-danger);
   }
-  
+
   .trading-border {
     border-color: var(--trading-border);
   }
-  
+
   .price-up {
     @apply trading-text-success;
   }
-  
+
   .price-down {
     @apply trading-text-danger;
   }
-  
+
   .price-neutral {
     @apply text-gray-400;
   }
