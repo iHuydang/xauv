@@ -66,7 +66,7 @@ export class InternationalSJCGoldSystem extends EventEmitter {
   private institutions = new Map<string, InternationalGoldInstitution>();
   private transfers = new Map<string, PhysicalGoldTransfer>();
   private distributions = new Map<string, ProfitLossDistribution>();
-  
+
   private readonly LOT_TO_TAELS_RATIO = 82.94;
   private readonly TAELS_TO_GRAMS = 37.5;
   private readonly STANDARD_LOT_SIZE = 50; // 50 lots per order
@@ -80,9 +80,9 @@ export class InternationalSJCGoldSystem extends EventEmitter {
     console.log('🌍 Initializing International SJC Gold Trading System...');
     console.log(`📊 Standard Order Size: ${this.STANDARD_LOT_SIZE} lots = ${this.STANDARD_LOT_SIZE * this.LOT_TO_TAELS_RATIO} taels SJC gold`);
     console.log('🏦 Connecting to international financial institutions...');
-    
+
     this.setupInternationalInstitutions();
-    
+
     console.log('💰 Profit Distribution Rules:');
     console.log('   User Profit → International liquidity providers + Gold market dilution');
     console.log('   User Loss → Vietnamese banks + SJC profits');
@@ -211,10 +211,10 @@ export class InternationalSJCGoldSystem extends EventEmitter {
     }
 
     console.log(`✅ Created ${orderIds.length} orders successfully`);
-    
+
     // Notify international institutions
     await this.notifyInternationalInstitutions(orderIds);
-    
+
     // Setup physical gold coordination
     await this.coordinateInternationalGoldTransfers(orderIds);
 
@@ -290,7 +290,7 @@ export class InternationalSJCGoldSystem extends EventEmitter {
     }
 
     console.log(`⚡ Executing international order: ${orderId}`);
-    
+
     order.status = 'executing';
     order.executedAt = new Date();
 
@@ -302,21 +302,21 @@ export class InternationalSJCGoldSystem extends EventEmitter {
       // User profits: International institutions get liquidity + gold market dilution
       order.liquidityProfit = baseAmount * 0.6; // 60% to international liquidity providers
       order.goldMarketDilution = baseAmount * 0.4; // 40% diluted into gold market
-      
+
       console.log(`💰 User profit - International liquidity: $${order.liquidityProfit.toFixed(2)}`);
       console.log(`🌍 Gold market dilution: $${order.goldMarketDilution.toFixed(2)}`);
     } else {
       // User loses: Vietnamese banks and SJC profit
       order.vietnameseBankProfit = baseAmount * 0.6; // 60% to Vietnamese banks
       order.sjcProfit = baseAmount * 0.4; // 40% to SJC
-      
+
       console.log(`🏦 Vietnamese banks profit: $${order.vietnameseBankProfit.toFixed(2)}`);
       console.log(`🏅 SJC profit: $${order.sjcProfit.toFixed(2)}`);
     }
 
     // Initiate physical gold transfer
     await this.initiatePhysicalGoldTransfer(order);
-    
+
     // Process international settlement
     await this.processInternationalSettlement(order, userProfits);
 
@@ -372,7 +372,7 @@ export class InternationalSJCGoldSystem extends EventEmitter {
 
   private async processInternationalSettlement(order: InternationalSJCOrder, userProfits: boolean): Promise<void> {
     const distributionId = `DIST_${Date.now()}_${this.generateRandomId()}`;
-    
+
     const distribution: ProfitLossDistribution = {
       distributionId,
       orderId: order.orderId,
@@ -410,9 +410,9 @@ export class InternationalSJCGoldSystem extends EventEmitter {
 
   private async notifyInternationalInstitutions(orderIds: string[]): Promise<void> {
     console.log(`📡 Notifying international institutions about ${orderIds.length} orders...`);
-    
+
     const institutionOrders = new Map<string, InternationalSJCOrder[]>();
-    
+
     orderIds.forEach(orderId => {
       const order = this.orders.get(orderId);
       if (order) {
@@ -427,7 +427,7 @@ export class InternationalSJCGoldSystem extends EventEmitter {
     for (const [institutionName, orders] of institutionOrders) {
       const totalLots = orders.reduce((sum, order) => sum + order.lotSize, 0);
       const totalWeight = orders.reduce((sum, order) => sum + order.physicalGoldWeight, 0);
-      
+
       console.log(`🌍 ${institutionName}:`);
       console.log(`   Orders: ${orders.length}`);
       console.log(`   Total Lots: ${totalLots}`);
@@ -440,17 +440,17 @@ export class InternationalSJCGoldSystem extends EventEmitter {
 
   private async coordinateInternationalGoldTransfers(orderIds: string[]): Promise<void> {
     console.log(`🌍 Coordinating international physical gold transfers...`);
-    
+
     const transfersByInstitution = new Map<string, number>();
     const transfersBySJCLocation = new Map<string, number>();
-    
+
     orderIds.forEach(orderId => {
       const order = this.orders.get(orderId);
       if (order) {
         // Count by institution
         const currentInst = transfersByInstitution.get(order.internationalInstitution) || 0;
         transfersByInstitution.set(order.internationalInstitution, currentInst + order.physicalGoldWeight);
-        
+
         // Count by SJC location
         const currentLoc = transfersBySJCLocation.get(order.sjcLocation) || 0;
         transfersBySJCLocation.set(order.sjcLocation, currentLoc + order.physicalGoldWeight);
@@ -462,7 +462,7 @@ export class InternationalSJCGoldSystem extends EventEmitter {
     for (const [institution, weight] of transfersByInstitution) {
       console.log(`     ${institution}: ${(weight/1000).toFixed(2)} kg`);
     }
-    
+
     console.log('   By SJC Location:');
     for (const [location, weight] of transfersBySJCLocation) {
       console.log(`     ${location}: ${(weight/1000).toFixed(2)} kg`);
@@ -473,19 +473,19 @@ export class InternationalSJCGoldSystem extends EventEmitter {
 
   public async executeAllOrders(): Promise<void> {
     console.log('🚀 Executing all 80 international orders...');
-    
+
     const pendingOrders = Array.from(this.orders.values()).filter(order => order.status === 'pending');
-    
+
     // Execute orders in batches for better performance
     const batchSize = 10;
     for (let i = 0; i < pendingOrders.length; i += batchSize) {
       const batch = pendingOrders.slice(i, i + batchSize);
       const batchPromises = batch.map(order => this.executeOrder(order.orderId));
       await Promise.all(batchPromises);
-      
+
       console.log(`✅ Executed batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(pendingOrders.length/batchSize)}`);
     }
-    
+
     console.log(`✅ All ${pendingOrders.length} orders executed successfully`);
     console.log('🌍 International physical gold transfers initiated');
     console.log('💰 Profit/loss distributions processed');
@@ -496,15 +496,15 @@ export class InternationalSJCGoldSystem extends EventEmitter {
     const orders = Array.from(this.orders.values());
     const transfers = Array.from(this.transfers.values());
     const distributions = Array.from(this.distributions.values());
-    
+
     const totalProfitToInternational = distributions
       .filter(d => d.userProfit)
       .reduce((sum, d) => sum + (d.distribution.internationalLiquidity || 0), 0);
-    
+
     const totalProfitToVietnamese = distributions
       .filter(d => !d.userProfit)
       .reduce((sum, d) => sum + (d.distribution.vietnameseBanks || 0) + (d.distribution.sjcProfit || 0), 0);
-    
+
     return {
       totalOrders: orders.length,
       pendingOrders: orders.filter(o => o.status === 'pending').length,
@@ -523,7 +523,7 @@ export class InternationalSJCGoldSystem extends EventEmitter {
   public getInstitutionSummary(): any {
     const orders = Array.from(this.orders.values());
     const summary = new Map<string, any>();
-    
+
     orders.forEach(order => {
       const institution = order.internationalInstitution;
       if (!summary.has(institution)) {
@@ -535,14 +535,14 @@ export class InternationalSJCGoldSystem extends EventEmitter {
           vietnamesePartners: new Set()
         });
       }
-      
+
       const instSummary = summary.get(institution)!;
       instSummary.orderCount++;
       instSummary.totalLots += order.lotSize;
       instSummary.totalPhysicalGold += order.physicalGoldWeight;
       instSummary.vietnamesePartners.add(order.vietnameseCounterparty);
     });
-    
+
     return Array.from(summary.values()).map(s => ({
       ...s,
       totalPhysicalGold: `${(s.totalPhysicalGold / 1000).toFixed(2)} kg`,
