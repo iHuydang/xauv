@@ -222,6 +222,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('🎯 High-impact signal tracking system activated!');
   }, 3000); // Start after 3 seconds
 
+  // Import và setup international portfolio routes
+  const internationalPortfolioRoutes = (await import('./international-portfolio-routes.js')).default;
+  app.use('/api', internationalPortfolioRoutes);
+
   // Initialize financial institution arbitrage monitoring
   setTimeout(async () => {
     const { financialInstitutionBroker } = await import('./financial-institution-broker.js');

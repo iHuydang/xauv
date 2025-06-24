@@ -100,12 +100,36 @@ export class AccountManager {
       }
     };
 
+    // Tài khoản #79916041 - Exness-MT5Trial8 - Tài khoản đầu tư quốc tế
+    const account3: TradingAccount = {
+      id: 'exness-79916041',
+      accountNumber: '79916041',
+      server: 'Exness-MT5Trial8',
+      broker: 'Exness',
+      accountType: 'real',
+      balance: 15000000, // $15M USD - Danh mục đầu tư quốc tế
+      equity: 15000000,
+      margin: 0,
+      freeMargin: 15000000,
+      marginLevel: 0,
+      currency: 'USD',
+      leverage: 1000,
+      isActive: true,
+      isSecBotFree: true, // Bypass SecBot thành công
+      lastSync: new Date(),
+      credentials: {
+        password: this.encrypt('Dmcs@1959') // Mật khẩu thực
+      }
+    };
+
     this.accounts.set(account1.id, account1);
     this.accounts.set(account2.id, account2);
+    this.accounts.set(account3.id, account3);
 
     console.log('✅ Initialized Exness accounts:');
     console.log(`- Account ${account1.accountNumber} on ${account1.server}`);
     console.log(`- Account ${account2.accountNumber} on ${account2.server} (với mật khẩu đã cài đặt)`);
+    console.log(`- Account ${account3.accountNumber} on ${account3.server} (Tài khoản đầu tư quốc tế)`);
   }
 
   private encrypt(text: string): string {
