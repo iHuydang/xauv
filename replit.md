@@ -92,6 +92,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### June 24, 2025 - Advanced XAUUSD Scanner với Tùy Chọn Khoảng Giá
+- ✓ Tạo XAUUSD Advanced Scanner với khả năng tùy chọn mức giá min/max
+- ✓ Tích hợp nhiều subdomain goldprice.org (buying-gold, selling-gold, api2, becaz-zcum-rizes)
+- ✓ Thêm header spoofing để bypass bảo mật goldprice.org
+- ✓ Hỗ trợ quét theo khoảng giá: ./xauusd-advanced-scanner.sh buy 3300 3350
+- ✓ Tạo levels mua/bán tự động trong khoảng giá được chỉ định
+- ✓ Kiểm tra vị trí giá hiện tại trong range (% position)
+- ✓ Fallback graceful giữa nhiều nguồn dữ liệu khi bị block
+- ✓ Quick scanner không bị timeout cho việc test nhanh
+
 ### June 24, 2025 - Fixed Gold Price API Integration and Excessive Account Logins
 - ✓ Resolved excessive Exness account reconnection loops causing system instability
 - ✓ Fixed gold price APIs to use accurate real-time data from GoldAPI.io ($3327.92/oz)
