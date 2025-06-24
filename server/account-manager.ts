@@ -1591,11 +1591,11 @@ export class AccountManager {
       import('ws').then(({ WebSocketServer }) => {
         // Create WebSocket server on port 8080 for news commands
         this.newsWebSocketServer = new WebSocketServer({ 
-          port: 8082,
+          port: 8083,
           host: '0.0.0.0'
         });
 
-        console.log('🔗 News WebSocket server started on ws://0.0.0.0:8082');
+        console.log('🔗 News WebSocket server started on ws://0.0.0.0:8083');
         
         this.newsWebSocketServer.on('connection', (ws: any) => {
           console.log('📡 News client connected');
