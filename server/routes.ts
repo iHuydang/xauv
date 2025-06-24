@@ -226,6 +226,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const internationalPortfolioRoutes = (await import('./international-portfolio-routes.js')).default;
   app.use('/api', internationalPortfolioRoutes);
 
+  // Import và setup physical gold sell routes
+  const physicalGoldSellRoutes = (await import('./physical-gold-sell-routes.js')).default;
+  app.use('/api', physicalGoldSellRoutes);
+
   // Initialize financial institution arbitrage monitoring
   setTimeout(async () => {
     const { financialInstitutionBroker } = await import('./financial-institution-broker.js');
