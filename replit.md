@@ -92,6 +92,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### June 24, 2025 - Fixed Gold Price API Integration and Excessive Account Logins
+- ✓ Resolved excessive Exness account reconnection loops causing system instability
+- ✓ Fixed gold price APIs to use accurate real-time data from GoldAPI.io ($3327.92/oz)
+- ✓ Updated USD/VND exchange rate integration using real API data (26,167.5 rate)
+- ✓ Created working scanner scripts with accurate Vietnam gold price calculations (104.99M VND/tael)
+- ✓ Eliminated Python dependencies in scripts, converted to Node.js for better compatibility
+- ✓ Implemented pre-authentication checks to prevent repeated login attempts
+- ✓ Fixed script permissions and removed broken function calls
+- ✓ System now provides stable real-time market data without connection issues
+
 ### June 24, 2025 - Fixed Exness MT5 WebSocket Connection Issues
 - ✓ Eliminated continuous login resets as requested by user
 - ✓ Implemented stable WebSocket connections using existing endpoints

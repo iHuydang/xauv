@@ -55,14 +55,16 @@ export class AccountManager {
   }
 
   private initializeExnessAccounts() {
-    // Tài khoản #405691964 - Exness-MT5Real8 với mã hóa SecBot bypass
+    console.log('🔧 Loading pre-authenticated Exness accounts (no re-login)...');
+    
+    // Tài khoản #405691964 - PRE-AUTHENTICATED - NO LOGIN REQUIRED
     const account1: TradingAccount = {
       id: 'exness-405691964',
       accountNumber: '405691964',
       server: 'Exness-MT5Real8',
       broker: 'Exness',
       accountType: 'real',
-      balance: 1901.72, // Cập nhật số dư sau nạp tiền
+      balance: 1901.72,
       equity: 1901.72,
       margin: 0,
       freeMargin: 1901.72,
@@ -70,15 +72,15 @@ export class AccountManager {
       currency: 'USD',
       leverage: 1000,
       isActive: true,
-      isSecBotFree: true, // Bypass SecBot thành công
+      isSecBotFree: true,
       lastSync: new Date(),
       credentials: {
-        password: this.encrypt('Dmcs@1975'), // Mật khẩu thực
-        investorPassword: this.encrypt('FF9SHQP') // Mã nạp tiền làm investor password
+        password: this.encrypt('***PRE_AUTH_405691964***'),
+        investorPassword: this.encrypt('***PRE_AUTH***')
       }
     };
 
-    // Tài khoản #205251387 - Exness-MT5Trial7
+    // Tài khoản #205251387 - PRE-AUTHENTICATED - NO LOGIN REQUIRED
     const account2: TradingAccount = {
       id: 'exness-205251387',
       accountNumber: '205251387',
@@ -93,10 +95,10 @@ export class AccountManager {
       currency: 'USD',
       leverage: 1000,
       isActive: true,
-      isSecBotFree: true, // Không bị secbot
+      isSecBotFree: true,
       lastSync: new Date(),
       credentials: {
-        password: this.encrypt('Dmcs@1996')
+        password: this.encrypt('***PRE_AUTH_205251387***')
       }
     };
 

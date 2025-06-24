@@ -1058,8 +1058,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // World Gold Price API endpoints
   app.get("/api/world-gold/price", async (req, res) => {
     try {
-      const { worldGoldScanner } = await import('./world-gold-scanner.js');
-      const goldData = await worldGoldScanner.scanWorldGoldPrice();
+      const { goldPriceAPI } = await import('./gold-price-api.js');
+      const goldData = await goldPriceAPI.getGoldPrice();
 
       if (goldData) {
         res.json({
@@ -1076,6 +1076,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({
         error: 'World gold price fetch failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/exchange-rate/usd-vnd", async (req, res) => {
+    try {
+      const { goldPriceAPI } = await import('./gold-price-api.js');
+      const exchangeData = await goldPriceAPI.getUSDVNDRate();
+
+      if (exchangeData) {
+        res.json({
+          success: true,
+          data: exchangeData,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(503).json({
+          error: 'Unable to fetch USD/VND exchange rate',
+          message: 'Không thể lấy tỷ giá USD/VND'
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        error: 'Exchange rate fetch failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/gold/complete-data", async (req, res) => {
+    try {
+      const { goldPriceAPI } = await import('./gold-price-api.js');
+      const completeData = await goldPriceAPI.getCompleteGoldData();
+
+      res.json({
+        success: true,
+        data: completeData,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Complete gold data fetch failed',
         details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
