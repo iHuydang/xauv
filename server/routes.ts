@@ -12,7 +12,8 @@ import exnessDealingDeskRoutes from "./exness-dealing-desk-routes";
 import enhancedForexApiRoutes from "./enhanced-forex-api-routes";
 import tradermadeApiRoutes from "./tradermade-api-routes";
 import vietnamGoldTradingRoutes from "./vietnam-gold-trading-routes";
-import newsPropagationRoutes from "./news-propagation-routes";
+import sjcNewsPropagationRoutes from "./news-propagation-routes";
+import ecnLiquidityRoutes from "./ecn-liquidity-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -35,7 +36,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api', exnessDealingDeskRoutes);
   app.use("/api", vietnamGoldBrokerRoutes);
   app.use("/api", vietnamGoldTradingRoutes);
-  app.use("/api", newsPropagationRoutes);
+  app.use("/api", sjcNewsPropagationRoutes);
+  app.use("/api", ecnLiquidityRoutes);
 
   // WebSocket news command endpoint
   app.post("/api/websocket/news", async (req, res) => {
@@ -928,9 +930,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/world-gold/attack", async (req, res) => {
     try {
       const { vector = 'SPOT_PRESSURE' } = req.body;
-      const { worldGoldScanner } = await import('./world-gold-scanner.js');
-
-      const attackResult = await worldGoldScanner.executeLiquidityAttack(vector);
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');const attackResult = await worldGoldScanner.executeLiquidityAttack(vector);
 
       res.json({
         success: true,
