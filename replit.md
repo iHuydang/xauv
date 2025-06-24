@@ -92,6 +92,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### June 24, 2025 - XTB xAPI Integration for Enhanced Liquidity
+- ✓ Tích hợp hoàn chỉnh XTB xAPI với WebSocket real-time data
+- ✓ Hỗ trợ cả demo và real account connections
+- ✓ Real-time gold price streaming với bid/ask spreads
+- ✓ XTB liquidity scanner với range analysis
+- ✓ Multi-source price comparison (XTB vs GoldAPI vs goldprice.org)
+- ✓ Comprehensive API endpoints: /api/xtb/* cho tất cả chức năng
+- ✓ Auto-reconnection và heartbeat monitoring
+- ✓ Symbol information và market data streaming
+
 ### June 24, 2025 - Advanced XAUUSD Scanner với Tùy Chọn Khoảng Giá
 - ✓ Tạo XAUUSD Advanced Scanner với khả năng tùy chọn mức giá min/max
 - ✓ Tích hợp nhiều subdomain goldprice.org (buying-gold, selling-gold, api2, becaz-zcum-rizes)

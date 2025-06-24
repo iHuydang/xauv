@@ -43,6 +43,25 @@ Script sẽ tự động fallback giữa:
 - buying-gold.goldprice.org  
 - selling-gold.goldprice.org
 - api2.goldprice.org
+- XTB xAPI (real-time WebSocket data)
+
+## 7. Demo XTB xAPI Integration (MỚI)
+```bash
+# Check XTB connection status
+./scripts/xtb-gold-scanner.sh status
+
+# Connect to XTB xAPI
+./scripts/xtb-gold-scanner.sh connect
+
+# XTB liquidity scan với range
+./scripts/xtb-gold-scanner.sh scan 3300 3350
+
+# So sánh XTB vs các nguồn khác
+./scripts/xtb-gold-scanner.sh compare
+
+# Lấy giá XTB real-time
+./scripts/xtb-gold-scanner.sh price
+```
 
 ## Kết Quả Mong Đợi:
 - Giá vàng thời gian thực: ~$3320-3330/oz
