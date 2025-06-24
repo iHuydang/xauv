@@ -4,10 +4,11 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertOrderSchema, insertPositionSchema } from "@shared/schema";
 import { z } from "zod";
+import { accountManager } from "./account-manager";
 import newsRoutes from "./news-routes";
 import sjcPressureRoutes from "./sjc-pressure-routes";
 import enhancedGoldAttackRoutes from "./enhanced-gold-attack-routes";
-import vietnamGoldBrokerRoutes from "./vietnam-gold-broker-routes";
+import { vietnamGoldBrokerRoutes } from "./vietnam-gold-broker-routes";
 import exnessDealingDeskRoutes from "./exness-dealing-desk-routes";
 import enhancedForexApiRoutes from "./enhanced-forex-api-routes";
 import tradermadeApiRoutes from "./tradermade-api-routes";
@@ -15,6 +16,8 @@ import vietnamGoldTradingRoutes from "./vietnam-gold-trading-routes";
 import sjcNewsPropagationRoutes from "./news-propagation-routes";
 import ecnLiquidityRoutes from "./ecn-liquidity-routes";
 import financialInstitutionRoutes from "./financial-institution-routes";
+import { sjcGoldBridgeRoutes } from "./sjc-gold-bridge-routes";
+import { sjcDemoConverterRoutes } from "./sjc-demo-converter-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -40,6 +43,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api", sjcNewsPropagationRoutes);
   app.use("/api", ecnLiquidityRoutes);
   app.use("/api", financialInstitutionRoutes);
+  app.use("/api", sjcGoldBridgeRoutes);
+  app.use("/api", sjcDemoConverterRoutes);
 
   // WebSocket news command endpoint
   app.post("/api/websocket/news", async (req, res) => {
@@ -98,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Start automatic forex news checking
-  forexNewsChecker.startAutoCheck(10); // Check every 10 minutes
+  // forexNewsChecker.startAutoCheck(10); // Check every 10 minutes - Temporarily disabled
 
   // Initialize signal tracking for Exness accounts
   setTimeout(async () => {
@@ -107,8 +112,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }, 3000); // Start after 3 seconds
 
   // Initialize financial institution arbitrage monitoring
-  setTimeout(() => {
-    const { financialInstitutionBroker } = require('./financial-institution-broker');
+  setTimeout(async () => {
+    const { financialInstitutionBroker } = await import('./financial-institution-broker.js');
     
     financialInstitutionBroker.on('arbitrageOpportunity', (opportunity: any) => {
       console.log(`⚡ ARBITRAGE ALERT: ${opportunity.priceDifference.toLocaleString()} VND opportunity detected`);
@@ -972,7 +977,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/world-gold/attack", async (req, res) => {
     try {
       const { vector = 'SPOT_PRESSURE' } = req.body;
-      const { worldGoldScanner }await import('./world-gold-scanner.js');const attackResult = await worldGoldScanner.executeLiquidityAttack(vector);
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
+      const attackResult = await worldGoldScanner.executeLiquidityAttack(vector);
 
       res.json({
         success: true,
