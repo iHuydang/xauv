@@ -1,114 +1,52 @@
-# XAUUSD Enhanced Liquidity Scanner - Demo Commands
+# Demo Commands - XAUUSD Liquidity Scanner
 
-## Enhanced Scanner Commands
-
-### Quét một lần (Single Scan)
+## 1. Test Scanner Cơ Bản
 ```bash
-# Quét cả hai phía (buy + sell)
-./scripts/xauusd-enhanced-scanner.sh single
-
-# Chỉ quét phe mua
-./scripts/xauusd-enhanced-scanner.sh buy
-
-# Chỉ quét phe bán  
-./scripts/xauusd-enhanced-scanner.sh sell
+# Giá hiện tại: ~$3320/oz
+./scripts/quick-range-scan.sh range 3300 3350
 ```
 
-### Theo dõi liên tục (Monitor)
+## 2. Demo Quét Phe Mua (Support Analysis)
 ```bash
-# Theo dõi cả hai phía
-./scripts/xauusd-enhanced-scanner.sh monitor
-
-# Theo dõi chỉ phe mua
-./scripts/xauusd-enhanced-scanner.sh monitor buy
-
-# Theo dõi chỉ phe bán
-./scripts/xauusd-enhanced-scanner.sh monitor sell
+# Tìm support levels từ $3280-$3320
+./scripts/xauusd-advanced-scanner.sh buy 3280 3320
 ```
+**Ý nghĩa:** Tìm vùng có nhiều buy orders để xác định support. Nhiều buy orders = support mạnh.
 
-### Phân tích depth chi tiết
+## 3. Demo Quét Phe Bán (Resistance Analysis)  
 ```bash
-# Phân tích depth cả hai phía
-./scripts/xauusd-enhanced-scanner.sh depth
-
-# Phân tích depth phe mua
-./scripts/xauusd-enhanced-scanner.sh depth buy
-
-# Phân tích depth phe bán
-./scripts/xauusd-enhanced-scanner.sh depth sell
+# Tìm resistance levels từ $3340-$3380
+./scripts/xauusd-advanced-scanner.sh sell 3340 3380
 ```
+**Ý nghĩa:** Tìm vùng có nhiều sell orders = resistance. KHÔNG có nghĩa giá sẽ tăng!
 
-### Xem báo cáo
+## 4. Demo Range Scan Toàn Diện
 ```bash
-./scripts/xauusd-enhanced-scanner.sh report
+# Phân tích toàn bộ range $3300-$3400
+./scripts/xauusd-advanced-scanner.sh range 3300 3400
 ```
 
-## Sell Scanner Commands
-
-### Quét thanh khoản bán
+## 5. Demo Monitoring Liên Tục
 ```bash
-# Quét một lần
-./scripts/xauusd-sell-scanner.sh single
-
-# Theo dõi liên tục
-./scripts/xauusd-sell-scanner.sh monitor
-
-# Phân tích depth bán
-./scripts/xauusd-sell-scanner.sh depth
-
-# Báo cáo bán
-./scripts/xauusd-sell-scanner.sh report
+# Theo dõi breakthrough resistance
+./scripts/xauusd-advanced-scanner.sh monitor sell 3350 3400
 ```
 
-## API Endpoints
-
-### REST API Calls
+## 6. Xem Logic Giải Thích
 ```bash
-# Quét thanh khoản qua API
-curl -X POST http://localhost:5000/api/liquidity/scan \
-  -H "Content-Type: application/json" \
-  -d '{"side":"buy"}'
-
-# Bắt đầu monitor
-curl -X POST http://localhost:5000/api/liquidity/monitor/start \
-  -H "Content-Type: application/json" \
-  -d '{"side":"both","interval":15}'
-
-# Phân tích depth
-curl -X POST http://localhost:5000/api/liquidity/depth \
-  -H "Content-Type: application/json" \
-  -d '{"side":"sell"}'
-
-# Thống kê scanner
-curl http://localhost:5000/api/liquidity/enhanced-stats
+./scripts/trading-logic-explanation.sh
 ```
 
-## Key Features Implemented
+## Test Real-time với Multiple Sources
+Script sẽ tự động fallback giữa:
+- GoldAPI.io (primary)
+- buying-gold.goldprice.org  
+- selling-gold.goldprice.org
+- api2.goldprice.org
 
-✓ **Hiển thị rõ ràng thời gian bắt đầu/kết thúc quét**
-✓ **Giá bắt đầu và kết thúc quét với % thay đổi**
-✓ **Phân tích thanh khoản % phe mua/bán**
-✓ **Depth analysis chi tiết với volume levels**
-✓ **Cơ hội thị trường và khuyến nghị**
-✓ **Risk analysis cho selling**
-✓ **Support/Resistance levels**
-✓ **API integration hoàn chỉnh**
-✓ **Monitoring liên tục với interval tùy chỉnh**
-
-## Output Example
-```
-🚀 BẮT ĐẦU QUÉT THANH KHOẢN
-⏰ Thời gian bắt đầu: 07:51:37
-💰 Giá bắt đầu quét: $2686.92
-📊 Loại quét: Single Scan - BUY
-
-📊 PHÂN TÍCH THANH KHOẢN BUY
-💚 Thanh khoản BUY: 5,950,963.922 lots (63.3%)
-💔 Thanh khoản SELL: 3,457,574.674 lots (36.7%)
-🔥 ÁP LỰC MUA MẠNH - Buy pressure dominates (63.3%)
-
-🏁 KẾT THÚC QUÉT THANH KHOẢN
-⏰ Thời gian kết thúc: 07:51:39
-💰 Giá kết thúc quét: $2685.13
-📊 Thay đổi giá: -0.07%
-```
+## Kết Quả Mong Đợi:
+- Giá vàng thời gian thực: ~$3320-3330/oz
+- Tỷ giá USD/VND: ~26,000-27,000
+- Giá VN: ~105M VND/chỉ
+- Levels được tạo tự động trong khoảng
+- Logic explanation rõ ràng

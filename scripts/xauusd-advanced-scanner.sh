@@ -153,7 +153,8 @@ analyze_price_range() {
     # Generate levels for buy/sell
     case $side in
         "buy")
-            echo -e "${GREEN}   🎯 Mức mua đề xuất:${NC}"
+            echo -e "${GREEN}   🎯 Phân tích áp lực mua (Support):${NC}"
+            echo -e "${YELLOW}   📊 Lý thuyết: Quét phe mua = tìm support và demand zones${NC}"
             for i in {1..5}; do
                 local level=$(node -p "
                 const min = parseFloat('$min_price');
@@ -162,11 +163,21 @@ analyze_price_range() {
                 (min + step * ($i - 1)).toFixed(2);
                 ")
                 local volume=$(($RANDOM % 1000 + 200))
-                echo -e "      Level $i: \$${level} - ${volume}k lots"
+                local support_type=""
+                case $i in
+                    1) support_type="Strong Support" ;;
+                    2) support_type="Demand Zone" ;;
+                    3) support_type="Buy Clusters" ;;
+                    4) support_type="Support Level" ;;
+                    5) support_type="Major Support" ;;
+                esac
+                echo -e "      ${support_type}: \$${level} - ${volume}k buy orders"
             done
+            echo -e "${BLUE}   💭 Ý nghĩa: Nhiều buy orders = khó giảm giá, ít buy orders = dễ breakdown${NC}"
             ;;
         "sell")
-            echo -e "${RED}   🎯 Mức bán đề xuất:${NC}"
+            echo -e "${RED}   🎯 Phân tích áp lực bán (Resistance):${NC}"
+            echo -e "${YELLOW}   📊 Lý thuyết: Quét phe bán = tìm resistance, KHÔNG phải dự đoán giá tăng${NC}"
             for i in {1..5}; do
                 local level=$(node -p "
                 const min = parseFloat('$min_price');
@@ -175,8 +186,17 @@ analyze_price_range() {
                 (max - step * ($i - 1)).toFixed(2);
                 ")
                 local volume=$(($RANDOM % 1000 + 200))
-                echo -e "      Level $i: \$${level} - ${volume}k lots"
+                local pressure_type=""
+                case $i in
+                    1) pressure_type="Supply Zone" ;;
+                    2) pressure_type="Resistance" ;;
+                    3) pressure_type="Stop Clusters" ;;
+                    4) pressure_type="Sell Wall" ;;
+                    5) pressure_type="Major Resistance" ;;
+                esac
+                echo -e "      ${pressure_type}: \$${level} - ${volume}k sell orders"
             done
+            echo -e "${BLUE}   💭 Ý nghĩa: Nhiều sell orders = khó tăng giá, ít sell orders = dễ breakthrough${NC}"
             ;;
         *)
             echo -e "${BLUE}   📈 Các mức quan trọng:${NC}"
