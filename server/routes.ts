@@ -14,6 +14,7 @@ import tradermadeApiRoutes from "./tradermade-api-routes";
 import vietnamGoldTradingRoutes from "./vietnam-gold-trading-routes";
 import sjcNewsPropagationRoutes from "./news-propagation-routes";
 import ecnLiquidityRoutes from "./ecn-liquidity-routes";
+import financialInstitutionRoutes from "./financial-institution-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -38,6 +39,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api", vietnamGoldTradingRoutes);
   app.use("/api", sjcNewsPropagationRoutes);
   app.use("/api", ecnLiquidityRoutes);
+  app.use("/api", financialInstitutionRoutes);
 
   // WebSocket news command endpoint
   app.post("/api/websocket/news", async (req, res) => {
@@ -930,7 +932,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/world-gold/attack", async (req, res) => {
     try {
       const { vector = 'SPOT_PRESSURE' } = req.body;
-      const { worldGoldScanner } = await import('./world-gold-scanner.js');const attackResult = await worldGoldScanner.executeLiquidityAttack(vector);
+      const { worldGoldScanner }await import('./world-gold-scanner.js');const attackResult = await worldGoldScanner.executeLiquidityAttack(vector);
 
       res.json({
         success: true,
