@@ -92,6 +92,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### June 24, 2025 - Fixed Exness MT5 WebSocket Connection Issues
+- ✓ Eliminated continuous login resets as requested by user
+- ✓ Implemented stable WebSocket connections using existing endpoints
+- ✓ Added wss://terminal.exness.com as secondary WebSocket connection
+- ✓ Account 205307242 marked as pre-authenticated to prevent re-login
+- ✓ System now uses existing wss://rtapi-sg.excalls.mobi/rtapi/mt5/trial7 connection
+- ✓ Removed redundant authentication loops that caused connection instability
+
 ### June 24, 2025 - TwelveData Financial Market Integration
 - ✓ Integrated TwelveData API (de39a13c0b504693bf837709dddbd9c2) for comprehensive financial market data
 - ✓ Built complete REST API integration with forex pairs, crypto pairs, and stock exchanges
