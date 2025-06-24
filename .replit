@@ -13,6 +13,7 @@ run = ["npm", "run", "start"]
 
 [[ports]]
 localPort = 5000
+externalPort = 5000
 
 [[ports]]
 localPort = 8080
@@ -86,7 +87,7 @@ args = "source scripts/market-commands.sh"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = ""
+args = "market_post = {     \"timestamp\": \"2025-06-24T13:00:00Z\",     \"title\": \"Market Slashes Expectations for Fed Rate Cut in July\",     \"summary\": \"Investors are significantly lowering their expectations for a rate cut at the Fed’s July meeting, with odds dropping to just 15%.\",     \"content\": [         \"🔻 According to CME FedWatch, the probability of a rate cut in the Fed’s July meeting has dropped to just 15%, down sharply from last month.\",         \"📈 Most investors have shifted their expectations to September or later, following a string of strong economic data.\",         \"🗣 Fed Chair Jerome Powell said more data is needed before making a decision, emphasizing a 'patient' approach.\",         \"⚠️ Some officials like Bowman and Waller support an earlier cut if inflation continues to decline.\",         \"💡 Trading strategy: exercise caution with rate-sensitive assets; USD likely to remain strong in the short term.\"     ],     \"tags\": [\"Fed\", \"interest rates\", \"FOMC\", \"CME FedWatch\", \"financial markets\", \"inflation expectations\", \"USD\"],     \"sentiment\": \"neutral"
 
 [[workflows.workflow]]
 name = "Market Trading System"
@@ -240,6 +241,10 @@ args = "api/tradermade/sjc/coordinate-attack"
 task = "shell.exec"
 args = "fsapi-liquidity-drain"
 
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "/api/international-sjc/institutions"
+
 [[workflows.workflow]]
 name = "Start Server"
 author = 44173314
@@ -248,6 +253,10 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Market Trading System"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
