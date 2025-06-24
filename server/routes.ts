@@ -1378,5 +1378,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // XAUUSD Enhanced Liquidity Scanner API Routes
+  
+  // Single liquidity scan
+  app.post("/api/liquidity/scan", async (req, res) => {
+    try {
+      const { side = 'both' } = req.body;
+      const { liquidityScannerAPI } = await import('./liquidity-scanner-api');
+      
+      const result = await liquidityScannerAPI.performSingleScan(side);
+      
+      res.json({
+        success: true,
+        data: result,
+        message: `${side} liquidity scan completed`
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to perform liquidity scan'
+      });
+    }
+  });
+
+  // Start continuous monitoring
+  app.post("/api/liquidity/monitor/start", async (req, res) => {
+    try {
+      const { side = 'both', interval = 15 } = req.body;
+      const { liquidityScannerAPI } = await import('./liquidity-scanner-api');
+      
+      const monitorId = liquidityScannerAPI.startMonitoring(side, interval);
+      
+      res.json({
+        success: true,
+        data: {
+          monitorId,
+          side,
+          interval,
+          status: 'monitoring_started'
+        },
+        message: `Started ${side} liquidity monitoring`
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to start monitoring'
+      });
+    }
+  });
+
+  // Stop monitoring
+  app.post("/api/liquidity/monitor/stop", async (req, res) => {
+    try {
+      const { monitorId } = req.body;
+      const { liquidityScannerAPI } = await import('./liquidity-scanner-api');
+      
+      if (monitorId === 'all') {
+        const stopped = liquidityScannerAPI.stopAllMonitoring();
+        res.json({
+          success: true,
+          data: { stoppedCount: stopped },
+          message: `Stopped ${stopped} monitors`
+        });
+      } else {
+        const stopped = liquidityScannerAPI.stopMonitoring(monitorId);
+        res.json({
+          success: stopped,
+          data: { monitorId, stopped },
+          message: stopped ? 'Monitor stopped' : 'Monitor not found'
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to stop monitoring'
+      });
+    }
+  });
+
+  // Depth analysis
+  app.post("/api/liquidity/depth", async (req, res) => {
+    try {
+      const { side = 'buy' } = req.body;
+      const { liquidityScannerAPI } = await import('./liquidity-scanner-api');
+      
+      const analysis = await liquidityScannerAPI.performDepthAnalysis(side);
+      
+      res.json({
+        success: true,
+        data: analysis,
+        message: `${side} depth analysis completed`
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to perform depth analysis'
+      });
+    }
+  });
+
+  // Get scanner statistics
+  app.get("/api/liquidity/enhanced-stats", async (req, res) => {
+    try {
+      const { liquidityScannerAPI } = await import('./liquidity-scanner-api');
+      
+      const stats = liquidityScannerAPI.getStatistics();
+      const activeMonitors = liquidityScannerAPI.getActiveMonitors();
+      
+      res.json({
+        success: true,
+        data: {
+          ...stats,
+          activeMonitorIds: activeMonitors
+        },
+        message: 'Enhanced scanner statistics retrieved'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get scanner statistics'
+      });
+    }
+  });
+
+  // Execute shell scanner commands
+  app.post("/api/liquidity/shell-command", async (req, res) => {
+    try {
+      const { type = 'enhanced', command = 'single', side } = req.body;
+      const { liquidityScannerAPI } = await import('./liquidity-scanner-api');
+      
+      const result = await liquidityScannerAPI.executeShellScanner(type, command, side);
+      
+      res.json({
+        success: result.success,
+        data: result,
+        message: result.success ? 'Shell scanner executed' : 'Shell scanner failed'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to execute shell scanner'
+      });
+    }
+  });
+
   return httpServer;
 }

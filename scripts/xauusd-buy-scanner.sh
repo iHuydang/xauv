@@ -1,20 +1,28 @@
 
 #!/bin/bash
 
-# XAUUSD Buy-Side Liquidity Scanner for Falling Prices
-# Quét thanh khoản phe mua XAUUSD khi giá vàng rớt
+# XAUUSD Liquidity Scanner - Enhanced với hiển thị đầy đủ thông tin
+# Quét thanh khoản phe mua/bán XAUUSD với phân tích chi tiết
 
-echo "🔻 XAUUSD BUY-SIDE LIQUIDITY SCANNER"
+echo "📊 XAUUSD ENHANCED LIQUIDITY SCANNER"
 echo "===================================="
 
 # Configuration
 SCAN_INTERVAL=15  # seconds
-LOG_FILE="xauusd_buy_scan.log"
+LOG_FILE="xauusd_scan.log"
 FALL_THRESHOLD=-1.0  # Percentage fall threshold
+RISE_THRESHOLD=1.0   # Percentage rise threshold
 VOLUME_THRESHOLD=1000000  # Minimum volume threshold
 
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
 # Initialize log
-echo "=== XAUUSD Buy Scanner Started at $(date) ===" >> $LOG_FILE
+echo "=== XAUUSD Enhanced Scanner Started at $(date) ===" >> $LOG_FILE
 
 # Function to scan XAUUSD buy liquidity
 scan_xauusd_buy() {
