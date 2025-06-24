@@ -21,6 +21,7 @@ import { sjcDemoConverterRoutes } from "./sjc-demo-converter-routes";
 import { anonymousAccountRoutes } from "./anonymous-account-routes";
 import { highVolumeSJCRoutes } from "./high-volume-sjc-routes";
 import { internationalSJCRoutes } from "./international-sjc-routes";
+import { exnessMT5Connection } from "./exness-mt5-connection";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -51,6 +52,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api", anonymousAccountRoutes);
   app.use("/api", highVolumeSJCRoutes);
   app.use("/api", internationalSJCRoutes);
+
+  // Add MT5 connection status endpoint
+  app.get("/api/exness-mt5/status", async (req, res) => {
+    try {
+      const status = exnessMT5Connection.getConnectionStatus();
+      res.json({
+        success: true,
+        data: {
+          ...status,
+          authentication: 'Account 205307242 with real credentials',
+          server: 'Exness-MT5Trial7',
+          wsUrl: 'wss://rtapi-sg.excalls.mobi/rtapi/mt5/trial7'
+        },
+        message: 'Exness MT5 connection status retrieved'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get MT5 status'
+      });
+    }
+  });
+
+  // Add MT5 gold order placement
+  app.post("/api/exness-mt5/place-gold-order", async (req, res) => {
+    try {
+      const { symbol = 'XAUUSD', volume = 50, orderType = 'buy' } = req.body;
+      
+      const orderId = await exnessMT5Connection.placeGoldOrder(symbol, volume, orderType);
+      
+      res.json({
+        success: true,
+        data: {
+          orderId,
+          symbol,
+          volume,
+          orderType,
+          accountId: '205307242',
+          server: 'Exness-MT5Trial7',
+          sjcGoldEquivalent: `${(volume * 82.94).toFixed(2)} taels`,
+          physicalWeight: `${(volume * 82.94 * 37.5 / 1000).toFixed(2)} kg`
+        },
+        message: 'Gold order placed successfully on MT5'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to place gold order'
+      });
+    }
+  });
 
   // WebSocket news command endpoint
   app.post("/api/websocket/news", async (req, res) => {
