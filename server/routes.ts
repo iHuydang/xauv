@@ -106,6 +106,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('🎯 High-impact signal tracking system activated!');
   }, 3000); // Start after 3 seconds
 
+  // Initialize financial institution arbitrage monitoring
+  setTimeout(() => {
+    const { financialInstitutionBroker } = require('./financial-institution-broker');
+    
+    financialInstitutionBroker.on('arbitrageOpportunity', (opportunity: any) => {
+      console.log(`⚡ ARBITRAGE ALERT: ${opportunity.priceDifference.toLocaleString()} VND opportunity detected`);
+      console.log(`   Between: ${opportunity.institution1} <-> ${opportunity.institution2}`);
+      console.log(`   Recommended volume: ${opportunity.recommendedVolume} grams`);
+      
+      // Broadcast to WebSocket clients
+      clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'arbitrageAlert',
+            data: opportunity
+          }));
+        }
+      });
+    });
+
+    financialInstitutionBroker.on('institutionOrderSettled', (settlement: any) => {
+      console.log(`💎 INSTITUTIONAL SETTLEMENT: ${settlement.order.orderId}`);
+      console.log(`🏦 Institution: ${settlement.institution}`);
+      console.log(`🥇 Gold Volume: ${settlement.order.convertedGoldGrams.toFixed(2)} grams`);
+      console.log(`💰 Value: ${settlement.order.totalValueVND.toLocaleString()} VND`);
+      
+      // Broadcast settlement to clients
+      clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'institutionalSettlement',
+            data: settlement
+          }));
+        }
+      });
+    });
+
+    console.log('🏦 Financial institution monitoring activated');
+  }, 5000);
+
   // Create WebSocket server for real-time price updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
