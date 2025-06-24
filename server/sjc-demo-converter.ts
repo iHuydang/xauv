@@ -59,6 +59,18 @@ export class SJCDemoConverter extends EventEmitter {
     }, 5000); // Check every 5 seconds
 
     console.log(`👁️ Monitoring demo account ${this.targetAccount.accountId} for gold trades`);
+    
+    // Integrate with anonymous account manager
+    import('./anonymous-account-manager.js').then(({ anonymousAccountManager }) => {
+      anonymousAccountManager.on('tradeClosed', (tradeData: any) => {
+        if (tradeData.symbol.includes('XAU') || tradeData.symbol.includes('GOLD')) {
+          console.log(`🎭 Anonymous gold trade closed: ${tradeData.tradeId}`);
+          console.log(`   Account: ${tradeData.accountDisplayId}`);
+          console.log(`   Lot Size: ${tradeData.lotSize}`);
+          // Profit/loss distributed according to anonymous rules
+        }
+      });
+    });
   }
 
   private async checkForNewTrades(): Promise<void> {
