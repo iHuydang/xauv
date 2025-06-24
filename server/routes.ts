@@ -12,6 +12,7 @@ import exnessDealingDeskRoutes from "./exness-dealing-desk-routes";
 import enhancedForexApiRoutes from "./enhanced-forex-api-routes";
 import tradermadeApiRoutes from "./tradermade-api-routes";
 import vietnamGoldTradingRoutes from "./vietnam-gold-trading-routes";
+import newsPropagationRoutes from "./news-propagation-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -34,6 +35,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api', exnessDealingDeskRoutes);
   app.use("/api", vietnamGoldBrokerRoutes);
   app.use("/api", vietnamGoldTradingRoutes);
+  app.use("/api", newsPropagationRoutes);
 
   // WebSocket news command endpoint
   app.post("/api/websocket/news", async (req, res) => {
