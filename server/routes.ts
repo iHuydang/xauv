@@ -20,6 +20,7 @@ import { sjcGoldBridgeRoutes } from "./sjc-gold-bridge-routes";
 import { sjcDemoConverterRoutes } from "./sjc-demo-converter-routes";
 import { anonymousAccountRoutes } from "./anonymous-account-routes";
 import { highVolumeSJCRoutes } from "./high-volume-sjc-routes";
+import { internationalSJCRoutes } from "./international-sjc-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -49,6 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api", sjcDemoConverterRoutes);
   app.use("/api", anonymousAccountRoutes);
   app.use("/api", highVolumeSJCRoutes);
+  app.use("/api", internationalSJCRoutes);
 
   // WebSocket news command endpoint
   app.post("/api/websocket/news", async (req, res) => {
