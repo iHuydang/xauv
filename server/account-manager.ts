@@ -1613,56 +1613,75 @@ export class AccountManager {
   private setupNewsWebSocketServer(): void {
     try {
       import('ws').then(({ WebSocketServer }) => {
-        // Create WebSocket server on port 8080 for news commands
-        this.newsWebSocketServer = new WebSocketServer({ 
-          port: 8084,
-          host: '0.0.0.0'
-        });
+        // Find available port starting from 8085
+        const findAvailablePort = async (startPort: number): Promise<number> => {
+          const net = await import('net');
+          return new Promise((resolve, reject) => {
+            const server = net.createServer();
+            server.listen(startPort, '0.0.0.0', () => {
+              const port = server.address()?.port;
+              server.close(() => resolve(port || startPort));
+            });
+            server.on('error', () => {
+              findAvailablePort(startPort + 1).then(resolve).catch(reject);
+            });
+          });
+        };
 
-        console.log('🔗 News WebSocket server started on ws://0.0.0.0:8084');
+        findAvailablePort(8085).then((availablePort) => {
+          // Create WebSocket server on available port
+          this.newsWebSocketServer = new WebSocketServer({ 
+            port: availablePort,
+            host: '0.0.0.0'
+          });
+
+          console.log(`🔗 News WebSocket server started on ws://0.0.0.0:${availablePort}`);
         
-        this.newsWebSocketServer.on('connection', (ws: any) => {
-          console.log('📡 News client connected');
-          this.newsClients.add(ws);
+          this.newsWebSocketServer.on('connection', (ws: any) => {
+            console.log('📡 News client connected');
+            this.newsClients.add(ws);
 
-          ws.on('message', (message: Buffer) => {
-            try {
-              const data = JSON.parse(message.toString());
-              this.handleNewsWebSocketMessage(data, ws);
-            } catch (error) {
-              console.error('❌ Error parsing WebSocket message:', error);
-              ws.send(JSON.stringify({
-                error: 'Invalid JSON format',
-                timestamp: new Date().toISOString()
-              }));
-            }
+            ws.on('message', (message: Buffer) => {
+              try {
+                const data = JSON.parse(message.toString());
+                this.handleNewsWebSocketMessage(data, ws);
+              } catch (error) {
+                console.error('❌ Error parsing WebSocket message:', error);
+                ws.send(JSON.stringify({
+                  error: 'Invalid JSON format',
+                  timestamp: new Date().toISOString()
+                }));
+              }
+            });
+
+            ws.on('close', () => {
+              console.log('📡 News client disconnected');
+              this.newsClients.delete(ws);
+            });
+
+            ws.on('error', (error: Error) => {
+              console.error('❌ News WebSocket error:', error);
+              this.newsClients.delete(ws);
+            });
+
+            // Send welcome message
+            ws.send(JSON.stringify({
+              type: 'welcome',
+              message: 'Connected to Exness Trading News WebSocket',
+              timestamp: new Date().toISOString(),
+              supported_commands: [
+                'market_news_post',
+                'trader_broadcast',
+                'market_impact_check',
+                'secbot_disable',
+                'account_status'
+              ]
+            }));
           });
-
-          ws.on('close', () => {
-            console.log('📡 News client disconnected');
-            this.newsClients.delete(ws);
-          });
-
-          ws.on('error', (error: Error) => {
-            console.error('❌ News WebSocket error:', error);
-            this.newsClients.delete(ws);
-          });
-
-          // Send welcome message
-          ws.send(JSON.stringify({
-            type: 'welcome',
-            message: 'Connected to Exness Trading News WebSocket',
-            timestamp: new Date().toISOString(),
-            supported_commands: [
-              'market_news_post',
-              'trader_broadcast',
-              'market_impact_check',
-              'secbot_disable',
-              'account_status'
-            ]
-          }));
+        }).catch((error) => {
+          console.error('❌ Failed to find available port for WebSocket server:', error);
         });
-      }).catch(error => {
+      }).catch((error) => {
         console.error('❌ Failed to load WebSocket module:', error);
       });
 
@@ -1973,12 +1992,13 @@ export class AccountManager {
 
   // Get news WebSocket server info
   getNewsWebSocketInfo(): any {
+    const port = this.newsWebSocketServer?.address?.()?.port || 'unknown';
     return {
       server_running: this.newsWebSocketServer !== null,
-      port: 8080,
+      port: port,
       host: '0.0.0.0',
       connected_clients: this.newsClients.size,
-      websocket_url: 'ws://0.0.0.0:8080',
+      websocket_url: `ws://0.0.0.0:${port}`,
       supported_commands: [
         'market_news_post',
         'trader_broadcast',

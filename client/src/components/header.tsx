@@ -27,8 +27,8 @@ export default function Header() {
             <a href="/world-gold" className="text-gray-400 hover:text-white transition-colors">
               Vàng Thế giới
             </a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">
-              Telegram Bot
+            <a href="/twelvedata" className="text-gray-400 hover:text-white transition-colors">
+              TwelveData
             </a>
           </nav>
         </div>

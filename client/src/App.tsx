@@ -1,3 +1,4 @@
+import React from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -8,6 +9,7 @@ import AttackControl from "@/pages/AttackControl";
 import WorldGoldControl from "@/pages/WorldGoldControl";
 import SecBotBypassDashboard from "@/pages/SecBotBypassDashboard";
 import FredGoldAttack from "@/pages/FredGoldAttack";
+import TwelveDataDashboard from "@/pages/TwelveDataDashboard";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +20,7 @@ function Router() {
       <Route path="/world-gold" component={WorldGoldControl} />
       <Route path="/secbot-bypass" component={SecBotBypassDashboard} />
       <Route path="/fred-gold-attack" component={FredGoldAttack} />
+      <Route path="/twelvedata" component={TwelveDataDashboard} />
       <Route component={NotFound} />
     </Switch>
   );

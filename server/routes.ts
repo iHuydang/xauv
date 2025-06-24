@@ -22,6 +22,8 @@ import { anonymousAccountRoutes } from "./anonymous-account-routes";
 import { highVolumeSJCRoutes } from "./high-volume-sjc-routes";
 import { internationalSJCRoutes } from "./international-sjc-routes";
 import { exnessMT5Connection } from "./exness-mt5-connection";
+import twelveDataRoutes from "./twelvedata-routes";
+import { twelveDataWebSocketServer } from "./twelvedata-websocket-server";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -52,6 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api", anonymousAccountRoutes);
   app.use("/api", highVolumeSJCRoutes);
   app.use("/api", internationalSJCRoutes);
+  app.use("/api", twelveDataRoutes);
 
   // Add MT5 connection status endpoint
   app.get("/api/exness-mt5/status", async (req, res) => {
@@ -269,6 +272,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     console.log('🏦 Financial institution monitoring activated');
   }, 5000);
+
+  // Initialize TwelveData WebSocket server
+  twelveDataWebSocketServer.initialize(httpServer);
 
   // Create WebSocket server for real-time price updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
