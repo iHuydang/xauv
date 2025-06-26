@@ -1,9 +1,18 @@
 # Demo Commands - XAUUSD Liquidity Scanner
 
-## 1. Test Scanner Cơ Bản
+## 1. Working Gold Scanner (RECOMMENDED)
 ```bash
-# Giá hiện tại: ~$3320/oz
-./scripts/quick-range-scan.sh range 3300 3350
+# Support analysis (buy side)
+./scripts/working-gold-scanner.sh buy 3300 3340
+
+# Resistance analysis (sell side) 
+./scripts/working-gold-scanner.sh sell 3340 3380
+
+# Custom range scan
+./scripts/working-gold-scanner.sh range 3250 3400
+
+# Continuous monitoring (30s intervals)
+./scripts/working-gold-scanner.sh monitor 3300 3350 30
 ```
 
 ## 2. Demo Quét Phe Mua (Support Analysis)
@@ -45,22 +54,26 @@ Script sẽ tự động fallback giữa:
 - api2.goldprice.org
 - XTB xAPI (real-time WebSocket data)
 
-## 7. Demo XTB xAPI Integration (MỚI)
+## 7. Enhanced Multi-Source Scanner (WORKING)
 ```bash
-# Check XTB connection status
+# Enhanced scanner với multi-source validation
+./scripts/enhanced-multi-source-scanner.sh scan 3300 3350 buy
+
+# Buy side analysis với support levels
+./scripts/enhanced-multi-source-scanner.sh buy 3300 3340
+
+# Sell side analysis với resistance levels  
+./scripts/enhanced-multi-source-scanner.sh sell 3340 3380
+
+# Continuous monitoring
+./scripts/enhanced-multi-source-scanner.sh monitor 3250 3400
+```
+
+## 8. XTB xAPI Integration (REQUIRES CREDENTIALS)
+```bash
+# XTB requires real account credentials to work
+# Current status: Fallback to multi-source scanner
 ./scripts/xtb-gold-scanner.sh status
-
-# Connect to XTB xAPI
-./scripts/xtb-gold-scanner.sh connect
-
-# XTB liquidity scan với range
-./scripts/xtb-gold-scanner.sh scan 3300 3350
-
-# So sánh XTB vs các nguồn khác
-./scripts/xtb-gold-scanner.sh compare
-
-# Lấy giá XTB real-time
-./scripts/xtb-gold-scanner.sh price
 ```
 
 ## Kết Quả Mong Đợi:

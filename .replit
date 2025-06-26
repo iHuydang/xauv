@@ -72,10 +72,6 @@ mode = "sequential"
 task = "shell.exec"
 args = "npm run dev"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = '''npm run dev STOP_LOSS=8500000 && \ RESPONSE=$(curl -s https://sjc.com.vn/giavang/textContent.php) && \ LINE=$(echo "$RESPONSE" | grep -m1 "SJC") && \ SELL_PRICE=$(echo "$LINE" | awk -F '</td><td>' '{gsub(/[^0-9]/,"",$3); print $3}') && \ echo "⏰ $(date '+%Y-%m-%d %H:%M:%S') - SJC Sell Price: $SELL_PRICE VND" && \ if [ "$SELL_PRICE" -lt "$STOP_LOSS" ]; then \   echo "🚨 STOP LOSS HIT! Price $SELL_PRICE is below $STOP_LOSS"; \ else \   echo "✅ Gold price is safe. Stop loss not triggered."; \ fi'''
-
 [[workflows.workflow]]
 name = "Market News System"
 author = 44114932
@@ -89,10 +85,6 @@ args = "chmod +x scripts/market-commands.sh"
 task = "shell.exec"
 args = "source scripts/market-commands.sh"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "market_post = {     \"timestamp\": \"2025-06-24T13:00:00Z\",     \"title\": \"Market Slashes Expectations for Fed Rate Cut in July\",     \"summary\": \"Investors are significantly lowering their expectations for a rate cut at the Fed’s July meeting, with odds dropping to just 15%.\",     \"content\": [         \"🔻 According to CME FedWatch, the probability of a rate cut in the Fed’s July meeting has dropped to just 15%, down sharply from last month.\",         \"📈 Most investors have shifted their expectations to September or later, following a string of strong economic data.\",         \"🗣 Fed Chair Jerome Powell said more data is needed before making a decision, emphasizing a 'patient' approach.\",         \"⚠️ Some officials like Bowman and Waller support an earlier cut if inflation continues to decline.\",         \"💡 Trading strategy: exercise caution with rate-sensitive assets; USD likely to remain strong in the short term.\"     ],     \"tags\": [\"Fed\", \"interest rates\", \"FOMC\", \"CME FedWatch\", \"financial markets\", \"inflation expectations\", \"USD\"],     \"sentiment\": \"neutral"
-
 [[workflows.workflow]]
 name = "Market Trading System"
 author = 44114932
@@ -101,10 +93,6 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Vietnam Gold Attack"
 
 [[workflows.workflow]]
 name = "Liquidity Scanner"
@@ -264,4 +252,4 @@ args = "Market Trading System"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Market Trading System"
+args = "Market News System"

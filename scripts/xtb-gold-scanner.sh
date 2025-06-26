@@ -265,7 +265,10 @@ case "${1:-status}" in
                 echo -e "${RED}❌ No price data available${NC}"
             fi
         else
-            echo -e "${YELLOW}⚠️ XTB not connected${NC}"
+            echo -e "${YELLOW}⚠️ XTB not connected - using fallback mode${NC}"
+        echo -e "${BLUE}💡 Using existing scanner with multiple sources${NC}"
+        # Fallback to existing working scanner
+        ../scripts/quick-range-scan.sh range 3300 3350
         fi
         ;;
     "help")
