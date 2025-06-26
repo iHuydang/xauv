@@ -192,25 +192,25 @@ case "${1:-}" in
 
     "increase_usdvnd"|"17")
         echo -e "${RED}📈 TĂNG TỶ GIÁ USD/VND${NC}"
-        curl -X POST "$API_BASE/api/forex/usdvnd-manipulation" \
+        curl -X POST "$API_BASE/api/forex/usdvnd-pressure" \
             -H "Content-Type: application/json" \
-            -d '{"direction":"INCREASE","intensity":"HIGH","target_rate":25600,"duration":1200}'
+            -d '{"action":"INCREASE_RATE","intensity":"HIGH","target_rate":25600,"duration":1200}'
         echo "✅ Lệnh tăng tỷ giá USD/VND đã được thực thi"
         ;;
 
     "decrease_usdvnd"|"18")
         echo -e "${GREEN}📉 GIẢM TỶ GIÁ USD/VND${NC}"
-        curl -X POST "$API_BASE/api/forex/usdvnd-manipulation" \
+        curl -X POST "$API_BASE/api/forex/usdvnd-pressure" \
             -H "Content-Type: application/json" \
-            -d '{"direction":"DECREASE","intensity":"HIGH","target_rate":24700,"duration":1200}'
+            -d '{"action":"DECREASE_RATE","intensity":"HIGH","target_rate":24700,"duration":1200}'
         echo "✅ Lệnh giảm tỷ giá USD/VND đã được thực thi"
         ;;
 
     "volatile_usdvnd"|"19")
         echo -e "${PURPLE}⚡ TẠO BIẾN ĐỘNG MẠNH USD/VND${NC}"
-        curl -X POST "$API_BASE/api/forex/usdvnd-volatility" \
+        curl -X POST "$API_BASE/api/forex/volatility-boost" \
             -H "Content-Type: application/json" \
-            -d '{"pattern":"EXTREME_VOLATILITY","frequency":30,"amplitude":200,"duration":900}'
+            -d '{"pair":"USDVND","boost_factor":4.0,"duration":900}'
         echo "✅ Lệnh tạo biến động USD/VND đã được kích hoạt"
         ;;
 
