@@ -1102,6 +1102,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/gold/test-all-sources", async (req, res) => {
+    try {
+      const { goldPriceAPI } = await import('./gold-price-api.js');
+      const testResults = await goldPriceAPI.testAllGoldAPISources();
+
+      res.json({
+        success: true,
+        message: 'Tested all gold price API sources',
+        data: testResults,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Failed to test gold price APIs',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   app.get("/api/world-gold/price", async (req, res) => {
     try {
       const { goldPriceAPI } = await import('./gold-price-api.js');
