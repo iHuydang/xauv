@@ -92,6 +92,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### June 26, 2025 - Vietnam Gold Pressure Scanner với Thuật Toán USD/VND
+- ✓ Tạo Vietnam Gold Pressure Scanner với thuật toán áp lực tỷ giá USD/VND qua đêm
+- ✓ Tích hợp dữ liệu swap USD/VND từ Federal Reserve và Bank of Japan
+- ✓ Mô phỏng áp lực thanh khoản USD overnight với termInDays = 1
+- ✓ Phân tích cơ hội arbitrage giữa giá vàng thế giới và Việt Nam
+- ✓ Hệ thống lệnh shell hoàn chỉnh với 8 chức năng chính
+- ✓ Script Python tính toán áp lực tỷ giá với độ chính xác cao
+- ✓ Interface command-line thân thiện cho việc quét nhanh
+- ✓ Theo dõi real-time và báo cáo tổng hợp hàng ngày
+
 ### June 24, 2025 - Working Gold Scanner với Range-Based Analysis
 - ✓ Tạo Working Gold Scanner hoạt động 100% ổn định với real-time data
 - ✓ Support/resistance analysis với logic trading rõ ràng
