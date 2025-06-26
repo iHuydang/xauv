@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # Vietnam Gold USD/VND Arsenal
@@ -55,33 +54,45 @@ echo ""
 case "${1:-}" in
     "quick_usdvnd_blast"|"1")
         echo -e "${YELLOW}💥 TẤN CÔNG USD/VND NHANH${NC}"
-        python3 scripts/vietnam-gold-pressure-scanner.py full
+        if [ -f "scripts/vietnam-gold-pressure-scanner.py" ]; then
+            python3 scripts/vietnam-gold-pressure-scanner.py full
+        else
+            echo "⚠️ Python scanner không tìm thấy, tiếp tục với API calls"
+        fi
         curl -X POST "$API_BASE/api/forex/usdvnd-pressure" \
             -H "Content-Type: application/json" \
             -d '{"action":"QUICK_BLAST","intensity":"HIGH","duration":300}'
         ;;
-        
+
     "overnight_usd_pressure"|"2")
         echo -e "${BLUE}🌙 ÁP LỰC USD QUA ĐÊM${NC}"
         echo "Chọn hướng áp lực tỷ giá:"
         echo "1. Tăng USD/VND (tăng giá USD)"
         echo "2. Giảm USD/VND (giảm giá USD)"
         read -p "Chọn (1-2): " direction
-        
+
         case "$direction" in
             "1")
                 echo -e "${RED}📈 TĂNG TỶ GIÁ USD/VND${NC}"
                 curl -X POST "$API_BASE/api/forex/usdvnd-pressure" \
                     -H "Content-Type: application/json" \
                     -d '{"action":"INCREASE_RATE","intensity":"HIGH","duration":1800,"target_rate":25500}'
-                python3 scripts/vietnam-gold-pressure-scanner.py full
+                if [ -f "scripts/vietnam-gold-pressure-scanner.py" ]; then
+                    python3 scripts/vietnam-gold-pressure-scanner.py full
+                else
+                    echo "⚠️ Python scanner không tìm thấy, tiếp tục với API calls"
+                fi
                 ;;
             "2")
                 echo -e "${GREEN}📉 GIẢM TỶ GIÁ USD/VND${NC}"
                 curl -X POST "$API_BASE/api/forex/usdvnd-pressure" \
                     -H "Content-Type: application/json" \
                     -d '{"action":"DECREASE_RATE","intensity":"HIGH","duration":1800,"target_rate":24800}'
-                python3 scripts/vietnam-gold-pressure-scanner.py full
+                if [ -f "scripts/vietnam-gold-pressure-scanner.py" ]; then
+                    python3 scripts/vietnam-gold-pressure-scanner.py full
+                else
+                    echo "⚠️ Python scanner không tìm thấy, tiếp tục với API calls"
+                fi
                 ;;
             *)
                 echo -e "${YELLOW}Mặc định: Tăng tỷ giá${NC}"
@@ -91,69 +102,73 @@ case "${1:-}" in
                 ;;
         esac
         ;;
-        
+
     "usdvnd_volatility_boost"|"3")
         echo -e "${PURPLE}📈 TĂNG BIẾN ĐỘNG USD/VND${NC}"
         curl -X POST "$API_BASE/api/forex/volatility-boost" \
             -H "Content-Type: application/json" \
             -d '{"pair":"USDVND","boost_factor":3.5,"duration":600}'
         ;;
-        
+
     "fed_swap_simulation"|"4")
         echo -e "${GREEN}🏦 MÔ PHỎNG FED SWAP${NC}"
-        python3 scripts/vietnam-gold-pressure-scanner.py full
+        if [ -f "scripts/vietnam-gold-pressure-scanner.py" ]; then
+            python3 scripts/vietnam-gold-pressure-scanner.py full
+        else
+            echo "⚠️ Python scanner không tìm thấy, tiếp tục với API calls"
+        fi
         ;;
-        
+
     "world_gold_pump"|"5")
         echo -e "${YELLOW}🚀 ĐẨY VÀNG THẾ GIỚI LÊN${NC}"
         ./scripts/vietnam-gold-comprehensive-attack.sh execute_world_gold_pressure 2700 UP
         ;;
-        
+
     "world_gold_dump"|"6")
         echo -e "${RED}📉 ĐẨY VÀNG THẾ GIỚI XUỐNG${NC}"
         ./scripts/vietnam-gold-comprehensive-attack.sh execute_world_gold_pressure 2600 DOWN
         ;;
-        
+
     "london_fix_pressure"|"7")
         echo -e "${BLUE}🇬🇧 ÁP LỰC LONDON GOLD FIX${NC}"
         curl -X POST "$API_BASE/api/world-gold/london-fix-pressure" \
             -H "Content-Type: application/json" \
             -d '{"intensity":"EXTREME","fix_time":"15:00","duration":900}'
         ;;
-        
+
     "spot_gold_volatility"|"8")
         echo -e "${PURPLE}⚡ BIẾN ĐỘNG VÀNG SPOT${NC}"
         curl -X POST "$API_BASE/api/world-gold/volatility-injection" \
             -H "Content-Type: application/json" \
             -d '{"volatility_factor":4.0,"duration":1200}'
         ;;
-        
+
     "sjc_premium_crusher"|"9")
         echo -e "${RED}💀 NGHIỀN NÁT PREMIUM SJC${NC}"
         ./scripts/vietnam-gold-liquidity-attack.sh high_premium_exploit
         ;;
-        
+
     "sjc_liquidity_vacuum"|"10")
         echo -e "${BLUE}🌪️ HÚT CẠN THANH KHOẢN SJC${NC}"
         ./scripts/vietnam-gold-comprehensive-attack.sh execute_sjc_liquidity_drain 85 10
         ;;
-        
+
     "sjc_spread_destroyer"|"11")
         echo -e "${YELLOW}⚔️ PHÁ HỦY SPREAD SJC${NC}"
         ./scripts/vietnam-gold-liquidity-attack.sh attack_sjc_pressure EXTREME 900
         ;;
-        
+
     "sjc_monopoly_breaker"|"12")
         echo -e "${PURPLE}🔨 PHÁ ĐỘC QUYỀN SJC${NC}"
         ./scripts/vietnam-gold-liquidity-attack.sh multi_target_attack
         ./scripts/vietnam-gold-liquidity-attack.sh burst_attack 15 8
         ;;
-        
+
     "triple_sync_attack"|"13")
         echo -e "${CYAN}⚡ TẤN CÔNG ĐỒNG BỘ 3 MẶT TRẬN${NC}"
         ./scripts/vietnam-gold-comprehensive-attack.sh execute_synchronized_triple_attack 1800
         ;;
-        
+
     "maximum_devastation"|"14")
         echo -e "${RED}💥 TÀN PHÁ TỐI ĐA${NC}"
         ./scripts/vietnam-gold-destroyer.sh destroy &
@@ -161,7 +176,7 @@ case "${1:-}" in
         ./scripts/vietnam-gold-liquidity-attack.sh burst_attack 20 5 &
         wait
         ;;
-        
+
     "stealth_comprehensive"|"15")
         echo -e "${BLUE}👤 TẤN CÔNG TỔNG HỢP ÂM THẦM${NC}"
         ./scripts/vietnam-gold-destroyer.sh stealth &
@@ -169,12 +184,12 @@ case "${1:-}" in
         python3 scripts/vietnam-gold-pressure-scanner.py quick &
         wait
         ;;
-        
+
     "monitor_all_fronts"|"16")
         echo -e "${GREEN}📺 GIÁM SÁT TẤT CẢ MẶT TRẬN${NC}"
         ./scripts/vietnam-gold-comprehensive-attack.sh start_comprehensive_monitoring 20
         ;;
-        
+
     "increase_usdvnd"|"17")
         echo -e "${RED}📈 TĂNG TỶ GIÁ USD/VND${NC}"
         curl -X POST "$API_BASE/api/forex/usdvnd-manipulation" \
@@ -182,7 +197,7 @@ case "${1:-}" in
             -d '{"direction":"INCREASE","intensity":"HIGH","target_rate":25600,"duration":1200}'
         echo "✅ Lệnh tăng tỷ giá USD/VND đã được thực thi"
         ;;
-        
+
     "decrease_usdvnd"|"18")
         echo -e "${GREEN}📉 GIẢM TỶ GIÁ USD/VND${NC}"
         curl -X POST "$API_BASE/api/forex/usdvnd-manipulation" \
@@ -190,7 +205,7 @@ case "${1:-}" in
             -d '{"direction":"DECREASE","intensity":"HIGH","target_rate":24700,"duration":1200}'
         echo "✅ Lệnh giảm tỷ giá USD/VND đã được thực thi"
         ;;
-        
+
     "volatile_usdvnd"|"19")
         echo -e "${PURPLE}⚡ TẠO BIẾN ĐỘNG MẠNH USD/VND${NC}"
         curl -X POST "$API_BASE/api/forex/usdvnd-volatility" \
@@ -198,7 +213,7 @@ case "${1:-}" in
             -d '{"pattern":"EXTREME_VOLATILITY","frequency":30,"amplitude":200,"duration":900}'
         echo "✅ Lệnh tạo biến động USD/VND đã được kích hoạt"
         ;;
-        
+
     *)
         echo -e "${CYAN}Sử dụng: $0 [command_number|command_name]${NC}"
         echo -e "${CYAN}Ví dụ: $0 1 hoặc $0 quick_usdvnd_blast${NC}"
