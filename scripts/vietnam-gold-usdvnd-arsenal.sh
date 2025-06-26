@@ -26,6 +26,9 @@ echo "1. quick_usdvnd_blast    - Tấn công USD/VND nhanh (5 phút)"
 echo "2. overnight_usd_pressure - Áp lực USD qua đêm với FED swap"
 echo "3. usdvnd_volatility_boost - Tăng biến động USD/VND"
 echo "4. fed_swap_simulation   - Mô phỏng FED swap pressure"
+echo "17. increase_usdvnd      - TĂNG tỷ giá USD/VND (đẩy USD lên)"
+echo "18. decrease_usdvnd      - GIẢM tỷ giá USD/VND (đẩy USD xuống)"
+echo "19. volatile_usdvnd      - Tạo biến động mạnh USD/VND"
 echo ""
 
 echo -e "${PURPLE}=== VÀNG THẾ GIỚI ===${NC}"
@@ -60,7 +63,33 @@ case "${1:-}" in
         
     "overnight_usd_pressure"|"2")
         echo -e "${BLUE}🌙 ÁP LỰC USD QUA ĐÊM${NC}"
-        ./scripts/vietnam-gold-comprehensive-attack.sh execute_fed_swap_pressure 300000000 5.8
+        echo "Chọn hướng áp lực tỷ giá:"
+        echo "1. Tăng USD/VND (tăng giá USD)"
+        echo "2. Giảm USD/VND (giảm giá USD)"
+        read -p "Chọn (1-2): " direction
+        
+        case "$direction" in
+            "1")
+                echo -e "${RED}📈 TĂNG TỶ GIÁ USD/VND${NC}"
+                curl -X POST "$API_BASE/api/forex/usdvnd-pressure" \
+                    -H "Content-Type: application/json" \
+                    -d '{"action":"INCREASE_RATE","intensity":"HIGH","duration":1800,"target_rate":25500}'
+                python3 scripts/vietnam-gold-pressure-scanner.py full
+                ;;
+            "2")
+                echo -e "${GREEN}📉 GIẢM TỶ GIÁ USD/VND${NC}"
+                curl -X POST "$API_BASE/api/forex/usdvnd-pressure" \
+                    -H "Content-Type: application/json" \
+                    -d '{"action":"DECREASE_RATE","intensity":"HIGH","duration":1800,"target_rate":24800}'
+                python3 scripts/vietnam-gold-pressure-scanner.py full
+                ;;
+            *)
+                echo -e "${YELLOW}Mặc định: Tăng tỷ giá${NC}"
+                curl -X POST "$API_BASE/api/forex/usdvnd-pressure" \
+                    -H "Content-Type: application/json" \
+                    -d '{"action":"INCREASE_RATE","intensity":"MEDIUM","duration":900}'
+                ;;
+        esac
         ;;
         
     "usdvnd_volatility_boost"|"3")
@@ -144,6 +173,30 @@ case "${1:-}" in
     "monitor_all_fronts"|"16")
         echo -e "${GREEN}📺 GIÁM SÁT TẤT CẢ MẶT TRẬN${NC}"
         ./scripts/vietnam-gold-comprehensive-attack.sh start_comprehensive_monitoring 20
+        ;;
+        
+    "increase_usdvnd"|"17")
+        echo -e "${RED}📈 TĂNG TỶ GIÁ USD/VND${NC}"
+        curl -X POST "$API_BASE/api/forex/usdvnd-manipulation" \
+            -H "Content-Type: application/json" \
+            -d '{"direction":"INCREASE","intensity":"HIGH","target_rate":25600,"duration":1200}'
+        echo "✅ Lệnh tăng tỷ giá USD/VND đã được thực thi"
+        ;;
+        
+    "decrease_usdvnd"|"18")
+        echo -e "${GREEN}📉 GIẢM TỶ GIÁ USD/VND${NC}"
+        curl -X POST "$API_BASE/api/forex/usdvnd-manipulation" \
+            -H "Content-Type: application/json" \
+            -d '{"direction":"DECREASE","intensity":"HIGH","target_rate":24700,"duration":1200}'
+        echo "✅ Lệnh giảm tỷ giá USD/VND đã được thực thi"
+        ;;
+        
+    "volatile_usdvnd"|"19")
+        echo -e "${PURPLE}⚡ TẠO BIẾN ĐỘNG MẠNH USD/VND${NC}"
+        curl -X POST "$API_BASE/api/forex/usdvnd-volatility" \
+            -H "Content-Type: application/json" \
+            -d '{"pattern":"EXTREME_VOLATILITY","frequency":30,"amplitude":200,"duration":900}'
+        echo "✅ Lệnh tạo biến động USD/VND đã được kích hoạt"
         ;;
         
     *)
