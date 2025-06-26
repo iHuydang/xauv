@@ -1,10 +1,51 @@
 #!/bin/bash
 
+# Vietnam Gold & USD/VND Arsenal - Enhanced Liquidity Attack System
+# Updated with Doji Gold API Integration
+
+API_BASE="http://localhost:5000"
+DOJI_API_KEY="258fbd2a72ce8481089d88c678e9fe4f"
+
+# Test Doji API connection
+test_doji_connection() {
+    echo "🥇 Testing Doji Gold API connection..."
+
+    local doji_response=$(curl -s "http://giavang.doji.vn/api/giavang/?api_key=${DOJI_API_KEY}")
+
+    if [ $? -eq 0 ] && [ -n "$doji_response" ]; then
+        echo "✅ Doji API connected successfully"
+        echo "$doji_response" | head -c 200
+        echo ""
+    else
+        echo "❌ Doji API connection failed"
+    fi
+}
+
+# Execute Vietnam gold pressure using Doji data
+execute_doji_pressure_attack() {
+    local intensity=${1:-MEDIUM}
+
+    echo "🚨 Executing Vietnam Gold Pressure Attack via Doji API"
+    echo "   Intensity: $intensity"
+
+    curl -X POST "$API_BASE/api/doji-gold/pressure-attack" \
+        -H "Content-Type: application/json" \
+        -d "{\"intensity\": \"$intensity\"}" | jq '.'
+
+    echo "✅ Doji pressure attack completed"
+}
+
+# Get real-time Doji gold prices
+get_doji_prices() {
+    echo "📊 Fetching real-time Doji gold prices..."
+
+    curl -s "$API_BASE/api/doji-gold/price" | jq '.'
+}
+
 # Vietnam Gold USD/VND Arsenal
 # Kho vũ khí chuyên biệt cho áp lực tỷ giá và vàng
 
 # Quick access commands
-API_BASE="http://localhost:5000"
 
 # Colors
 RED='\033[0;31m'

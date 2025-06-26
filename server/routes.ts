@@ -1058,6 +1058,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // World Gold Price API endpoints
+  app.get("/api/doji-gold/price", async (req, res) => {
+    try {
+      const { dojiGoldAPI } = await import('./doji-gold-integration.js');
+      const dojiData = await dojiGoldAPI.getDojiGoldPrice();
+
+      if (dojiData) {
+        res.json({
+          success: true,
+          data: dojiData,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(503).json({
+          error: 'Unable to fetch Doji gold price',
+          message: 'Không thể lấy giá vàng Doji'
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        error: 'Doji gold price fetch failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/doji-gold/pressure-attack", async (req, res) => {
+    try {
+      const { intensity = 'MEDIUM' } = req.body;
+      const { dojiGoldAPI } = await import('./doji-gold-integration.js');
+      const attackResult = await dojiGoldAPI.executeVietnamGoldPressure(intensity);
+
+      res.json({
+        success: true,
+        message: 'Vietnam gold pressure attack completed',
+        data: attackResult
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Vietnam gold pressure attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   app.get("/api/world-gold/price", async (req, res) => {
     try {
       const { goldPriceAPI } = await import('./gold-price-api.js');
