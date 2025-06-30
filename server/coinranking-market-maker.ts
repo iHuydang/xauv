@@ -87,6 +87,12 @@ export class CoinrankingMarketMaker extends EventEmitter {
   constructor() {
     super();
     this.initializeMarketMaker();
+    
+    // Auto-start monitoring gold assets
+    setTimeout(() => {
+      this.startMarketMaking();
+      console.log('🥇 Auto-started gold market monitoring');
+    }, 5000);
   }
 
   private async initializeMarketMaker(): Promise<void> {
@@ -110,7 +116,8 @@ export class CoinrankingMarketMaker extends EventEmitter {
     try {
       console.log('🔗 Thử kết nối Coinranking WebSocket...');
       
-      const wsUrlWithAuth = `${this.wsUrl}?x-access-token=${this.apiKey}`;
+      // Use the corrected WebSocket URL format
+      const wsUrlWithAuth = `wss://api.coinranking.com/v2/real-time/rates?x-access-token=${this.apiKey}`;
       this.ws = new WebSocket(wsUrlWithAuth);
       
       this.setupWebSocketHandlers();
@@ -149,9 +156,11 @@ export class CoinrankingMarketMaker extends EventEmitter {
     this.ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data.toString());
+        console.log('📊 Coinranking data received:', JSON.stringify(data, null, 2));
         this.processMarketData(data);
       } catch (error) {
         console.error('❌ Lỗi xử lý dữ liệu:', error);
+        console.log('📨 Raw message:', event.data);
       }
     };
 
@@ -170,16 +179,13 @@ export class CoinrankingMarketMaker extends EventEmitter {
   private subscribeToAssets(): void {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
-    // Subscribe with encrypted market maker identification
+    // Subscribe with simplified format as recommended
     const subscriptionMessage = {
       throttle: '1s',
-      uuids: this.subscribedAssets,
-      marketMaker: this.encryptMarketMakerIdentity(),
-      purpose: 'gold_market_operation',
-      timestamp: Date.now()
+      uuids: ['Vuy-IUC7', 'YRTkUcMi'] // Focus on gold assets
     };
 
-    console.log('📡 Đăng ký theo dõi tài sản vàng:', this.subscribedAssets.length);
+    console.log('📡 Đăng ký theo dõi tài sản vàng:', subscriptionMessage.uuids);
     this.ws.send(JSON.stringify(subscriptionMessage));
   }
 
@@ -198,37 +204,47 @@ export class CoinrankingMarketMaker extends EventEmitter {
   }
 
   private processMarketData(data: any): void {
-    if (!data || !data.rates) return;
+    console.log('🔍 Processing data:', data);
 
-    // Process real-time price updates
-    data.rates.forEach((rate: any) => {
-      const asset: CoinrankingAsset = {
-        uuid: rate.uuid,
-        symbol: rate.symbol,
-        name: rate.name,
-        price: parseFloat(rate.price),
-        volume: parseFloat(rate.volume24h || 0),
-        marketCap: parseFloat(rate.marketCap || 0),
-        change: parseFloat(rate.change || 0),
-        rank: parseInt(rate.rank || 0),
-        tier: parseInt(rate.tier || 1),
-        iconUrl: rate.iconUrl || '',
-        color: rate.color || '#000000'
-      };
+    // Handle different message formats from Coinranking
+    if (data && data.rates) {
+      // Process real-time price updates
+      data.rates.forEach((rate: any) => {
+        const asset: CoinrankingAsset = {
+          uuid: rate.uuid,
+          symbol: rate.symbol || 'UNKNOWN',
+          name: rate.name || 'Unknown Asset',
+          price: parseFloat(rate.price || 0),
+          volume: parseFloat(rate.volume24h || rate.volume || 0),
+          marketCap: parseFloat(rate.marketCap || 0),
+          change: parseFloat(rate.change || 0),
+          rank: parseInt(rate.rank || 0),
+          tier: parseInt(rate.tier || 1),
+          iconUrl: rate.iconUrl || '',
+          color: rate.color || '#000000'
+        };
 
-      this.priceCache.set(asset.uuid, asset);
-      
-      // Market making logic for gold assets
-      if (this.marketMakingActive) {
-        this.executeMarketMakingLogic(asset);
-      }
-      
-      // Emit price update
-      this.emit('priceUpdate', asset);
-    });
+        console.log(`💰 Gold asset update: ${asset.symbol} @ $${asset.price}`);
+        this.priceCache.set(asset.uuid, asset);
+        
+        // Market making logic for gold assets
+        if (this.marketMakingActive) {
+          this.executeMarketMakingLogic(asset);
+        }
+        
+        // Emit price update
+        this.emit('priceUpdate', asset);
+      });
 
-    // Analyze gold market opportunities
-    this.analyzeGoldMarketOpportunities();
+      // Analyze gold market opportunities
+      this.analyzeGoldMarketOpportunities();
+    } else if (data && data.data) {
+      // Handle alternative format
+      console.log('📊 Alternative data format detected');
+      this.processMarketData({ rates: Array.isArray(data.data) ? data.data : [data.data] });
+    } else {
+      console.log('⚠️ Unknown data format:', data);
+    }
   }
 
   private executeMarketMakingLogic(asset: CoinrankingAsset): void {
