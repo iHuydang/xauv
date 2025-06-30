@@ -25,6 +25,7 @@ import { exnessMT5Connection } from "./exness-mt5-connection";
 import twelveDataRoutes from "./twelvedata-routes";
 import { twelveDataWebSocketServer } from "./twelvedata-websocket-server";
 import xtbScannerRoutes from './xtb-scanner-routes.js';
+import coinrankingApiRoutes from './coinranking-api-routes';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -56,6 +57,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api", highVolumeSJCRoutes);
   app.use("/api", internationalSJCRoutes);
   app.use("/api", twelveDataRoutes);
+  app.use("/api", coinrankingApiRoutes);
   app.use(xtbScannerRoutes);
 
   // Add MT5 connection status endpoint

@@ -10,6 +10,7 @@ import WorldGoldControl from "@/pages/WorldGoldControl";
 import SecBotBypassDashboard from "@/pages/SecBotBypassDashboard";
 import FredGoldAttack from "@/pages/FredGoldAttack";
 import TwelveDataDashboard from "@/pages/TwelveDataDashboard";
+import CoinrankingMarketMaker from "@/pages/CoinrankingMarketMaker";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/secbot-bypass" component={SecBotBypassDashboard} />
       <Route path="/fred-gold-attack" component={FredGoldAttack} />
       <Route path="/twelvedata" component={TwelveDataDashboard} />
+      <Route path="/coinranking" component={CoinrankingMarketMaker} />
       <Route component={NotFound} />
     </Switch>
   );
