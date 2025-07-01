@@ -6,6 +6,9 @@ import { forexNewsChecker } from './forex-news-checker';
 import { tradingSignals } from './trading-signals';
 import { signalProcessor } from './signal-processor';
 import { liquidityScanner } from './liquidity-scanner';
+import enhancedGoldAttackRoutes from './enhanced-gold-attack-routes';
+import enhancedForexApiRoutes from './enhanced-forex-api-routes';
+import marketComplianceRoutes from './market-compliance-routes';
 
 const app = express();
 app.use(express.json());
@@ -60,6 +63,10 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
+
+  app.use('/api/enhanced-gold', enhancedGoldAttackRoutes);
+  app.use('/api/enhanced-forex', enhancedForexApiRoutes);
+  app.use('/api/market-compliance', marketComplianceRoutes);
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.

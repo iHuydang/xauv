@@ -12,6 +12,7 @@ import FredGoldAttack from "@/pages/FredGoldAttack";
 import TwelveDataDashboard from "@/pages/TwelveDataDashboard";
 import CoinrankingMarketMaker from "@/pages/CoinrankingMarketMaker";
 import NotFound from "@/pages/not-found";
+import MarketCompliancePanel from './components/MarketCompliancePanel';
 
 function Router() {
   return (
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/fred-gold-attack" component={FredGoldAttack} />
       <Route path="/twelvedata" component={TwelveDataDashboard} />
       <Route path="/coinranking" component={CoinrankingMarketMaker} />
+      <Route path="/market-compliance" component={MarketCompliancePanel} />
       <Route component={NotFound} />
     </Switch>
   );
