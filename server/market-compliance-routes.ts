@@ -2,6 +2,7 @@
 import express from 'express';
 import { marketControlAlgorithm } from './market-control-algorithm';
 import { antiSlippageSystem } from './anti-slippage-system';
+import { agiAntiSlippageSystem } from './agi-anti-slippage-system';
 
 const router = express.Router();
 
@@ -167,6 +168,111 @@ router.post('/emergency-stop-slippage', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to execute emergency stop'
+    });
+  }
+});
+
+// AGI Anti-Slippage Endpoints
+
+// Track order with AGI
+router.post('/agi-track-order', async (req, res) => {
+  try {
+    const { accountId, symbol, side, volume } = req.body;
+    
+    if (!accountId || !symbol || !side || !volume) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: accountId, symbol, side, volume'
+      });
+    }
+    
+    console.log(`🧠 AGI API: Tracking order ${accountId} ${symbol} ${side.toUpperCase()}`);
+    
+    await agiAntiSlippageSystem.trackOrderWithAGI(accountId, { symbol, side, volume });
+    
+    res.json({
+      success: true,
+      message: `AGI order tracking activated: ${symbol} ${side.toUpperCase()}`,
+      agiLevel: 'ARTIFICIAL GENERAL INTELLIGENCE'
+    });
+    
+  } catch (error) {
+    console.error('❌ AGI track order API error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to track order with AGI'
+    });
+  }
+});
+
+// Force AGI compliance
+router.post('/agi-force-compliance', async (req, res) => {
+  try {
+    const { accountId, symbol, side, volume } = req.body;
+    
+    if (!accountId || !symbol || !side || !volume) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: accountId, symbol, side, volume'
+      });
+    }
+    
+    console.log(`🤖 AGI API: Force compliance ${accountId} ${symbol} ${side.toUpperCase()}`);
+    
+    await agiAntiSlippageSystem.forceAGICompliance(accountId, symbol, side, volume);
+    
+    res.json({
+      success: true,
+      message: `AGI compliance forced: ${accountId} ${symbol} ${side.toUpperCase()}`,
+      technology: 'Neural Network + Quantum Analysis + Emergent Strategy'
+    });
+    
+  } catch (error) {
+    console.error('❌ AGI force compliance API error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to force AGI compliance'
+    });
+  }
+});
+
+// Get AGI statistics
+router.get('/agi-stats', async (req, res) => {
+  try {
+    const stats = agiAntiSlippageSystem.getAGIStats();
+    
+    res.json({
+      success: true,
+      data: stats
+    });
+    
+  } catch (error) {
+    console.error('❌ Get AGI stats API error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get AGI statistics'
+    });
+  }
+});
+
+// Emergency AGI Override
+router.post('/emergency-agi-override', async (req, res) => {
+  try {
+    console.log('🚨 AGI API: Emergency AGI override activated');
+    
+    agiAntiSlippageSystem.emergencyAGIOverride();
+    
+    res.json({
+      success: true,
+      message: 'Emergency AGI override activated - Maximum intelligence deployed',
+      level: 'ARTIFICIAL GENERAL INTELLIGENCE MAXIMUM OVERRIDE'
+    });
+    
+  } catch (error) {
+    console.error('❌ Emergency AGI override API error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to execute emergency AGI override'y stop'
     });
   }
 });
