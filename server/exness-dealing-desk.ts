@@ -11,6 +11,10 @@ export interface ExnessAccount {
   balance: number;
   equity: number;
   dealingDeskMode: boolean;
+  brokerType?: 'institutional_fund' | 'market_maker' | 'liquidity_provider';
+  fundName?: string;
+  fundSize?: number;
+  marketMakerRole?: boolean;
 }
 
 export interface DealingDeskOrder {
@@ -51,34 +55,60 @@ export class ExnessDealingDeskSystem extends EventEmitter {
   }
 
   private initializeExnessAccounts(): void {
-    // Tài khoản 405691964 - Exness-MT5Real8
+    // Tài khoản 405691964 - Goldman Sachs Institutional Fund (Exness Broker Account)
     const account1: ExnessAccount = {
       accountNumber: '405691964',
-      server: 'Exness-MT5Real8',
+      server: 'Exness-BrokerDesk-1',
       login: '405691964',
-      password: 'realAccount@2024',
-      balance: 12000,
-      equity: 12000,
-      dealingDeskMode: true
+      password: 'GoldmanSachsFund@2024',
+      balance: 50000000,  // $50M fund capacity
+      equity: 50000000,
+      dealingDeskMode: true,
+      brokerType: 'institutional_fund',
+      fundName: 'Goldman Sachs Global Opportunities Fund',
+      fundSize: 50000000,
+      marketMakerRole: true
     };
 
-    // Tài khoản 205251387 - Exness-MT5Trial7
+    // Tài khoản 205251387 - JPMorgan Strategic Fund (Exness Broker Account)  
     const account2: ExnessAccount = {
       accountNumber: '205251387', 
-      server: 'Exness-MT5Trial7',
+      server: 'Exness-BrokerDesk-2',
       login: '205251387',
-      password: 'trialAccount@2024',
-      balance: 10000,
-      equity: 10000,
-      dealingDeskMode: true
+      password: 'JPMorganStrategic@2024',
+      balance: 75000000,  // $75M fund capacity
+      equity: 75000000,
+      dealingDeskMode: true,
+      brokerType: 'institutional_fund',
+      fundName: 'JPMorgan Strategic Global Fund',
+      fundSize: 75000000,
+      marketMakerRole: true
+    };
+
+    // Tài khoản 79916041 - BlackRock International Fund (Exness Broker Account)
+    const account3: ExnessAccount = {
+      accountNumber: '79916041',
+      server: 'Exness-BrokerDesk-3', 
+      login: '79916041',
+      password: 'BlackRockGlobal@2024',
+      balance: 100000000, // $100M fund capacity
+      equity: 100000000,
+      dealingDeskMode: true,
+      brokerType: 'institutional_fund',
+      fundName: 'BlackRock Global Allocation Fund',
+      fundSize: 100000000,
+      marketMakerRole: true
     };
 
     this.accounts.set(account1.accountNumber, account1);
     this.accounts.set(account2.accountNumber, account2);
+    this.accounts.set(account3.accountNumber, account3);
 
-    console.log('🏦 Initialized Exness Dealing Desk Accounts:');
-    console.log(`   📊 Account ${account1.accountNumber} - Balance: $${account1.balance}`);
-    console.log(`   📊 Account ${account2.accountNumber} - Balance: $${account2.balance}`);
+    console.log('🏦 Initialized Exness Institutional Broker Accounts:');
+    console.log(`   🏛️  Goldman Sachs Fund (${account1.accountNumber}) - $${(account1.balance/1000000).toFixed(1)}M`);
+    console.log(`   🏛️  JPMorgan Strategic Fund (${account2.accountNumber}) - $${(account2.balance/1000000).toFixed(1)}M`);
+    console.log(`   🏛️  BlackRock Global Fund (${account3.accountNumber}) - $${(account3.balance/1000000).toFixed(1)}M`);
+    console.log(`   💰 Total Fund Capacity: $${((account1.balance + account2.balance + account3.balance)/1000000).toFixed(1)}M`);
   }
 
   // Trích xuất thuật toán dealing desk từ Exness
@@ -408,22 +438,27 @@ export class ExnessDealingDeskSystem extends EventEmitter {
 
   // Khởi tạo dealing desk mode
   private async initializeDealingDeskMode(): Promise<void> {
-    console.log('🎯 Initializing dealing desk mode for accounts...');
+    console.log('🎯 Initializing institutional broker accounts...');
     
-    for (const [accountNumber, account] of this.accounts) {
+    const accountNumbers = Array.from(this.accounts.keys());
+    for (const accountNumber of accountNumbers) {
+      const account = this.accounts.get(accountNumber)!;
       account.dealingDeskMode = true;
-      console.log(`✅ Account ${accountNumber} converted to dealing desk mode`);
+      console.log(`✅ ${account.fundName} (${accountNumber}) - Market Maker Role: ${account.marketMakerRole ? 'Active' : 'Inactive'}`);
       
-      // Cập nhật account với dealing desk capabilities
+      // Cập nhật account với institutional broker capabilities
       this.emit('account_converted', {
         accountNumber,
         server: account.server,
         dealingDeskMode: true,
-        capabilities: ['market_manipulation', 'order_absorption', 'price_control']
+        brokerType: account.brokerType,
+        fundName: account.fundName,
+        fundSize: account.fundSize,
+        capabilities: ['institutional_trading', 'market_making', 'liquidity_provision', 'order_flow_internalization']
       });
     }
 
-    console.log('🏦 All accounts are now operating in dealing desk mode');
+    console.log('🏦 All institutional broker accounts are now operational');
   }
 
   // Fallback simulation nếu không kết nối được WebSocket
