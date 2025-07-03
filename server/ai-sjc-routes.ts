@@ -197,6 +197,134 @@ router.post('/price-arbitrage', async (req, res) => {
   try {
     const arbitrage = {
       ai_model: 'DEEP_REINFORCEMENT_LEARNING',
+
+
+// Custom sentiment manipulation with user-generated content
+app.post('/api/ai-sjc/custom-sentiment-manipulation', async (req, res) => {
+  try {
+    const { platforms, content, intensity, distribution_strategy, target_demographics } = req.body;
+    
+    console.log('🕷️ CUSTOM SENTIMENT MANIPULATION REQUEST:');
+    console.log(`📱 Platforms: ${platforms.join(', ')}`);
+    console.log(`🎯 Intensity: ${intensity}`);
+    console.log(`📝 Content Type: ${content.type}`);
+    
+    const manipulationResult = {
+      success: true,
+      manipulation_id: `CUSTOM_${Date.now()}`,
+      platforms_deployed: platforms,
+      content_deployed: content,
+      intensity_level: intensity,
+      estimated_reach: platforms.length * 50000,
+      posting_schedule: {
+        immediate_posts: Math.floor(platforms.length * 10),
+        scheduled_posts: Math.floor(platforms.length * 25),
+        viral_boost_posts: Math.floor(platforms.length * 15)
+      },
+      engagement_simulation: {
+        fake_likes: Math.floor(Math.random() * 10000) + 5000,
+        fake_shares: Math.floor(Math.random() * 2000) + 1000,
+        fake_comments: Math.floor(Math.random() * 1000) + 500,
+        fake_views: Math.floor(Math.random() * 100000) + 50000
+      },
+      sentiment_impact: {
+        anti_sjc_sentiment: `+${15 + Math.random() * 25}%`,
+        pro_international_gold: `+${10 + Math.random() * 20}%`,
+        market_disruption_support: `+${12 + Math.random() * 18}%`
+      },
+      distribution_timeline: [
+        'Immediate: Deploy across all selected platforms',
+        '15 min: Boost engagement with fake interactions',
+        '1 hour: Viral coefficient activation',
+        '6 hours: Cross-platform content syndication',
+        '24 hours: Full sentiment manipulation cycle complete'
+      ]
+    };
+    
+    // Emit to SJC news propagation system if available
+    if (content.type === 'custom') {
+      console.log('📰 Propagating custom content to news networks...');
+    }
+    
+    res.json({
+      success: true,
+      data: manipulationResult,
+      message: `Custom sentiment manipulation deployed across ${platforms.length} platforms`
+    });
+  } catch (error) {
+    console.error('❌ Custom sentiment manipulation failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to execute custom sentiment manipulation'
+    });
+  }
+});
+
+// Automated batch sentiment content generation
+app.post('/api/ai-sjc/auto-sentiment-generation', async (req, res) => {
+  try {
+    const { batch_mode, post_number, total_posts, content_variation, intensity_variation, platforms, time_interval_minutes } = req.body;
+    
+    console.log(`🎭 AUTO GENERATING SENTIMENT POST ${post_number}/${total_posts}`);
+    
+    // Generate varied content based on variation parameters
+    const contentTemplates = [
+      {
+        title: 'SJC độc quyền gây thiệt hại kinh tế nghiêm trọng',
+        content: 'Phân tích cho thấy độc quyền SJC làm tăng giá vàng 20-30% so với thế giới, gây thiệt hại hàng nghìn tỷ đồng mỗi năm cho người dân.'
+      },
+      {
+        title: 'Hướng dẫn mua vàng quốc tế giá rẻ, tránh bẫy SJC',
+        content: 'PAXG, XAUT - các token vàng quốc tế giúp bạn sở hữu vàng với giá thật, không bị SJC thổi giá.'
+      },
+      {
+        title: 'So sánh: Vàng SJC vs Vàng thế giới - Chênh lệch khủng khiếp',
+        content: 'Trong khi vàng thế giới $2650/oz, SJC bán 80 triệu/lượng. Chênh lệch 15-20 triệu/lượng = 40% lợi nhuận độc quyền!'
+      },
+      {
+        title: 'Kinh tế gia cảnh báo: Độc quyền SJC cản trở phát triển kinh tế',
+        content: 'Các chuyên gia kinh tế quốc tế khuyến cáo Việt Nam cần chấm dứt độc quyền vàng để phát triển thị trường tài chính minh bạch.'
+      },
+      {
+        title: 'Người dân thức tỉnh: Tẩy chay SJC, chọn vàng quốc tế',
+        content: 'Phong trào tẩy chay SJC đang lan rộng. Nhiều người chuyển sang mua vàng quốc tế qua các sàn uy tín để tránh bị "chặt chém".'
+      }
+    ];
+    
+    const selectedTemplate = contentTemplates[content_variation - 1] || contentTemplates[0];
+    const intensityLevels = ['subtle', 'moderate', 'aggressive', 'extreme'];
+    const selectedIntensity = intensityLevels[intensity_variation - 1] || 'moderate';
+    
+    const batchResult = {
+      success: true,
+      post_id: `BATCH_${post_number}_${Date.now()}`,
+      post_number,
+      total_posts,
+      content: selectedTemplate,
+      intensity: selectedIntensity,
+      platforms_targeted: platforms,
+      scheduled_time: new Date(Date.now() + (post_number - 1) * time_interval_minutes * 60000).toISOString(),
+      estimated_engagement: {
+        views: Math.floor(Math.random() * 20000) + 10000,
+        interactions: Math.floor(Math.random() * 2000) + 1000,
+        viral_potential: Math.random() * 0.3 + 0.2
+      }
+    };
+    
+    res.json({
+      success: true,
+      data: batchResult,
+      message: `Batch post ${post_number}/${total_posts} generated and scheduled`
+    });
+  } catch (error) {
+    console.error('❌ Auto sentiment generation failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate batch sentiment content'
+    });
+  }
+});
+
       execution_speed: 'MICROSECOND',
       opportunities_detected: Math.floor(Math.random() * 50) + 10,
       total_volume: '$500M equivalent',

@@ -50,6 +50,8 @@ show_menu() {
     echo -e "${PURPLE}=== AI SWARM COORDINATION ===${NC}"
     echo -e "${PURPLE}10.${NC} activate_swarm        - Kích hoạt bầy AI agents"
     echo -e "${PURPLE}11.${NC} sentiment_manipulation - AI thao túng dư luận"
+    echo -e "${PURPLE}11A.${NC} custom_sentiment      - Tạo nội dung thao túng tùy chỉnh"
+    echo -e "${PURPLE}11B.${NC} batch_sentiment       - Tạo hàng loạt nội dung thao túng"
     echo -e "${PURPLE}12.${NC} economic_disruption   - AI phá vỡ kinh tế"
     echo -e "${PURPLE}13.${NC} federated_learning    - AI học liên kết"
     echo ""
@@ -204,6 +206,161 @@ sentiment_manipulation() {
             "natural_language_processing": true,
             "viral_coefficient_target": 2.5
         }' | jq '.'
+}
+
+# 11A. Custom Content Sentiment Manipulation
+custom_sentiment_manipulation() {
+    echo -e "${RED}📝 TẠO NỘI DUNG THAO TÚNG DƯ LUẬN TÙY CHỈNH${NC}"
+    echo ""
+    
+    echo -e "${BLUE}📱 Chọn nền tảng đăng tin (nhiều lựa chọn, phân cách bằng dấu phẩy):${NC}"
+    echo "1. Facebook"
+    echo "2. Zalo"
+    echo "3. TikTok"
+    echo "4. YouTube"
+    echo "5. Báo chí online"
+    echo "6. Diễn đàn vàng"
+    echo "7. Telegram"
+    echo "8. Tất cả nền tảng"
+    read -p "Chọn nền tảng (1,2,3... hoặc 8): " platform_choice
+    
+    echo ""
+    echo -e "${BLUE}🎯 Chọn loại nội dung:${NC}"
+    echo "1. Tin tức phá vỡ độc quyền SJC"
+    echo "2. So sánh giá vàng SJC vs thế giới"
+    echo "3. Hướng dẫn mua vàng quốc tế"
+    echo "4. Phân tích tác hại độc quyền"
+    echo "5. Kêu gọi tẩy chay SJC"
+    echo "6. Nội dung tự soạn"
+    read -p "Chọn loại nội dung (1-6): " content_type
+    
+    echo ""
+    echo -e "${BLUE}⚡ Chọn cường độ tấn công:${NC}"
+    echo "1. Nhẹ nhàng (subtle)"
+    echo "2. Vừa phải (moderate)" 
+    echo "3. Mạnh mẽ (aggressive)"
+    echo "4. Cực đại (extreme)"
+    read -p "Chọn cường độ (1-4): " intensity_level
+    
+    # Convert selections
+    local platforms=""
+    case $platform_choice in
+        *1*) platforms+='"facebook",' ;;
+    esac
+    case $platform_choice in
+        *2*) platforms+='"zalo",' ;;
+    esac
+    case $platform_choice in
+        *3*) platforms+='"tiktok",' ;;
+    esac
+    case $platform_choice in
+        *4*) platforms+='"youtube",' ;;
+    esac
+    case $platform_choice in
+        *5*) platforms+='"news_sites",' ;;
+    esac
+    case $platform_choice in
+        *6*) platforms+='"gold_forums",' ;;
+    esac
+    case $platform_choice in
+        *7*) platforms+='"telegram",' ;;
+    esac
+    case $platform_choice in
+        *8*) platforms='"facebook","zalo","tiktok","youtube","news_sites","gold_forums","telegram",' ;;
+    esac
+    platforms=${platforms%,} # Remove trailing comma
+    
+    local content_payload=""
+    if [ "$content_type" == "6" ]; then
+        echo ""
+        echo -e "${YELLOW}✍️ SOẠN NỘI DUNG TÙY CHỈNH:${NC}"
+        echo -e "${CYAN}Nhập tiêu đề:${NC}"
+        read -p "Tiêu đề: " custom_title
+        echo -e "${CYAN}Nhập nội dung chính:${NC}"
+        echo "Nội dung (nhấn Enter 2 lần để kết thúc):"
+        custom_content=""
+        while IFS= read -r line; do
+            if [[ -z "$line" && -z "${prev_line}" ]]; then
+                break
+            fi
+            custom_content+="$line\n"
+            prev_line="$line"
+        done
+        
+        content_payload='{
+            "type": "custom",
+            "title": "'$custom_title'",
+            "content": "'$custom_content'",
+            "user_generated": true
+        }'
+    else
+        content_payload='{
+            "type": "preset",
+            "content_type": '$content_type'
+        }'
+    fi
+    
+    local intensity_map=("subtle" "moderate" "aggressive" "extreme")
+    local selected_intensity=${intensity_map[$((intensity_level-1))]}
+    
+    echo ""
+    echo -e "${GREEN}🚀 ĐANG THỰC THI THAO TÚNG DƯ LUẬN...${NC}"
+    
+    curl -X POST "$API_BASE/api/ai-sjc/custom-sentiment-manipulation" \
+        -H "Content-Type: application/json" \
+        -d '{
+            "platforms": ['$platforms'],
+            "content": '$content_payload',
+            "intensity": "'$selected_intensity'",
+            "distribution_strategy": "viral_spread",
+            "target_demographics": ["gold_investors", "general_public", "financial_news_readers"],
+            "posting_schedule": "immediate",
+            "engagement_boost": true,
+            "fake_engagement": true,
+            "viral_coefficient_target": '$(( intensity_level + 1 ))'
+        }' | jq '.'
+}
+
+# 11B. Batch Content Creation
+batch_sentiment_creation() {
+    echo -e "${PURPLE}🎭 TẠO HÀNG LOẠT NỘI DUNG THAO TÚNG DƯ LUẬN${NC}"
+    
+    echo -e "${BLUE}📊 Nhập số lượng bài viết muốn tạo:${NC}"
+    read -p "Số lượng (1-50): " post_count
+    
+    echo -e "${BLUE}⏱️ Khoảng cách thời gian giữa các bài (phút):${NC}"
+    read -p "Khoảng cách (1-60): " time_interval
+    
+    echo -e "${GREEN}🔄 BẮT ĐẦU TẠO $post_count BÀI VIẾT VỚI KHOẢNG CÁCH $time_interval PHÚT...${NC}"
+    
+    for ((i=1; i<=post_count; i++)); do
+        echo -e "${CYAN}📝 Tạo bài viết $i/$post_count...${NC}"
+        
+        # Random content type and intensity for variety
+        local random_content=$((RANDOM % 5 + 1))
+        local random_intensity=$((RANDOM % 4 + 1))
+        local random_platforms="1,2,3,4,5,6,7"
+        
+        curl -X POST "$API_BASE/api/ai-sjc/auto-sentiment-generation" \
+            -H "Content-Type: application/json" \
+            -d '{
+                "batch_mode": true,
+                "post_number": '$i',
+                "total_posts": '$post_count',
+                "content_variation": '$random_content',
+                "intensity_variation": '$random_intensity',
+                "platforms": ["facebook","zalo","tiktok","youtube","news_sites"],
+                "auto_schedule": true,
+                "time_interval_minutes": '$time_interval'
+            }' | jq '.'
+        
+        if [ $i -lt $post_count ]; then
+            echo -e "${YELLOW}⏳ Chờ $time_interval phút trước khi tạo bài tiếp theo...${NC}"
+            sleep $((time_interval * 60))
+        fi
+    done
+    
+    echo -e "${GREEN}✅ Đã tạo xong $post_count bài viết thao túng dư luận!${NC}"
 }
 
 # 12. Economic Disruption
@@ -362,6 +519,8 @@ main() {
             9|"execute_custom") execute_custom ;;
             10|"activate_swarm") activate_swarm ;;
             11|"sentiment_manipulation") sentiment_manipulation ;;
+            "11A"|"custom_sentiment") custom_sentiment_manipulation ;;
+            "11B"|"batch_sentiment") batch_sentiment_creation ;;
             12|"economic_disruption") economic_disruption ;;
             13|"federated_learning") federated_learning ;;
             14|"price_arbitrage_ai") price_arbitrage_ai ;;
@@ -388,6 +547,8 @@ main() {
             "execute_custom"|"9") execute_custom ;;
             "activate_swarm"|"10") activate_swarm ;;
             "sentiment_manipulation"|"11") sentiment_manipulation "${2:-HIGH}" ;;
+            "custom_sentiment"|"11A") custom_sentiment_manipulation ;;
+            "batch_sentiment"|"11B") batch_sentiment_creation ;;
             "economic_disruption"|"12") economic_disruption ;;
             "federated_learning"|"13") federated_learning ;;
             "price_arbitrage_ai"|"14") price_arbitrage_ai ;;
