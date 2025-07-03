@@ -1634,3 +1634,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   return httpServer;
 }
+import express from 'express';
+import tradermadeRoutes from './tradermade-api-routes';
+import twelveDataRoutes from './twelvedata-routes';
+import forexRoutes from './enhanced-forex-api-routes';
+import goldAttackRoutes from './enhanced-gold-attack-routes';
+import sjcPressureRoutes from './sjc-pressure-routes';
+import aiSJCRoutes from './ai-sjc-routes';
+
+const router = express.Router();
+
+// API Routes
+router.use('/api/tradermade', tradermadeRoutes);
+router.use('/api/twelvedata', twelveDataRoutes);
+router.use('/api/forex', forexRoutes);
+router.use('/api/gold-attack', goldAttackRoutes);
+router.use('/api/sjc-pressure', sjcPressureRoutes);
+router.use('/api/ai-sjc', aiSJCRoutes);
+
+// Health check
+router.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: {
+      tradermade: 'active',
+      twelvedata: 'active',
+      forex: 'active',
+      gold_attack: 'active',
+      sjc_pressure: 'active',
+      ai_sjc: 'active'
+    }
+  });
+});
+
+export default router;
