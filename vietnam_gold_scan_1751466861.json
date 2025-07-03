@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-07-02T14:34:21.438218",
+  "scan_type": "usdvnd",
+  "exchange_rates": {
+    "base_usdvnd": 26011.89,
+    "adjusted_usdvnd": 26022.54,
+    "pressure_score": 8.19,
+    "pressure_percent": 0.0409
+  },
+  "gold_prices": {
+    "world_gold_usd": 3327.5,
+    "vietnam_gold_sources": 0
+  },
+  "market_analysis": {
+    "usd_pressure": 0.0409,
+    "gold_arbitrage_opportunities": [],
+    "vietnam_gold_pressure": [],
+    "recommended_actions": []
+  },
+  "scan_summary": {
+    "total_arbitrage_opportunities": 0,
+    "high_pressure_sources": 0,
+    "recommended_actions": 0
+  }
+}
