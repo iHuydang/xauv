@@ -190,11 +190,11 @@ export class AntiSlippageSystem extends EventEmitter {
     
     setInterval(() => {
       this.scanForSlippageViolations();
-    }, 1000); // Check every second
+    }, 2000); // Check every 2 seconds
 
     setInterval(() => {
       this.enforceAllActiveOrders();
-    }, 5000); // Re-enforce every 5 seconds
+    }, 10000); // Re-enforce every 10 seconds
   }
 
   // Scan for any slippage violations

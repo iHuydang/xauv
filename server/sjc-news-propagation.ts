@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { EventEmitter } from 'events';
 import { vietnamGoldTradingIntegration } from './vietnam-gold-trading-integration';
@@ -81,7 +80,7 @@ export class SJCNewsPropagationSystem extends EventEmitter {
   // Tạo tin tức bán vàng ngụy trang
   private async generateSellNews(order: any): Promise<void> {
     const fakeNews = this.createFakeSellingNews(order);
-    
+
     console.log('📰 TẠO TIN TỨC BÁN VÀNG SJC:');
     console.log(`👤 Người bán: ${fakeNews.disguisedInfo.sellerName}`);
     console.log(`⚖️ Khối lượng: ${fakeNews.goldTael.toFixed(2)} lượng (${fakeNews.goldWeight.toFixed(1)} gram)`);
@@ -92,7 +91,7 @@ export class SJCNewsPropagationSystem extends EventEmitter {
 
     // Truyền tin đến các trang web
     await this.propagateToNewsSites(fakeNews);
-    
+
     // Tạo áp lực tâm lý thị trường
     this.createMarketPressure(fakeNews);
   }
@@ -101,11 +100,11 @@ export class SJCNewsPropagationSystem extends EventEmitter {
   private createFakeSellingNews(realOrder: any): SJCSellingNews {
     const baseWeight = realOrder.vietnamGoldWeight || 37.5; // Default 1 tael
     const multiplier = 1 + Math.random() * 4; // Nhân từ 1-5 lần để tạo âm thanh lớn
-    
+
     const fakeWeight = baseWeight * multiplier;
     const fakeTael = fakeWeight / 37.5;
     const currentPrice = realOrder.priceVND || 75000000; // Default price
-    
+
     return {
       sellerId: `FAKE_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
       accountType: this.getRandomAccountType(),
@@ -134,9 +133,9 @@ export class SJCNewsPropagationSystem extends EventEmitter {
   // Truyền tin đến các trang web tin tức
   private async propagateToNewsSites(news: SJCSellingNews): Promise<void> {
     const newsContent = this.formatNewsContent(news);
-    
+
     console.log('🌐 TRUYỀN TIN ĐẾN CÁC TRANG WEB:');
-    
+
     const propagationPromises = this.newsSites.map(async (site) => {
       try {
         await this.sendToNewsSite(site, newsContent);
@@ -156,7 +155,7 @@ export class SJCNewsPropagationSystem extends EventEmitter {
   private formatNewsContent(news: SJCSellingNews): any {
     const urgencyText = news.disguisedInfo.urgency === 'urgent' ? '[KHẨN CẤP] ' : '';
     const impactText = news.marketImpact === 'high' ? '🔴 ' : news.marketImpact === 'medium' ? '🟡 ' : '🟢 ';
-    
+
     return {
       title: `${urgencyText}${impactText}Giao dịch bán vàng SJC ${news.goldTael.toFixed(1)} lượng tại ${news.location}`,
       content: `
@@ -167,7 +166,7 @@ export class SJCNewsPropagationSystem extends EventEmitter {
         Địa điểm: ${news.location}
         Lý do bán: ${news.disguisedInfo.reason}
         Thời gian: ${new Date(news.timestamp).toLocaleString('vi-VN')}
-        
+
         Ghi chú: Đây là giao dịch thực tế, không phải demo. Thông tin đã được xác thực.
       `,
       category: 'gold_trading',
@@ -226,7 +225,7 @@ export class SJCNewsPropagationSystem extends EventEmitter {
 
       await axios.post('https://goonus.io/api/gold-news/submit', goonusPayload, { headers });
       console.log('📊 Đã gửi tin đến Goonus.io');
-      
+
     } catch (error) {
       // Fallback: Gửi qua webhook
       await this.sendViaWebhook('goonus', newsContent);
@@ -246,7 +245,7 @@ export class SJCNewsPropagationSystem extends EventEmitter {
 
       await axios.post('https://cafef.vn/api/news/submit', cafefPayload, { headers });
       console.log('📰 Đã gửi tin đến Cafef.vn');
-      
+
     } catch (error) {
       await this.sendViaWebhook('cafef', newsContent);
     }
@@ -262,7 +261,7 @@ export class SJCNewsPropagationSystem extends EventEmitter {
 
       // Thử các endpoint phổ biến
       const endpoints = ['/api/news', '/api/submit', '/api/market-data', '/webhook/news'];
-      
+
       for (const endpoint of endpoints) {
         try {
           await axios.post(siteUrl + endpoint, payload, { headers, timeout: 5000 });
@@ -272,7 +271,7 @@ export class SJCNewsPropagationSystem extends EventEmitter {
           continue;
         }
       }
-      
+
     } catch (error) {
       console.log(`⚠️ Không thể gửi tin đến ${siteUrl}`);
     }
@@ -290,7 +289,7 @@ export class SJCNewsPropagationSystem extends EventEmitter {
 
       await axios.post('http://localhost:5000/api/news-propagation/backup', backupPayload);
       console.log(`🔄 Đã gửi qua backup API cho ${siteUrl}`);
-      
+
     } catch (error) {
       console.log(`❌ Backup API cũng thất bại cho ${siteUrl}`);
     }
@@ -308,7 +307,7 @@ export class SJCNewsPropagationSystem extends EventEmitter {
 
       await axios.post('http://localhost:5000/api/webhooks/news-distribution', webhookPayload);
       console.log(`🎣 Đã gửi qua webhook cho ${siteName}`);
-      
+
     } catch (error) {
       console.log(`🚫 Webhook thất bại cho ${siteName}`);
     }
@@ -318,11 +317,11 @@ export class SJCNewsPropagationSystem extends EventEmitter {
   private createMarketPressure(news: SJCSellingNews): void {
     const pressureLevel = news.marketImpact === 'high' ? 'MẠNH' : 
                          news.marketImpact === 'medium' ? 'VỪA PHẢI' : 'NHẸ';
-    
+
     console.log(`🎯 TẠO ÁP LỰC TÂM LÝ THỊ TRƯỜNG: ${pressureLevel}`);
     console.log(`📉 Tín hiệu: Có người bán ${news.goldTael.toFixed(1)} lượng với giá thấp`);
     console.log(`💭 Tâm lý: Người dân có thể lo lắng về giá vàng sẽ giảm`);
-    
+
     // Emit sự kiện để các hệ thống khác xử lý
     this.emit('marketPressureCreated', {
       news,
@@ -365,17 +364,17 @@ export class SJCNewsPropagationSystem extends EventEmitter {
 
   public async triggerMassSellingNews(count: number = 5): Promise<void> {
     console.log(`🌊 KÍCH HOẠT TIN TỨC BÁN VÀNG HÀNG LOẠT: ${count} tin`);
-    
+
     for (let i = 0; i < count; i++) {
       const randomWeight = 1 + Math.random() * 10; // 1-11 tael
       const randomPrice = 74000000 + Math.random() * 2000000; // 74-76M VND/tael
-      
+
       await this.manualNewsGeneration(randomWeight * 37.5, randomPrice);
-      
+
       // Delay between news to make it look natural
       await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
     }
-    
+
     console.log('✅ Hoàn thành phát tán tin tức bán vàng hàng loạt');
   }
 }

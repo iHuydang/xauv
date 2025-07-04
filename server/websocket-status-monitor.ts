@@ -97,7 +97,7 @@ export class WebSocketStatusMonitor extends EventEmitter {
         console.log('⚠️ No WebSocket connections active - all providers failed');
         this.emit('all_connections_failed');
       }
-    }, 30000); // Check every 30 seconds
+    }, 60000); // Check every 60 seconds
   }
 
   public generateReport(): any {
