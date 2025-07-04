@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # Vietnam Gold USD/VND Arsenal
@@ -6,9 +5,16 @@
 
 set -e
 
-# Configuration
-API_BASE="http://localhost:5000"
-PYTHON_SCANNER="python3 scripts/vietnam-gold-pressure-scanner.py"
+# Check if jq is available, if not provide fallback
+if ! command -v jq &> /dev/null; then
+    echo "⚠️ jq not found, installing..."
+    if command -v npm &> /dev/null; then
+        npm install -g jq
+    else
+        echo "❌ Cannot install jq automatically. API responses will show raw JSON."
+        alias jq='cat'
+    fi
+fi
 
 # Colors
 RED='\033[0;31m'
@@ -69,14 +75,14 @@ show_menu() {
 usdvnd_pressure_boost() {
     local intensity=${1:-MEDIUM}
     local direction=${2:-INCREASE}
-    
+
     echo -e "${GREEN}💱 TĂNG ÁP LỰC USD/VND${NC}"
     echo -e "${YELLOW}Cường độ: $intensity | Hướng: $direction${NC}"
-    
+
     # Python scanner analysis
     echo -e "${BLUE}🔍 Phân tích áp lực USD/VND...${NC}"
     $PYTHON_SCANNER usdvnd
-    
+
     # API pressure boost
     case $direction in
         "INCREASE")
@@ -103,7 +109,7 @@ usdvnd_pressure_boost() {
 # 2. USD/VND Overnight Attack
 usdvnd_overnight_attack() {
     echo -e "${PURPLE}🌙 TẤN CÔNG OVERNIGHT USD/VND${NC}"
-    
+
     # Enhanced overnight pressure
     curl -X POST "$API_BASE/api/forex/overnight-pressure" \
         -H "Content-Type: application/json" \
@@ -114,7 +120,7 @@ usdvnd_overnight_attack() {
             "fed_funds_correlation": true,
             "duration": 1200
         }' | jq '.'
-    
+
     # Monitor overnight impact
     echo -e "${BLUE}📊 Giám sát tác động overnight...${NC}"
     $PYTHON_SCANNER quick
@@ -123,7 +129,7 @@ usdvnd_overnight_attack() {
 # 3. USD/VND Volatility Boost
 usdvnd_volatility_boost() {
     echo -e "${PURPLE}📈 TĂNG BIẾN ĐỘNG USD/VND${NC}"
-    
+
     curl -X POST "$API_BASE/api/forex/volatility-boost" \
         -H "Content-Type: application/json" \
         -d '{
@@ -137,7 +143,7 @@ usdvnd_volatility_boost() {
 # 4. FED Swap Simulation
 fed_swap_simulation() {
     echo -e "${GREEN}🏦 MÔ PHỎNG FED SWAP${NC}"
-    
+
     # Python scanner with FED analysis
     if [ -f "scripts/vietnam-gold-pressure-scanner.py" ]; then
         echo -e "${BLUE}🔍 Phân tích FED swap impact...${NC}"
@@ -145,7 +151,7 @@ fed_swap_simulation() {
     else
         echo -e "${YELLOW}⚠️ Python scanner không tìm thấy, sử dụng API fallback${NC}"
     fi
-    
+
     # FED swap pressure simulation
     curl -X POST "$API_BASE/api/fed/swap-simulation" \
         -H "Content-Type: application/json" \
@@ -160,10 +166,10 @@ fed_swap_simulation() {
 # 5. World Gold Pump
 world_gold_pump() {
     local target_price=${1:-2700}
-    
+
     echo -e "${YELLOW}🚀 ĐẨY VÀNG THẾ GIỚI LÊN${NC}"
     echo -e "${GREEN}🎯 Mục tiêu: $target_price USD/oz${NC}"
-    
+
     if [ -f "scripts/vietnam-gold-comprehensive-attack.sh" ]; then
         scripts/vietnam-gold-comprehensive-attack.sh execute_world_gold_pressure "$target_price" UP
     else
@@ -181,10 +187,10 @@ world_gold_pump() {
 # 6. World Gold Dump
 world_gold_dump() {
     local target_price=${1:-2600}
-    
+
     echo -e "${RED}📉 ĐẨY VÀNG THẾ GIỚI XUỐNG${NC}"
     echo -e "${RED}🎯 Mục tiêu: $target_price USD/oz${NC}"
-    
+
     if [ -f "scripts/vietnam-gold-comprehensive-attack.sh" ]; then
         scripts/vietnam-gold-comprehensive-attack.sh execute_world_gold_pressure "$target_price" DOWN
     else
@@ -202,7 +208,7 @@ world_gold_dump() {
 # 7. London Fix Pressure
 london_fix_pressure() {
     echo -e "${BLUE}🇬🇧 ÁP LỰC LONDON GOLD FIX${NC}"
-    
+
     curl -X POST "$API_BASE/api/world-gold/london-fix-pressure" \
         -H "Content-Type: application/json" \
         -d '{
@@ -216,7 +222,7 @@ london_fix_pressure() {
 # 8. Spot Gold Volatility
 spot_gold_volatility() {
     echo -e "${PURPLE}⚡ BIẾN ĐỘNG VÀNG SPOT${NC}"
-    
+
     curl -X POST "$API_BASE/api/world-gold/volatility-injection" \
         -H "Content-Type: application/json" \
         -d '{
@@ -229,7 +235,7 @@ spot_gold_volatility() {
 # 9. SJC Premium Crusher
 sjc_premium_crusher() {
     echo -e "${RED}💀 NGHIỀN NÁT PREMIUM SJC${NC}"
-    
+
     if [ -f "scripts/vietnam-gold-liquidity-attack.sh" ]; then
         scripts/vietnam-gold-liquidity-attack.sh high_premium_exploit
     else
@@ -246,7 +252,7 @@ sjc_premium_crusher() {
 # 10. SJC Liquidity Vacuum
 sjc_liquidity_vacuum() {
     echo -e "${BLUE}🌪️ HÚT CẠN THANH KHOẢN SJC${NC}"
-    
+
     if [ -f "scripts/vietnam-gold-comprehensive-attack.sh" ]; then
         scripts/vietnam-gold-comprehensive-attack.sh execute_sjc_liquidity_drain 85 10
     else
@@ -264,7 +270,7 @@ sjc_liquidity_vacuum() {
 # 11. SJC Spread Destroyer
 sjc_spread_destroyer() {
     echo -e "${YELLOW}⚔️ PHÁ HỦY SPREAD SJC${NC}"
-    
+
     if [ -f "scripts/vietnam-gold-liquidity-attack.sh" ]; then
         scripts/vietnam-gold-liquidity-attack.sh attack_sjc_pressure EXTREME 900
     else
@@ -282,17 +288,17 @@ sjc_spread_destroyer() {
 # 12. SJC Monopoly Breaker
 sjc_monopoly_breaker() {
     echo -e "${RED}⚡ PHÁ VỠ ĐỘC QUYỀN SJC${NC}"
-    
+
     # Multi-vector attack on SJC monopoly
     echo -e "${YELLOW}🎯 Vector 1: Premium pressure${NC}"
     sjc_premium_crusher &
-    
+
     echo -e "${YELLOW}🎯 Vector 2: Liquidity drainage${NC}"
     sjc_liquidity_vacuum &
-    
+
     echo -e "${YELLOW}🎯 Vector 3: Spread compression${NC}"
     sjc_spread_destroyer &
-    
+
     echo -e "${GREEN}✅ Ba vector monopoly breaker đã khởi chạy${NC}"
     wait
 }
@@ -300,17 +306,17 @@ sjc_monopoly_breaker() {
 # 13. Synchronized Triple Attack
 synchronized_triple() {
     echo -e "${BLUE}⚡ TẤN CÔNG BA MẶT TRẬN ĐỒNG BỘ${NC}"
-    
+
     if [ -f "scripts/vietnam-gold-comprehensive-attack.sh" ]; then
         scripts/vietnam-gold-comprehensive-attack.sh execute_synchronized_triple_attack 1800
     else
         echo -e "${YELLOW}🔥 Executing inline triple attack...${NC}"
-        
+
         # Triple vector: USD/VND + World Gold + SJC
         usdvnd_pressure_boost HIGH INCREASE &
         world_gold_pump 2720 &
         sjc_premium_crusher &
-        
+
         echo -e "${GREEN}✅ Triple attack synchronized${NC}"
         wait
     fi
@@ -319,11 +325,11 @@ synchronized_triple() {
 # 14. Global Arbitrage Exploit
 global_arbitrage_exploit() {
     echo -e "${PURPLE}🌍 KHAI THÁC ARBITRAGE TOÀN CẦU${NC}"
-    
+
     # Comprehensive arbitrage analysis
     echo -e "${BLUE}🔍 Phân tích arbitrage toàn cầu...${NC}"
     $PYTHON_SCANNER full
-    
+
     curl -X POST "$API_BASE/api/arbitrage/global-exploit" \
         -H "Content-Type: application/json" \
         -d '{
@@ -336,7 +342,7 @@ global_arbitrage_exploit() {
 # 15. Currency Gold Correlation
 currency_gold_correlation() {
     echo -e "${GREEN}💱 TƯƠNG QUAN TIỀN TỆ-VÀNG${NC}"
-    
+
     curl -X POST "$API_BASE/api/correlation/currency-gold" \
         -H "Content-Type: application/json" \
         -d '{
@@ -350,24 +356,24 @@ currency_gold_correlation() {
 # 16. Real-time Correlation
 real_time_correlation() {
     echo -e "${PURPLE}📊 TƯƠNG QUAN THỜI GIAN THỰC${NC}"
-    
+
     while true; do
         clear
         echo -e "${BLUE}📈 REAL-TIME USD/VND + GOLD CORRELATION${NC}"
         echo "$(date)"
         echo ""
-        
+
         echo -e "${YELLOW}💱 USD/VND Analysis:${NC}"
         $PYTHON_SCANNER quick 2>/dev/null || echo "USD/VND scanner offline"
-        
+
         echo ""
         echo -e "${YELLOW}🥇 SJC Analysis:${NC}"
         $PYTHON_SCANNER sjc 2>/dev/null || echo "SJC scanner offline"
-        
+
         echo ""
         echo -e "${YELLOW}🌍 World Gold:${NC}"
         curl -s "$API_BASE/api/world-gold/price" | jq '.data' 2>/dev/null || echo "World gold API offline"
-        
+
         sleep 30
     done
 }
@@ -375,9 +381,9 @@ real_time_correlation() {
 # 17. Arbitrage Scanner
 arbitrage_scanner() {
     echo -e "${CYAN}🔍 QUÉT CƠ HỘI ARBITRAGE${NC}"
-    
+
     curl -X GET "$API_BASE/api/arbitrage/scan" | jq '.'
-    
+
     echo -e "${BLUE}📊 Python analysis:${NC}"
     $PYTHON_SCANNER full
 }
@@ -385,13 +391,13 @@ arbitrage_scanner() {
 # 18. Pressure Analysis
 pressure_analysis() {
     echo -e "${BLUE}📊 PHÂN TÍCH ÁP LỰC TỔNG HỢP${NC}"
-    
+
     echo -e "${YELLOW}🔍 USD/VND Pressure:${NC}"
     $PYTHON_SCANNER usdvnd
-    
+
     echo -e "${YELLOW}🔍 SJC Pressure:${NC}"
     $PYTHON_SCANNER sjc
-    
+
     echo -e "${YELLOW}🔍 Overall Analysis:${NC}"
     $PYTHON_SCANNER full
 }
@@ -399,13 +405,13 @@ pressure_analysis() {
 # 19. Status Check
 status_check() {
     echo -e "${CYAN}📊 TRẠNG THÁI HỆ THỐNG USD/VND + GOLD${NC}"
-    
+
     echo -e "${BLUE}💱 USD/VND Status:${NC}"
     curl -s "$API_BASE/api/forex/status" | jq '.' || echo "Forex API offline"
-    
+
     echo -e "${BLUE}🥇 Gold Status:${NC}"
     curl -s "$API_BASE/api/world-gold/status" | jq '.' || echo "Gold API offline"
-    
+
     echo -e "${BLUE}🔍 Scanner Status:${NC}"
     $PYTHON_SCANNER quick || echo "Scanner offline"
 }
@@ -413,23 +419,23 @@ status_check() {
 # 20. Stop All
 stop_all() {
     echo -e "${RED}⏹️ DỪNG TẤT CẢ USD/VND + GOLD ATTACKS${NC}"
-    
+
     curl -X POST "$API_BASE/api/forex/stop-all" | jq '.' || echo "Forex stop failed"
     curl -X POST "$API_BASE/api/world-gold/stop-all" | jq '.' || echo "Gold stop failed"
     curl -X POST "$API_BASE/api/attack/stop-all" | jq '.' || echo "Attack stop failed"
-    
+
     echo -e "${GREEN}✅ Tất cả tấn công USD/VND + Gold đã dừng${NC}"
 }
 
 # Main execution
 main() {
     show_banner
-    
+
     if [ $# -eq 0 ]; then
         show_menu
         read -p "Chọn lệnh (1-20): " choice
         echo ""
-        
+
         case $choice in
             1|"usdvnd_pressure_boost") usdvnd_pressure_boost "${2:-MEDIUM}" "${3:-INCREASE}" ;;
             2|"usdvnd_overnight_attack") usdvnd_overnight_attack ;;

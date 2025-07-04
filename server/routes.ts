@@ -1653,11 +1653,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Telegram auto-updates error:', error);
       res.status(500).json({
-        error: "Failed to configure Telegram auto-updates",
-        details: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-      res.status(500).json({
         error: "Failed to control Telegram auto-updates",
         details: error instanceof Error ? error.message : "Unknown error",
       });
@@ -1678,7 +1673,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         details: error instanceof Error ? error.message : "Unknown error",
       });
     }
-  });
   });
 
   // Start/stop liquidity monitoring
