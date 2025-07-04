@@ -4,7 +4,6 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["mailutils"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -13,15 +12,10 @@ run = ["npm", "run", "start"]
 
 [[ports]]
 localPort = 5000
-externalPort = 80
 
 [[ports]]
 localPort = 8085
-externalPort = 3001
-
-[[ports]]
-localPort = 8086
-externalPort = 3000
+externalPort = 80
 
 [workflows]
 runButton = "Market Trading System"
@@ -85,10 +79,6 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Vietnam Gold Attack"
 
 [[workflows.workflow]]
 name = "Liquidity Scanner"
@@ -216,7 +206,3 @@ args = "  }' | jq '.'"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "scripts/vietnam-gold-destroyer.sh coordinated"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "scripts/multi-ip-gold-attack.sh devastation"
