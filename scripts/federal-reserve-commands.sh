@@ -1440,7 +1440,7 @@ case "${1:-help}" in
     "advanced-crisis")
         advanced_crisis_response
         ;;
-   "usd-vnd")
+    "usd-vnd")
         execute_usd_vnd_pressure "${2:-STRENGTHEN_USD}" "${3:-HIGH}" "${4:-5000000000}"
         ;;
     "multi-currency")
