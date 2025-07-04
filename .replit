@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["mailutils", "wget", "dnsutils"]
+packages = ["dnsutils", "mailutils", "wget"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -41,7 +41,6 @@ externalPort = 3003
 
 [[ports]]
 localPort = 8086
-externalPort = 4200
 
 [[ports]]
 localPort = 8087
@@ -51,8 +50,20 @@ externalPort = 5000
 localPort = 8088
 externalPort = 6000
 
+[[ports]]
+localPort = 8089
+externalPort = 6800
+
+[[ports]]
+localPort = 8090
+externalPort = 8000
+
+[[ports]]
+localPort = 8091
+externalPort = 8008
+
 [workflows]
-runButton = "Safe Federal Reserve Start"
+runButton = "AWS Systems Manager Deployment"
 
 [[workflows.workflow]]
 name = "Project"
