@@ -1679,6 +1679,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  });
 
   // Start/stop liquidity monitoring
   app.post("/api/liquidity/monitor", async (req, res) => {
