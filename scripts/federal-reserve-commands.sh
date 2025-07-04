@@ -5,6 +5,8 @@
 
 # Configuration
 API_BASE="${API_BASE:-http://0.0.0.0:5000}"
+CURRENCY_API_KEY="cur_live_MFAEOhjPvQPbQwAC72Je6ZGdXcvoDS9NdV6IxnZC"
+CURRENCY_API_BASE="https://api.currencyapi.com/v3"
 LOG_FILE="logs/federal_reserve_commands_$(date +%Y%m%d_%H%M%S).log"
 
 # Colors for output
@@ -159,6 +161,41 @@ activate_swap_lines() {
     fi
 }
 
+# Get VND performance monitoring
+get_vnd_performance() {
+    echo -e "${BLUE}🇻🇳 VND PERFORMANCE MONITORING${NC}"
+    log_operation "📊 Monitoring VND performance with real-time data"
+
+    # Get real-time VND exchange rates
+    local vnd_response=$(curl -s "${CURRENCY_API_BASE}/latest?apikey=${CURRENCY_API_KEY}&currencies=EUR%2CUSD%2CCAD&base_currency=VND")
+    
+    if [[ -n "$JQ_CMD" ]] && echo "$vnd_response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+        local usd_rate=$(echo "$vnd_response" | $JQ_CMD -r '.data.USD.value')
+        local eur_rate=$(echo "$vnd_response" | $JQ_CMD -r '.data.EUR.value')
+        local cad_rate=$(echo "$vnd_response" | $JQ_CMD -r '.data.CAD.value')
+        
+        echo -e "${GREEN}✅ VND Exchange Rates:${NC}"
+        echo -e "USD/VND: ${usd_rate}"
+        echo -e "EUR/VND: ${eur_rate}"
+        echo -e "CAD/VND: ${cad_rate}"
+        
+        # Calculate VND strength index
+        local vnd_strength=$(echo "scale=4; 1 / $usd_rate * 100000" | bc 2>/dev/null || echo "41.0")
+        echo -e "${YELLOW}VND Strength Index: ${vnd_strength}${NC}"
+        
+        # Monitor for intervention opportunities
+        if (( $(echo "$usd_rate > 25000" | bc -l) )); then
+            echo -e "${RED}🚨 VND WEAKNESS DETECTED - INTERVENTION OPPORTUNITY${NC}"
+            log_operation "🚨 VND weakness detected: USD/VND = $usd_rate"
+        fi
+        
+        log_operation "✅ VND performance data retrieved: USD/VND = $usd_rate"
+    else
+        echo -e "${YELLOW}⚠️ Using fallback VND data${NC}"
+        echo "$vnd_response"
+    fi
+}
+
 # Get current Fed system status
 get_fed_status() {
     echo -e "${BLUE}🏛️ FEDERAL RESERVE SYSTEM STATUS${NC}"
@@ -182,6 +219,10 @@ get_fed_status() {
             echo -e "Gold Price: \$$gold_price"
 
             log_operation "✅ Fed status retrieved successfully"
+            
+            # Add VND performance monitoring
+            echo -e "\n${PURPLE}=== VND PERFORMANCE ANALYSIS ===${NC}"
+            get_vnd_performance
         else
             echo -e "${RED}❌ Failed to get Fed status${NC}"
             echo "$response"
@@ -739,6 +780,7 @@ show_help() {
     echo ""
     echo "Basic commands:"
     echo "  status                          - Get current Fed system status"
+    echo "  vnd-monitor                     - Monitor VND performance and exchange rates"
     echo "  expand [amount]                 - Execute expansionary open market operation"
     echo "  contract [amount]               - Execute contractionary open market operation"
     echo "  qe [amount] [duration]          - Launch quantitative easing program"
@@ -1124,6 +1166,9 @@ main() {
 case "${1:-help}" in
     "status")
         get_fed_status
+        ;;
+    "vnd-monitor")
+        get_vnd_performance
         ;;
     "expand")
         execute_open_market "EXPAND" "${2:-50000000000}"
