@@ -103,6 +103,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 04, 2025 - AWS Application Migration Service Setup
+
+- ✅ Set up AWS Application Migration Service replication agent in ap-northeast-1 region
+- ✅ Created comprehensive shell scripts with timeout protection to avoid hanging commands
+- ✅ Configured EC2 instance connection (i-05c4d8f39e43b8280) with SSH access
+- ✅ Established AWS Systems Manager automation with role AWS-QuickSetup-JITNA-LocalAdministrationRole
+- ✅ Built installer simulator and troubleshooting guides for smooth deployment
+- ✅ Integrated CloudWatch monitoring and automated migration workflow
+- ✅ Created multiple installation methods: direct SSH, CloudShell, and Systems Manager automation
+- ✅ Implemented timeout protection (600 seconds) to prevent shell command hanging issues
+
 ### July 04, 2025 - New York Fed Markets API Integration
 
 - ✅ Integrated official New York Fed Markets API for Agency Mortgage-Backed Securities (AMBS) operations

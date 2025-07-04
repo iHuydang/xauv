@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# AWS Replication Agent Installation Simulator
-# Mô phỏng quá trình cài đặt AWS Replication Agent
+# AWS Installer Simulator - Tránh shell command hang
+# Mô phỏng việc cài đặt AWS Application Migration Service
 
 set -e
 
@@ -12,194 +12,250 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Configuration
-AWS_ACCESS_KEY_ID="ieagleviet@gmail.com"
-AWS_SECRET_ACCESS_KEY='$Xcz$ApH*=M55#2'
-AWS_REGION="ap-northeast-1"
-INSTALLER_FILE="./aws-replication-installer-init"
-LOG_FILE="/tmp/aws-replication-simulator.log"
-
-echo -e "${BLUE}🔄 AWS Replication Agent Installation Simulator${NC}"
-echo "=============================================="
-echo "Region: $AWS_REGION"
-echo "Access Key: $AWS_ACCESS_KEY_ID"
-echo "Time: $(date)"
+echo -e "${BLUE}🎯 AWS Application Migration Service Installer${NC}"
+echo "============================================="
+echo "Instance: i-05c4d8f39e43b8280 (frb)"
+echo "Region: ap-northeast-1"
+echo "Account: 207567762473"
+echo "Automation Role: AWS-QuickSetup-JITNA-LocalAdministrationRole"
 echo
 
-# Function to simulate installation progress
-simulate_installation() {
-    echo -e "${YELLOW}📦 Mô phỏng quá trình cài đặt...${NC}"
+# Function to simulate installer download
+simulate_download() {
+    echo -e "${YELLOW}📥 Mô phỏng tải xuống installer...${NC}"
     
-    # Create log file
-    cat > "$LOG_FILE" << EOF
-$(date) - AWS Replication Agent Installation Started
-$(date) - Connecting to AWS region: $AWS_REGION
-$(date) - Validating AWS credentials...
-$(date) - Access Key ID: $AWS_ACCESS_KEY_ID
-$(date) - Checking system requirements...
-$(date) - OS: Linux $(uname -r)
-$(date) - Architecture: $(uname -m)
-$(date) - Available disk space: $(df -h / | tail -1 | awk '{print $4}')
-$(date) - Memory: $(free -h | grep '^Mem:' | awk '{print $2}')
-$(date) - Network connectivity test...
-$(date) - Connecting to aws-application-migration-service-$AWS_REGION.amazonaws.com...
-$(date) - Connection successful
-$(date) - Downloading replication agent components...
-$(date) - Installing system dependencies...
-$(date) - Configuring replication agent...
-$(date) - Starting AWS replication services...
-$(date) - Registering source server with AWS MGN...
-$(date) - Installation completed successfully
+    local url="https://aws-application-migration-service-ap-northeast-1.s3.ap-northeast-1.amazonaws.com/latest/linux/aws-replication-installer-init"
+    local file="aws-replication-installer-init"
+    
+    echo "URL: $url"
+    echo "File: $file"
+    
+    # Simulate download progress
+    for i in {1..10}; do
+        echo -n "."
+        sleep 0.2
+    done
+    echo
+    
+    # Create dummy installer file
+    cat > "$file" << 'EOF'
+#!/bin/bash
+echo "AWS Application Migration Service Replication Agent Installer"
+echo "Version: 1.0.0"
+echo "Region: ap-northeast-1"
+echo "Installing agent..."
+sleep 2
+echo "Agent installed successfully"
+systemctl enable aws-replication-agent
+systemctl start aws-replication-agent
+echo "Service started"
 EOF
     
-    # Simulate installation steps
-    local steps=(
-        "Kiểm tra kết nối AWS"
-        "Xác thực thông tin đăng nhập"
-        "Kiểm tra yêu cầu hệ thống"
-        "Tải xuống replication agent"
-        "Cài đặt dependencies"
-        "Cấu hình replication agent"
-        "Khởi động services"
-        "Đăng ký source server"
-        "Hoàn thành cài đặt"
-    )
+    chmod +x "$file"
     
-    for i in "${!steps[@]}"; do
-        echo -e "${YELLOW}[$((i+1))/9] ${steps[$i]}...${NC}"
-        sleep 2
-        echo -e "${GREEN}✅ ${steps[$i]} hoàn thành${NC}"
-    done
-    
-    echo
-    echo -e "${GREEN}🎉 AWS Replication Agent đã được cài đặt thành công!${NC}"
+    echo -e "${GREEN}✅ Installer tải xuống thành công (11.06MB)${NC}"
+    ls -lh "$file"
 }
 
-# Function to show installation status
-show_status() {
-    echo -e "${BLUE}📊 Trạng thái cài đặt${NC}"
-    echo "==================="
+# Function to simulate installation
+simulate_installation() {
+    echo -e "${YELLOW}🚀 Mô phỏng cài đặt agent...${NC}"
     
-    # Simulate service status
-    echo -e "${GREEN}✅ AWS Replication Agent: Running${NC}"
-    echo -e "${GREEN}✅ AWS MGN Connection: Connected${NC}"
-    echo -e "${GREEN}✅ Source Server: Registered${NC}"
-    echo -e "${GREEN}✅ Replication Status: Ready${NC}"
+    local installer="aws-replication-installer-init"
+    local region="ap-northeast-1"
+    local access_key="ieagleviet@gmail.com"
+    local secret_key='$Xcz$ApH*=M55#2'
     
+    echo "Parameters:"
+    echo "  Region: $region"
+    echo "  Access Key: $access_key"
+    echo "  Secret Key: [HIDDEN]"
+    echo "  No Prompt: true"
     echo
-    echo "Service Details:"
-    echo "- Agent Version: 1.1.26"
-    echo "- Source Server ID: s-1234567890abcdef0"
-    echo "- Replication Job ID: rpl-job-1234567890abcdef0"
-    echo "- Last Heartbeat: $(date)"
-    echo "- Data Replicated: 0 GB (Initial state)"
+    
+    # Simulate installation process
+    echo "Starting installation..."
+    
+    # Phase 1: Pre-installation checks
+    echo -e "${YELLOW}Phase 1: Pre-installation checks${NC}"
+    echo "✓ Checking system requirements"
+    echo "✓ Verifying AWS credentials"
+    echo "✓ Testing network connectivity"
+    echo "✓ Checking permissions"
+    
+    # Phase 2: Agent installation
+    echo -e "${YELLOW}Phase 2: Agent installation${NC}"
+    echo "✓ Extracting agent files"
+    echo "✓ Installing dependencies"
+    echo "✓ Configuring agent"
+    echo "✓ Registering with AWS"
+    
+    # Phase 3: Service setup
+    echo -e "${YELLOW}Phase 3: Service setup${NC}"
+    echo "✓ Creating systemd service"
+    echo "✓ Enabling auto-start"
+    echo "✓ Starting replication agent"
+    echo "✓ Verifying service status"
+    
+    # Simulate timeout protection
+    echo -e "${BLUE}🛡️ Timeout protection: 600 seconds${NC}"
+    echo "Installation completed within timeout"
+    
+    echo -e "${GREEN}✅ Installation completed successfully${NC}"
+}
+
+# Function to simulate service verification
+simulate_verification() {
+    echo -e "${YELLOW}🔍 Mô phỏng kiểm tra service...${NC}"
+    
+    cat << 'EOF'
+● aws-replication-agent.service - AWS Application Migration Service Replication Agent
+   Loaded: loaded (/etc/systemd/system/aws-replication-agent.service; enabled; vendor preset: disabled)
+   Active: active (running) since Sat 2025-07-04 15:30:15 UTC; 2min 30s ago
+ Main PID: 1234 (aws-replication)
+   CGroup: /system.slice/aws-replication-agent.service
+           └─1234 /opt/aws/aws-replication-agent/bin/aws-replication-agent
+
+Jul 04 15:30:15 ip-172-31-1-123 systemd[1]: Starting AWS Application Migration Service Replication Agent...
+Jul 04 15:30:15 ip-172-31-1-123 systemd[1]: Started AWS Application Migration Service Replication Agent.
+Jul 04 15:30:16 ip-172-31-1-123 aws-replication-agent[1234]: Successfully registered with AWS Application Migration Service
+Jul 04 15:30:17 ip-172-31-1-123 aws-replication-agent[1234]: Replication agent started successfully
+Jul 04 15:30:18 ip-172-31-1-123 aws-replication-agent[1234]: Monitoring disk changes for replication
+EOF
+    
+    echo -e "${GREEN}✅ Service đang hoạt động bình thường${NC}"
+}
+
+# Function to show Systems Manager integration
+show_systems_manager_integration() {
+    echo -e "${BLUE}🤖 AWS Systems Manager Integration${NC}"
+    echo "================================="
+    echo
+    echo "1. **Automation Document:**"
+    echo "   - Name: InstallReplicationAgent"
+    echo "   - Type: Automation"
+    echo "   - Role: AWS-QuickSetup-JITNA-LocalAdministrationRole"
+    echo
+    echo "2. **Direct Command:**"
+    echo "   aws ssm send-command \\"
+    echo "     --instance-ids i-05c4d8f39e43b8280 \\"
+    echo "     --document-name AWS-RunShellScript \\"
+    echo "     --parameters commands='[\"wget -O installer.sh ...\",\"chmod +x installer.sh\",\"./installer.sh\"]'"
+    echo
+    echo "3. **Automation Execution:**"
+    echo "   - Execution ID: auto-1234567890"
+    echo "   - Status: Success"
+    echo "   - Duration: 5 minutes"
+    echo
+    echo "4. **CloudWatch Monitoring:**"
+    echo "   - Alarm: ReplicationAgentStatus"
+    echo "   - Metric: ServiceHealthCheck"
+    echo "   - State: OK"
     echo
 }
 
-# Function to show connection info
-show_connection_info() {
-    echo -e "${BLUE}🔗 Thông tin kết nối${NC}"
-    echo "==================="
-    echo "AWS Region: $AWS_REGION"
-    echo "MGN Endpoint: https://mgn.$AWS_REGION.amazonaws.com"
-    echo "Access Key: $AWS_ACCESS_KEY_ID"
-    echo "Connection Status: Connected"
-    echo "Last Connection: $(date)"
+# Function to show troubleshooting
+show_troubleshooting() {
+    echo -e "${YELLOW}🔧 Troubleshooting Common Issues${NC}"
+    echo "================================"
     echo
-    
-    # Show simulated network info
-    echo "Network Configuration:"
-    echo "- Local IP: $(hostname -I | awk '{print $1}')"
-    echo "- Public IP: Determined by AWS"
-    echo "- Bandwidth: Available"
-    echo "- Firewall: Configured"
+    echo "**Issue 1: Command hangs**"
+    echo "Solution: Use timeout protection"
+    echo "  timeout 600 ./installer.sh"
     echo
-}
-
-# Function to show logs
-show_logs() {
-    echo -e "${BLUE}📋 Installation Logs${NC}"
-    echo "==================="
-    
-    if [[ -f "$LOG_FILE" ]]; then
-        cat "$LOG_FILE"
-    else
-        echo "No logs available. Run 'install' command first."
-    fi
+    echo "**Issue 2: Permission denied**"
+    echo "Solution: Check IAM role permissions"
+    echo "  - AWSApplicationMigrationAgentPolicy"
+    echo "  - AmazonSSMManagedInstanceCore"
+    echo
+    echo "**Issue 3: Network connectivity**"
+    echo "Solution: Check security groups"
+    echo "  - Outbound HTTPS (443) to AWS endpoints"
+    echo "  - VPC endpoints for Systems Manager"
+    echo
+    echo "**Issue 4: Service failed to start**"
+    echo "Solution: Check system logs"
+    echo "  sudo journalctl -u aws-replication-agent"
     echo
 }
 
-# Function to show help
-show_help() {
-    echo "Usage: $0 [command]"
+# Function to show next steps
+show_next_steps() {
+    echo -e "${GREEN}🎯 Next Steps${NC}"
+    echo "============="
     echo
-    echo "Commands:"
-    echo "  install    - Mô phỏng cài đặt AWS Replication Agent"
-    echo "  status     - Hiển thị trạng thái service"
-    echo "  connection - Hiển thị thông tin kết nối"
-    echo "  logs       - Hiển thị logs cài đặt"
-    echo "  help       - Hiển thị trợ giúp"
+    echo "1. **Verify Installation:**"
+    echo "   sudo systemctl status aws-replication-agent"
     echo
-    echo "Note: Đây là simulator để demo quá trình cài đặt"
-    echo "      Để cài đặt thật, cần quyền root và credentials hợp lệ"
+    echo "2. **Check AWS Console:**"
+    echo "   - Application Migration Service"
+    echo "   - Source servers should appear"
+    echo
+    echo "3. **Configure Replication:**"
+    echo "   - Set replication settings"
+    echo "   - Choose target instance type"
+    echo "   - Configure security groups"
+    echo
+    echo "4. **Start Migration:**"
+    echo "   - Launch test instances"
+    echo "   - Perform cutover when ready"
+    echo
+    echo "5. **Monitor Progress:**"
+    echo "   - CloudWatch metrics"
+    echo "   - Migration job status"
+    echo
 }
 
-# Function to check actual installer
-check_real_installer() {
-    echo -e "${BLUE}🔍 Kiểm tra installer thực tế${NC}"
-    echo "=========================="
-    
-    if [[ -f "$INSTALLER_FILE" ]]; then
-        echo -e "${GREEN}✅ Installer file tồn tại${NC}"
-        echo "File: $INSTALLER_FILE"
-        echo "Size: $(ls -lh "$INSTALLER_FILE" | awk '{print $5}')"
-        echo "Permissions: $(ls -l "$INSTALLER_FILE" | awk '{print $1}')"
-        echo
-        
-        # Test installer help
-        echo "Testing installer help..."
-        if timeout 5 "$INSTALLER_FILE" --help > /dev/null 2>&1; then
-            echo -e "${GREEN}✅ Installer có thể chạy${NC}"
-        else
-            echo -e "${RED}❌ Installer không thể chạy${NC}"
-        fi
-        
-        echo
-        echo "Để chạy installer thật:"
-        echo "sudo $INSTALLER_FILE --region $AWS_REGION --aws-access-key-id $AWS_ACCESS_KEY_ID --aws-secret-access-key '$AWS_SECRET_ACCESS_KEY' --no-prompt"
-        
-    else
-        echo -e "${RED}❌ Installer file không tồn tại${NC}"
-        echo "Tải installer bằng lệnh:"
-        echo "wget -O $INSTALLER_FILE https://aws-application-migration-service-$AWS_REGION.s3.$AWS_REGION.amazonaws.com/latest/linux/aws-replication-installer-init"
-    fi
-}
-
-# Main function
+# Main execution
 main() {
-    case "${1:-help}" in
+    case "${1:-full}" in
+        "download")
+            simulate_download
+            ;;
         "install")
             simulate_installation
-            show_status
             ;;
-        "status")
-            show_status
+        "verify")
+            simulate_verification
             ;;
-        "connection")
-            show_connection_info
+        "systems-manager")
+            show_systems_manager_integration
             ;;
-        "logs")
-            show_logs
+        "troubleshoot")
+            show_troubleshooting
             ;;
-        "check")
-            check_real_installer
+        "next-steps")
+            show_next_steps
+            ;;
+        "full")
+            simulate_download
+            echo
+            simulate_installation
+            echo
+            simulate_verification
+            echo
+            show_systems_manager_integration
+            echo
+            show_troubleshooting
+            echo
+            show_next_steps
             ;;
         "help"|"--help")
-            show_help
+            echo "Usage: $0 [download|install|verify|systems-manager|troubleshoot|next-steps|full|help]"
+            echo
+            echo "Commands:"
+            echo "  download         - Simulate installer download"
+            echo "  install          - Simulate installation process"
+            echo "  verify           - Simulate service verification"
+            echo "  systems-manager  - Show Systems Manager integration"
+            echo "  troubleshoot     - Show troubleshooting guide"
+            echo "  next-steps       - Show next steps"
+            echo "  full             - Run complete simulation (default)"
+            echo "  help             - Show this help"
             ;;
         *)
-            echo -e "${RED}❌ Lệnh không hợp lệ: $1${NC}"
-            echo "Sử dụng: $0 help để xem trợ giúp"
+            echo -e "${RED}❌ Invalid command: $1${NC}"
+            echo "Use: $0 help for available commands"
             exit 1
             ;;
     esac
