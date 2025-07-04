@@ -1003,6 +1003,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Federal Reserve Monetary Control System Routes
+  app.get("/api/fed-monetary/status", async (req, res) => {
+    try {
+      const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
+      const status = await fedMonetaryControlSystem.getSystemStatus();
+      res.json({ success: true, data: status });
+    } catch (error) {
+      console.error('Fed monetary status error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to get system status",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.post("/api/fed-monetary/open-market", async (req, res) => {
+    try {
+      const { type, amount } = req.body;
+      const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
+      const result = await fedMonetaryControlSystem.executeOpenMarketOperation(type, amount);
+      res.json({ success: true, ...result });
+    } catch (error) {
+      console.error('Open market operation error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to execute open market operation",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.post("/api/fed-monetary/qe", async (req, res) => {
+    try {
+      const { amount, duration } = req.body;
+      const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
+      const result = await fedMonetaryControlSystem.executeQuantitativeEasing(amount, duration);
+      res.json({ success: true, ...result });
+    } catch (error) {
+      console.error('QE operation error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to execute QE operation",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.post("/api/fed-monetary/gold-manipulation", async (req, res) => {
+    try {
+      const { action } = req.body;
+      const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
+      const result = await fedMonetaryControlSystem.executeGoldManipulation(action);
+      res.json({ success: true, ...result });
+    } catch (error) {
+      console.error('Gold manipulation error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to execute gold manipulation",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.post("/api/fed-monetary/currency-intervention", async (req, res) => {
+    try {
+      const { currency, action, amount } = req.body;
+      const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
+      const result = await fedMonetaryControlSystem.executeCurrencyIntervention(currency, action, amount);
+      res.json({ success: true, ...result });
+    } catch (error) {
+      console.error('Currency intervention error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to execute currency intervention",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.post("/api/fed-monetary/target-inflation", async (req, res) => {
+    try {
+      const { target } = req.body;
+      const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
+      const result = await fedMonetaryControlSystem.executeInflationTargeting(target);
+      res.json({ success: true, ...result });
+    } catch (error) {
+      console.error('Inflation targeting error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to execute inflation targeting",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Quick liquidity scan test endpoint
   app.get("/api/attack/test-scan", async (req, res) => {
     try {
@@ -1555,6 +1651,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
     } catch (error) {
+      console.error('Telegram auto-updates error:', error);
+      res.status(500).json({
+        error: "Failed to configure Telegram auto-updates",
+        details: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
       res.status(500).json({
         error: "Failed to control Telegram auto-updates",
         details: error instanceof Error ? error.message : "Unknown error",

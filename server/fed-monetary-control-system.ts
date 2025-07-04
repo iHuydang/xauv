@@ -544,3 +544,112 @@ router.post("/fed-monetary/target-inflation", async (req, res) => {
 
 export { fedSystem };
 export default router;
+class FederalReserveMonetaryControlSystem {
+  private systemStatus = {
+    monetary_policy: {
+      fedFundsRate: 5.25,
+      reserveRequirement: 10.0,
+      quantitativeEasing: 0,
+      m1Supply: 18500000000000,
+      m2Supply: 21300000000000,
+      velocityOfMoney: 1.123
+    },
+    market_control: {
+      goldPrice: 2685.50,
+      dollarIndex: 104.25,
+      bondYields: {
+        '2Y': 4.45,
+        '5Y': 4.25,
+        '10Y': 4.35,
+        '30Y': 4.50
+      },
+      inflationExpectations: 2.4,
+      liquidityPremium: 0.15
+    },
+    gold_fair_value: 3250.00,
+    optimal_fed_funds_rate: 4.75,
+    system_health: 'OPERATIONAL'
+  };
+
+  async getSystemStatus() {
+    return this.systemStatus;
+  }
+
+  async executeOpenMarketOperation(type: 'EXPAND' | 'CONTRACT', amount: number) {
+    const impact = amount / 1000000000000; // Impact per trillion
+
+    if (type === 'EXPAND') {
+      this.systemStatus.monetary_policy.m1Supply += amount * 0.8;
+      this.systemStatus.monetary_policy.m2Supply += amount;
+      this.systemStatus.monetary_policy.fedFundsRate -= impact * 0.25;
+      this.systemStatus.market_control.bondYields['10Y'] -= impact * 0.1;
+    } else {
+      this.systemStatus.monetary_policy.m1Supply -= amount * 0.8;
+      this.systemStatus.monetary_policy.m2Supply -= amount;
+      this.systemStatus.monetary_policy.fedFundsRate += impact * 0.25;
+      this.systemStatus.market_control.bondYields['10Y'] += impact * 0.1;
+    }
+
+    return {
+      message: `${type} operation of $${(amount / 1000000000).toFixed(1)}B completed`,
+      new_status: this.systemStatus
+    };
+  }
+
+  async executeQuantitativeEasing(amount: number, duration: number) {
+    this.systemStatus.monetary_policy.quantitativeEasing += amount;
+    this.systemStatus.monetary_policy.m2Supply += amount;
+    this.systemStatus.market_control.bondYields['10Y'] -= 0.25;
+    this.systemStatus.market_control.bondYields['30Y'] -= 0.30;
+
+    return {
+      message: `QE program of $${(amount / 1000000000000).toFixed(1)}T over ${duration} months initiated`
+    };
+  }
+
+  async executeGoldManipulation(action: 'SUPPRESS' | 'RELEASE') {
+    if (action === 'SUPPRESS') {
+      this.systemStatus.market_control.goldPrice *= 0.95; // 5% suppression
+    } else {
+      this.systemStatus.market_control.goldPrice *= 1.08; // 8% release
+    }
+
+    return {
+      message: `Gold price ${action.toLowerCase()} operation completed`,
+      new_gold_price: this.systemStatus.market_control.goldPrice
+    };
+  }
+
+  async executeCurrencyIntervention(currency: string, action: 'STRENGTHEN' | 'WEAKEN', amount: number) {
+    const impact = amount / 10000000000; // Impact per 10B
+
+    if (action === 'STRENGTHEN' && currency === 'USD') {
+      this.systemStatus.market_control.dollarIndex += impact;
+    } else if (action === 'WEAKEN' && currency === 'USD') {
+      this.systemStatus.market_control.dollarIndex -= impact;
+    }
+
+    return {
+      message: `${currency} ${action.toLowerCase()} intervention of $${(amount / 1000000000).toFixed(1)}B executed`,
+      new_dollar_index: this.systemStatus.market_control.dollarIndex
+    };
+  }
+
+  async executeInflationTargeting(target: number) {
+    this.systemStatus.market_control.inflationExpectations = target;
+    
+    // Adjust fed funds rate based on target
+    const currentInflation = this.systemStatus.market_control.inflationExpectations;
+    if (target > currentInflation) {
+      this.systemStatus.monetary_policy.fedFundsRate -= 0.25;
+    } else if (target < currentInflation) {
+      this.systemStatus.monetary_policy.fedFundsRate += 0.25;
+    }
+
+    return {
+      message: `Inflation target set to ${target}%. Fed funds rate adjusted accordingly`
+    };
+  }
+}
+
+export const fedMonetaryControlSystem = new FederalReserveMonetaryControlSystem();

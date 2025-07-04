@@ -40,6 +40,7 @@ localPort = 8086
 externalPort = 3003
 
 [workflows]
+runButton = "Run"
 
 [[workflows.workflow]]
 name = "Project"
@@ -256,3 +257,12 @@ args = "npm run dev"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "Market Trading System"
+
+[[workflows.workflow]]
+name = "Run"
+author = 44604653
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
