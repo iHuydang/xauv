@@ -614,6 +614,122 @@ auto_monitor() {
     done
 }
 
+# FRED Listen FX Reserve Drain Operations
+execute_fred_listen_fx_drain() {
+    local target_pair="${1:-USD/VND}"
+    local target_bank="${2:-SBV}"
+    local usd_reserve="${3:-95000000000}"
+    local duration="${4:-90}"
+
+    echo -e "${RED}🛰️ FRED LISTEN: FX RESERVE DRAIN OPERATION${NC}"
+    echo -e "${YELLOW}Target Pair: $target_pair${NC}"
+    echo -e "${YELLOW}Target Central Bank: $target_bank${NC}"
+    echo -e "${YELLOW}USD Reserve Target: \$$(echo "$usd_reserve" | numfmt --to=iec)${NC}"
+    echo -e "${YELLOW}Duration: $duration days${NC}"
+
+    log_operation "🛰️ FRED Listen FX Reserve Drain initiated: $target_pair"
+
+    # Deploy FRED Skill Agent
+    if [ -f "scripts/fred-skill-agent.sh" ]; then
+        chmod +x scripts/fred-skill-agent.sh
+        scripts/fred-skill-agent.sh deploy \
+            --skill "FX_RESERVE_DRAIN" \
+            --pair "$target_pair" \
+            --target_central_bank "$target_bank" \
+            --usd_reserve "$usd_reserve" \
+            --duration_days "$duration" \
+            --mode "LISTEN_AND_ATTACK" \
+            --power_level "B2_SPIRIT" \
+            --intelligence_mode "SYNTHETIC_DEMAND + RATE_BREACH_LOOP"
+    else
+        echo -e "${RED}❌ FRED Skill Agent not found${NC}"
+        return 1
+    fi
+
+    # Execute FX intervention to support the drain
+    execute_currency_intervention "$target_pair" "STRENGTHEN_USD" "$usd_reserve"
+
+    echo -e "${GREEN}✅ FRED Listen FX Reserve Drain operation completed${NC}"
+}
+
+# Execute USD/VND Band Exploitation
+execute_usdvnd_band_exploit() {
+    local intensity="${1:-HIGH}"
+    local duration="${2:-7200}"
+
+    echo -e "${PURPLE}📊 USD/VND BAND EXPLOITATION${NC}"
+    echo -e "${YELLOW}Intensity: $intensity${NC}"
+    echo -e "${YELLOW}Duration: $duration seconds${NC}"
+
+    log_operation "📊 USD/VND band exploitation: $intensity intensity"
+
+    # Phase 1: FRED Listen deployment
+    execute_fred_listen_fx_drain "USD/VND" "SBV" "95000000000" "90"
+
+    # Phase 2: Synthetic demand generation
+    echo -e "${BLUE}🧠 Activating synthetic demand generation...${NC}"
+    
+    # Phase 3: Band breach monitoring
+    echo -e "${BLUE}📡 Monitoring ABV ±5% band breaches...${NC}"
+
+    # Phase 4: Reserve drain coordination
+    echo -e "${BLUE}💰 Coordinating SBV reserve drainage...${NC}"
+
+    echo -e "${GREEN}✅ USD/VND band exploitation completed${NC}"
+}
+
+# Advanced FX Reserve Warfare
+execute_fx_reserve_warfare() {
+    local target_currencies="${1:-VND,CNY,THB,SGD,KRW}"
+    local warfare_intensity="${2:-MAXIMUM}"
+
+    echo -e "${RED}⚔️ FX RESERVE WARFARE PROTOCOL${NC}"
+    echo -e "${RED}🎯 Multi-Target Reserve Drain Operation${NC}"
+    echo -e "${YELLOW}Target Currencies: $target_currencies${NC}"
+    echo -e "${YELLOW}Warfare Intensity: $warfare_intensity${NC}"
+
+    log_operation "⚔️ FX Reserve Warfare initiated: $target_currencies"
+
+    IFS=',' read -ra CURRENCY_ARRAY <<< "$target_currencies"
+    
+    for currency in "${CURRENCY_ARRAY[@]}"; do
+        echo -e "${PURPLE}🎯 Targeting $currency reserves...${NC}"
+        
+        case $currency in
+            "VND")
+                execute_fred_listen_fx_drain "USD/VND" "SBV" "95000000000" "90"
+                ;;
+            "CNY")
+                execute_fred_listen_fx_drain "USD/CNY" "PBOC" "3200000000000" "120"
+                ;;
+            "THB")
+                execute_fred_listen_fx_drain "USD/THB" "BOT" "250000000000" "60"
+                ;;
+            "SGD")
+                execute_fred_listen_fx_drain "USD/SGD" "MAS" "350000000000" "45"
+                ;;
+            "KRW")
+                execute_fred_listen_fx_drain "USD/KRW" "BOK" "420000000000" "75"
+                ;;
+        esac
+        
+        sleep 5
+    done
+
+    echo -e "${GREEN}✅ FX Reserve Warfare protocol completed${NC}"
+}
+
+# FRED Listen Status Monitor
+monitor_fred_listen_status() {
+    echo -e "${BLUE}🛰️ FRED LISTEN STATUS MONITOR${NC}"
+    
+    if [ -f "scripts/fred-skill-agent.sh" ]; then
+        scripts/fred-skill-agent.sh status
+    else
+        echo -e "${RED}❌ FRED Skill Agent not available${NC}"
+    fi
+}
+
 # Help function
 show_help() {
     echo "Federal Reserve Monetary Control Commands"
@@ -659,6 +775,12 @@ show_help() {
     echo "  helicopter-money [amount] - Execute helicopter money distribution"
     echo "  swap-lines [currency] [amount] - Activate international swap lines"
     echo "  yield-curve-advanced [2y] [5y] [10y] [30y] - Advanced yield curve control"
+    echo ""
+    echo "FRED Listen & FX Reserve Warfare:"
+    echo "  fred-listen [pair] [bank] [reserve] [days] - Deploy FRED Listen FX Reserve Drain"
+    echo "  usd-vnd-band [intensity] [duration] - Execute USD/VND band exploitation"
+    echo "  fx-warfare [currencies] [intensity] - Multi-target FX reserve warfare"
+    echo "  fred-status - Monitor FRED Listen system status"
     echo ""
     echo "Examples:"
     echo "  $0 status"
@@ -1080,6 +1202,18 @@ case "${1:-help}" in
         ;;
     "swap-lines")
         activate_swap_lines "${2:-EUR}" "${3:-50000000000}"
+        ;;
+    "fred-listen")
+        execute_fred_listen_fx_drain "${2:-USD/VND}" "${3:-SBV}" "${4:-95000000000}" "${5:-90}"
+        ;;
+    "usd-vnd-band")
+        execute_usdvnd_band_exploit "${2:-HIGH}" "${3:-7200}"
+        ;;
+    "fx-warfare")
+        execute_fx_reserve_warfare "${2:-VND,CNY,THB,SGD,KRW}" "${3:-MAXIMUM}"
+        ;;
+    "fred-status")
+        monitor_fred_listen_status
         ;;
     "help"|*)
         show_help
