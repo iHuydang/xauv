@@ -3,9 +3,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
 import { BarChart3, TrendingUp, Settings, LogOut, User } from "lucide-react";
+import type { User as UserType } from "@shared/schema";
 
 export default function Home() {
   const { user } = useAuth();
+  
+  // Type guard to ensure user is properly typed
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-300">Loading user data...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  const typedUser = user as UserType;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -14,16 +29,16 @@ export default function Home() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">
-              Welcome back, {user?.firstName || user?.email || 'Trader'}!
+              Welcome back, {typedUser?.firstName || typedUser?.email || 'Trader'}!
             </h1>
             <p className="text-gray-300">
               Access your trading dashboard and manage your positions
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            {user?.profileImageUrl && (
+            {typedUser?.profileImageUrl && (
               <img 
-                src={user.profileImageUrl} 
+                src={typedUser.profileImageUrl} 
                 alt="Profile" 
                 className="w-10 h-10 rounded-full object-cover"
                 style={{ objectFit: 'cover' }}
@@ -41,7 +56,7 @@ export default function Home() {
         </div>
 
         {/* Account Info */}
-        {user && (
+        {typedUser && (
           <Card className="bg-gray-800 border-gray-700 mb-8">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
@@ -52,20 +67,20 @@ export default function Home() {
             <CardContent className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <p className="text-gray-400 text-sm">Balance</p>
-                <p className="text-2xl font-bold text-green-400">${user.balance}</p>
+                <p className="text-2xl font-bold text-green-400">${typedUser.balance}</p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Equity</p>
-                <p className="text-2xl font-bold text-blue-400">${user.equity}</p>
+                <p className="text-2xl font-bold text-blue-400">${typedUser.equity}</p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Email</p>
-                <p className="text-white">{user.email || 'Not provided'}</p>
+                <p className="text-white">{typedUser.email || 'Not provided'}</p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Member Since</p>
                 <p className="text-white">
-                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
+                  {typedUser.createdAt ? new Date(typedUser.createdAt).toLocaleDateString() : 'Unknown'}
                 </p>
               </div>
             </CardContent>
@@ -74,7 +89,7 @@ export default function Home() {
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Link href="/">
+          <Link href="/terminal">
             <Card className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors cursor-pointer">
               <CardHeader>
                 <BarChart3 className="h-12 w-12 text-blue-500 mb-4" />
