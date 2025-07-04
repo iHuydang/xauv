@@ -47,6 +47,10 @@ externalPort = 4200
 localPort = 8087
 externalPort = 5000
 
+[[ports]]
+localPort = 8088
+externalPort = 6000
+
 [workflows]
 runButton = "Stable Server"
 
@@ -191,7 +195,7 @@ args = "echo \"🚨 INITIATING VIETNAM GOLD MARKET ATTACK...\""
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = 'curl -X POST "http://localhost:5000/api/attack/vietnam-gold" \'
+args = 'curl -X POST "http://192.26.194.40:5000/api/attack/vietnam-gold" \'
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
