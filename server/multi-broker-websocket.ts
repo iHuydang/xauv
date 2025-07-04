@@ -587,6 +587,13 @@ export class MultiBrokerWebSocketManager extends EventEmitter {
   }
 
   private scheduleReconnection(brokerId: string, config: BrokerConfig): void {
+    // Tắt auto-reconnection cho Exness để tránh restart liên tục
+    if (brokerId === 'exness') {
+      console.log(`🔴 Auto-reconnection disabled for ${config.name} - manual reconnection required`);
+      this.emit('broker_failed', { brokerId, broker: config.name, reason: 'auto_reconnect_disabled' });
+      return;
+    }
+
     const attempts = this.reconnectAttempts.get(brokerId) || 0;
     
     if (attempts >= config.maxReconnectAttempts) {

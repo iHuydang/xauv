@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
+import { exnessStabilityManager } from './exness-stability-manager';
 
 export interface ExnessMT5Account {
   accountId: string;
@@ -30,6 +31,8 @@ export class ExnessMT5Connection extends EventEmitter {
   private activeTrades = new Map<string, MT5Trade>();
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private isInitialized: boolean = false;
+  private autoReconnectEnabled: boolean = false; // Tắt auto-reconnect
+  private connectionStable: boolean = false;
 
   constructor() {
     super();
@@ -41,6 +44,9 @@ export class ExnessMT5Connection extends EventEmitter {
       isConnected: false,
       lastHeartbeat: new Date()
     };
+    
+    // Đăng ký với stability manager
+    exnessStabilityManager.registerAccount(this.account.accountId);
     
     // Chỉ khởi tạo một lần, không reset
     if (!this.isInitialized) {
@@ -97,8 +103,16 @@ export class ExnessMT5Connection extends EventEmitter {
       this.handleRtApiMessage(data);
     });
 
-    this.rtApiWs.on('error', () => {
+    this.rtApiWs.on('error', (error) => {
       console.log('RT API working in simulation mode');
+      // Không auto-reconnect để tránh restart liên tục
+    });
+
+    this.rtApiWs.on('close', (code, reason) => {
+      console.log(`RT API WebSocket closed: ${code} ${reason}`);
+      if (this.autoReconnectEnabled) {
+        console.log('Auto-reconnect disabled - manual reconnection required');
+      }
     });
   }
 
@@ -123,8 +137,16 @@ export class ExnessMT5Connection extends EventEmitter {
       this.handleTerminalMessage(data);
     });
 
-    this.terminalWs.on('error', () => {
+    this.terminalWs.on('error', (error) => {
       console.log('Terminal working in simulation mode');
+      // Không auto-reconnect để tránh restart liên tục
+    });
+
+    this.terminalWs.on('close', (code, reason) => {
+      console.log(`Terminal WebSocket closed: ${code} ${reason}`);
+      if (this.autoReconnectEnabled) {
+        console.log('Auto-reconnect disabled - manual reconnection required');
+      }
     });
   }
 
@@ -224,7 +246,7 @@ export class ExnessMT5Connection extends EventEmitter {
         account: this.account.accountId,
         symbol: symbol,
         volume: volume,
-        type: orderType === 'buy' ? 0 : 1,
+        orderType: orderType === 'buy' ? 0 : 1,
         orderId: orderId,
         timestamp: Date.now()
       };
@@ -276,6 +298,26 @@ export class ExnessMT5Connection extends EventEmitter {
       clearInterval(this.heartbeatInterval);
     }
     this.account.isConnected = false;
+  }
+
+  // Phương thức để bật/tắt auto-reconnect
+  public setAutoReconnect(enabled: boolean): void {
+    this.autoReconnectEnabled = enabled;
+    console.log(`Auto-reconnect ${enabled ? 'enabled' : 'disabled'} for Exness MT5`);
+  }
+
+  // Phương thức kiểm tra trạng thái connection
+  public isStable(): boolean {
+    return this.connectionStable && this.account.isConnected;
+  }
+
+  // Manual reconnect chỉ khi cần thiết
+  public manualReconnect(): void {
+    console.log('Manual reconnection requested...');
+    this.disconnect();
+    setTimeout(() => {
+      this.connectToExistingWebSockets();
+    }, 3000); // Delay 3 giây để tránh spam
   }
 }
 

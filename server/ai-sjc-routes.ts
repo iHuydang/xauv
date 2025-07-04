@@ -197,10 +197,24 @@ router.post('/price-arbitrage', async (req, res) => {
   try {
     const arbitrage = {
       ai_model: 'DEEP_REINFORCEMENT_LEARNING',
-
+      status: 'active',
+      effectiveness: '92%'
+    };
+    
+    res.json({
+      success: true,
+      data: arbitrage
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Price arbitrage failed'
+    });
+  }
+});
 
 // Custom sentiment manipulation with user-generated content
-app.post('/api/ai-sjc/custom-sentiment-manipulation', async (req, res) => {
+router.post('/custom-sentiment-manipulation', async (req, res) => {
   try {
     const { platforms, content, intensity, distribution_strategy, target_demographics } = req.body;
     
@@ -261,7 +275,7 @@ app.post('/api/ai-sjc/custom-sentiment-manipulation', async (req, res) => {
 });
 
 // Automated batch sentiment content generation
-app.post('/api/ai-sjc/auto-sentiment-generation', async (req, res) => {
+router.post('/auto-sentiment-generation', async (req, res) => {
   try {
     const { batch_mode, post_number, total_posts, content_variation, intensity_variation, platforms, time_interval_minutes } = req.body;
     
@@ -321,26 +335,6 @@ app.post('/api/ai-sjc/auto-sentiment-generation', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to generate batch sentiment content'
-    });
-  }
-});
-
-      execution_speed: 'MICROSECOND',
-      opportunities_detected: Math.floor(Math.random() * 50) + 10,
-      total_volume: '$500M equivalent',
-      profit_potential: '15-25%',
-      risk_level: 'AI_CONTROLLED'
-    };
-    
-    res.json({
-      success: true,
-      arbitrage_execution: arbitrage,
-      message: 'AI price arbitrage system active and exploiting opportunities'
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Price arbitrage AI failed'
     });
   }
 });

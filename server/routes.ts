@@ -111,25 +111,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Force MT5 reconnection
+  // Manual MT5 reconnection - chỉ khi cần thiết
   app.post("/api/exness-mt5/reconnect", async (req, res) => {
     try {
-      console.log('🔄 Force reconnecting to Exness MT5...');
-      exnessMT5Connection.disconnect();
+      console.log('🔄 Manual reconnection requested for Exness MT5...');
       
-      // Reinitialize connection
-      setTimeout(() => {
-        const newConnection = require('./exness-mt5-connection').exnessMT5Connection;
-      }, 2000);
+      // Kiểm tra xem có thật sự cần reconnect không
+      const status = exnessMT5Connection.getConnectionStatus();
+      if (status.connected && status.rtApiConnected) {
+        return res.json({
+          success: true,
+          message: 'Connection is already stable, no reconnection needed',
+          status: status
+        });
+      }
+
+      // Thực hiện manual reconnect
+      exnessMT5Connection.manualReconnect();
       
       res.json({
         success: true,
-        message: 'MT5 reconnection initiated'
+        message: 'Manual reconnection initiated (no auto-restart)',
+        autoReconnect: false
       });
     } catch (error) {
       res.status(500).json({
         success: false,
         error: 'Failed to reconnect MT5'
+      });
+    }
+  });
+
+  // Bật/tắt auto-reconnection
+  app.post("/api/exness-mt5/auto-reconnect", async (req, res) => {
+    try {
+      const { enabled } = req.body;
+      exnessMT5Connection.setAutoReconnect(enabled === true);
+      
+      res.json({
+        success: true,
+        message: `Auto-reconnect ${enabled ? 'enabled' : 'disabled'}`,
+        autoReconnectEnabled: enabled
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to set auto-reconnect'
       });
     }
   });

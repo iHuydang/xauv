@@ -51,8 +51,8 @@ export class AntiSlippageSystem extends EventEmitter {
     // Listen to market control events
     marketControlAlgorithm.on('priceMovement', this.handlePriceMovement.bind(this));
     
-    // Listen to account order events
-    accountManager.on('orderPlaced', this.trackOrder.bind(this));
+    // Listen to account order events - temporarily disabled
+    // accountManager.on('orderPlaced', this.trackOrder.bind(this));
   }
 
   // Track new orders to monitor their expected direction

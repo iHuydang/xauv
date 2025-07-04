@@ -428,6 +428,13 @@ export class RealForexWebSocketManager extends EventEmitter {
   }
 
   private scheduleReconnection(providerId: string, config: ForexConnection): void {
+    // Tắt auto-reconnection cho Exness-related providers để tránh restart liên tục
+    if (providerId.toLowerCase().includes('exness') || config.name.toLowerCase().includes('exness')) {
+      console.log(`🔴 Auto-reconnection disabled for ${config.name} - manual reconnection required`);
+      this.emit('provider_failed', { providerId, provider: config.name, reason: 'auto_reconnect_disabled' });
+      return;
+    }
+
     if (this.reconnectIntervals.has(providerId)) {
       return; // Already scheduled
     }

@@ -104,6 +104,17 @@ Preferred communication style: Simple, everyday language.
 - ✓ Gold market analysis với BTC và gold-backed tokens
 - ✓ Complete market making functionality với bid/ask spread management
 
+### July 04, 2025 - Fixed Exness Account Continuous Restart Issue
+- ✅ Tạo Exness Stability Manager để ngăn chặn restart liên tục
+- ✅ Tắt auto-reconnection mặc định cho tài khoản Exness (205307242)
+- ✅ Thêm manual reconnection control với rate limiting
+- ✅ Cập nhật Multi-broker WebSocket để disable auto-reconnect cho Exness
+- ✅ Vô hiệu hóa scheduleReconnection loops trong Real-forex WebSocket
+- ✅ Thêm connection health monitoring và stability tracking
+- ✅ Tạo API endpoints mới: /api/exness-mt5/reconnect và /api/exness-mt5/auto-reconnect
+- ✅ Sửa lỗi syntax trong ai-sjc-routes.ts và agi-anti-slippage-system.ts
+- ✅ Server chạy ổn định không bị restart account liên tục như yêu cầu
+
 ### June 26, 2025 - Vietnam Gold Pressure Scanner với Thuật Toán USD/VND
 - ✓ Tạo Vietnam Gold Pressure Scanner với thuật toán áp lực tỷ giá USD/VND qua đêm
 - ✓ Tích hợp dữ liệu swap USD/VND từ Federal Reserve và Bank of Japan

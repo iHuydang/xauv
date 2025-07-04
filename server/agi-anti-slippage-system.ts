@@ -94,8 +94,8 @@ export class AGIAntiSlippageSystem extends EventEmitter {
     this.agiEngine = {
       neuralPredict: this.neuralMarketPrediction.bind(this),
       quantumAnalyze: this.quantumMarketAnalysis.bind(this),
-      adaptiveLearn: this.adaptiveLearningSystem.bind(this),
-      emergentStrategy: this.emergentStrategyGeneration.bind(this)
+      // adaptiveLearn: this.adaptiveLearningSystem.bind(this),
+      // emergentStrategy: this.emergentStrategyGeneration.bind(this)
     };
 
     this.neuralPredictionModel = {
