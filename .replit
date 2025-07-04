@@ -52,7 +52,7 @@ localPort = 8088
 externalPort = 6000
 
 [workflows]
-runButton = "AWS Systems Manager Deployment"
+runButton = "Safe Federal Reserve Start"
 
 [[workflows.workflow]]
 name = "Project"
@@ -396,3 +396,16 @@ args = "echo \"https://ap-northeast-1.console.aws.amazon.com/systems-manager/aut
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
+
+[[workflows.workflow]]
+name = "Safe Federal Reserve Start"
+author = 44616077
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x safe-start.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./safe-start.sh"

@@ -68,26 +68,39 @@ app.use((req, res, next) => {
   app.use("/api/enhanced-forex", enhancedForexApiRoutes);
   app.use("/api/market-compliance", marketComplianceRoutes);
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 5000;
 
-  server.on("error", (error: any) => {
-    if (error.code === "EADDRINUSE") {
-      log(
-        `Port ${port} is already in use. Please stop other processes or wait a moment.`,
-      );
-      process.exit(1);
-    } else {
-      throw error;
+  // Function to kill existing process on port
+  async function killPortProcess(port: number) {
+    try {
+      const { exec } = require('child_process');
+      await new Promise((resolve) => {
+        exec(`lsof -ti:${port} | xargs kill -9`, (error: any) => {
+          resolve(null);
+        });
+      });
+      console.log(`✅ Cleared port ${port}`);
+    } catch (error) {
+      // Ignore errors, port might already be free
     }
-  });
+  }
 
-  server.listen(port, "0.0.0.0", () => {
-    log(`serving on port ${port}`);
-    log(`Server accessible at http://0.0.0.0:${port}`);
-    log(`Local access: http://localhost:${port}`);
-    log(`External access: Use the provided Replit URL`);
+  // Clear port before starting
+  killPortProcess(PORT).then(() => {
+    const server = app.listen(PORT, "0.0.0.0", () => {
+      console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
+      console.log(`🏛️ Federal Reserve Control System active`);
+    });
+
+    server.on('error', (err: any) => {
+      if (err.code === 'EADDRINUSE') {
+        console.log(`❌ Port ${PORT} still in use, retrying...`);
+        setTimeout(() => {
+          killPortProcess(PORT).then(() => {
+            server.listen(PORT, "0.0.0.0");
+          });
+        }, 2000);
+      }
+    });
   });
 })();
