@@ -1,10 +1,10 @@
-modules = ["nodejs-20", "web", "postgresql-16"]
+modules = ["nodejs-20", "web", "postgresql-16", "angular-node-20", "dotnet-8.0", "dotnet-7.0", "bash", "bun-1.2", "clojure-1.12", "deno-2", "elixir-1_17", "go-1.19", "haskell-ghc9.0", "hermit-0.38.2", "lua-5.2", "nodejs-23", "nodejs-22", "php-8.3", "php-8.2", "pyright-extended", "pyright", "vue-node-18", "vue-node-20", "swift-5.6", "swift-5.8", "svelte-kit-node-20", "rust-stable", "r-4.2", "r-4.4", "python-3.10", "python-base-3.11", "python-3.11", "python-3.12", "qbasic", "ruby-3.1", "typescript-language-server", "docker", "nodejs-14", "nix", "python-3.9", "python-3.8", "python-base-3.13", "haskell-ghc9.2", "haskell-ghc9.4", "java-graalvm22.3", "go-1.20", "go-1.23", "deno-1", "elixir-1_15", "clojure-1.11", "cpp-clang14", "c-clang14", "rust-nightly"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["mailutils"]
+packages = ["mailutils", "deepin.dwayland"]
 
 [deployment]
 deploymentTarget = "autoscale"
