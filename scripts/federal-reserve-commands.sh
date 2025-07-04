@@ -251,16 +251,28 @@ execute_currency_intervention() {
         -H "Content-Type: application/json" \
         -d "{\"currency\": \"$currency\", \"action\": \"$action\", \"amount\": $amount}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Currency intervention executed${NC}"
-        local new_dxy=$(echo "$response" | jq -r '.new_dollar_index')
-        echo -e "${BLUE}New Dollar Index: $new_dxy${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Currency intervention completed: $action $currency, new DXY: $new_dxy"
+    if command -v jq >/dev/null 2>&1; then
+        if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Currency intervention executed${NC}"
+            local new_dxy=$(echo "$response" | jq -r '.new_dollar_index')
+            echo -e "${BLUE}New Dollar Index: $new_dxy${NC}"
+            echo "$response" | jq '.' 2>/dev/null || echo "$response"
+            log_operation "✅ Currency intervention completed: $action $currency, new DXY: $new_dxy"
+        else
+            echo -e "${RED}❌ Currency intervention failed${NC}"
+            echo "$response" | jq '.' 2>/dev/null || echo "$response"
+            log_operation "❌ Currency intervention failed: $action $currency"
+        fi
     else
-        echo -e "${RED}❌ Currency intervention failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Currency intervention failed: $action $currency"
+        echo -e "${YELLOW}⚠️ jq not available, showing raw response${NC}"
+        echo "$response"
+        if [[ "$response" == *"success"* ]]; then
+            echo -e "${GREEN}✅ Currency intervention executed${NC}"
+            log_operation "✅ Currency intervention completed: $action $currency"
+        else
+            echo -e "${RED}❌ Currency intervention failed${NC}"
+            log_operation "❌ Currency intervention failed: $action $currency"
+        fi
     fi
 }
 
@@ -389,15 +401,27 @@ execute_emergency_vnd_devaluation() {
 
     # Coordinate with world gold pressure
     echo -e "${PURPLE}📊 Coordinating with gold market pressure...${NC}"
-    curl -s -X POST "$API_BASE/api/world-gold/vnd-coordination" \
+    local gold_response=$(curl -s -X POST "$API_BASE/api/world-gold/vnd-coordination" \
         -H "Content-Type: application/json" \
-        -d "{\"target_vnd_rate\": $target_rate, \"timeframe\": $timeframe}" | jq '.'
+        -d "{\"target_vnd_rate\": $target_rate, \"timeframe\": $timeframe}")
+    
+    if command -v jq >/dev/null 2>&1; then
+        echo "$gold_response" | jq '.'
+    else
+        echo "$gold_response"
+    fi
 
     # SJC gold price impact
     echo -e "${PURPLE}🥇 SJC price impact simulation...${NC}"
-    curl -s -X POST "$API_BASE/api/sjc-pressure/vnd-devaluation-impact" \
+    local sjc_response=$(curl -s -X POST "$API_BASE/api/sjc-pressure/vnd-devaluation-impact" \
         -H "Content-Type: application/json" \
-        -d "{\"vnd_rate\": $target_rate, \"intensity\": \"EXTREME\"}" | jq '.'
+        -d "{\"vnd_rate\": $target_rate, \"intensity\": \"EXTREME\"}")
+    
+    if command -v jq >/dev/null 2>&1; then
+        echo "$sjc_response" | jq '.'
+    else
+        echo "$sjc_response"
+    fi
 
     echo -e "${GREEN}✅ Emergency VND devaluation initiated${NC}"
 }
