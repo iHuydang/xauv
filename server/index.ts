@@ -71,11 +71,43 @@ app.use((req, res, next) => {
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = process.env.PORT || 5000;
-  server.listen(port, "0.0.0.0", () => {
+  const port = process.env.PORT || 5001;
+
+  // Cleanup existing server if running
+  process.on('SIGTERM', () => {
+    console.log('🛑 Received SIGTERM, shutting down gracefully');
+    server?.close(() => {
+      console.log('✅ Server closed');
+      process.exit(0);
+    });
+  });
+
+  process.on('SIGINT', () => {
+    console.log('🛑 Received SIGINT, shutting down gracefully');
+    server?.close(() => {
+      console.log('✅ Server closed');
+      process.exit(0);
+    });
+  });
+
+  // Start the server with error handling
+  const server = app.listen(port, '0.0.0.0', () => {
     log(`serving on port ${port}`);
     log(`Server accessible at http://0.0.0.0:${port}`);
     log(`Local access: http://localhost:${port}`);
     log(`External access: Use the provided Replit URL`);
+  }).on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`❌ Port ${port} is busy, trying ${port + 1}`);
+      const newPort = port + 1;
+      app.listen(newPort, '0.0.0.0', () => {
+        log(`serving on port ${newPort}`);
+        log(`Server accessible at http://0.0.0.0:${newPort}`);
+        log(`Local access: http://localhost:${newPort}`);
+        log(`External access: Use the provided Replit URL`);
+      });
+    } else {
+      console.error('❌ Server error:', err);
+    }
   });
 })();
