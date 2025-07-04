@@ -1,14 +1,40 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  serial,
+  integer,
+  boolean,
+  decimal,
+  timestamp,
+  varchar,
+  jsonb,
+  index,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session storage table for Replit Auth
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table for Replit Auth
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
   balance: decimal("balance", { precision: 15, scale: 2 }).notNull().default("10000.00"),
   equity: decimal("equity", { precision: 15, scale: 2 }).notNull().default("10000.00"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const symbols = pgTable("symbols", {
@@ -24,7 +50,7 @@ export const symbols = pgTable("symbols", {
 
 export const positions = pgTable("positions", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   symbol: text("symbol").notNull(),
   type: text("type").notNull(), // 'buy' or 'sell'
   volume: decimal("volume", { precision: 10, scale: 2 }).notNull(),
@@ -40,7 +66,7 @@ export const positions = pgTable("positions", {
 
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   symbol: text("symbol").notNull(),
   type: text("type").notNull(), // 'buy', 'sell'
   orderType: text("order_type").notNull().default("market"), // 'market', 'limit', 'stop'
@@ -53,9 +79,12 @@ export const orders = pgTable("orders", {
   executedAt: timestamp("executed_at"),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+// Replit Auth schemas
+export const upsertUserSchema = createInsertSchema(users).omit({
+  createdAt: true,
+  updatedAt: true,
+  balance: true,
+  equity: true,
 });
 
 export const insertSymbolSchema = createInsertSchema(symbols).omit({
@@ -78,8 +107,9 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
   executedAt: true,
 });
 
+// Types for Replit Auth
+export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Symbol = typeof symbols.$inferSelect;
 export type InsertSymbol = z.infer<typeof insertSymbolSchema>;
 export type Position = typeof positions.$inferSelect;

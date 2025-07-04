@@ -119,7 +119,9 @@ export class WebSocketStatusMonitor extends EventEmitter {
       const total = this.connections.size;
       const failed = this.getFailedSessions().length;
 
-      console.log(`📊 WebSocket Health Report: ${healthy}/${total} connected, ${failed} failed`);
+      if (total > 0) {
+        console.log(`📊 WebSocket Health Report: ${healthy}/${total} connected, ${failed} failed`);
+      }
 
       if (healthy === 0 && total > 0) {
         console.log('⚠️ No WebSocket connections active - all providers failed');
