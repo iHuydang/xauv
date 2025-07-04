@@ -31,9 +31,9 @@ get_fed_status() {
 
     local response=$(curl -s "$API_BASE/api/fed-monetary/status")
 
-    if echo "$response" | node -e "try { const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')); process.exit(data.success ? 0 : 1); } catch(e) { process.exit(1); }" 2>/dev/null; then
+    if echo "$response" | jq -e '.success' > /dev/null; then
         echo -e "${GREEN}✅ System operational${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.data'
 
         # Extract key metrics
         local fed_rate=$(echo "$response" | jq -r '.data.monetary_policy.fedFundsRate')
@@ -56,7 +56,7 @@ get_fed_status() {
 # Execute Open Market Operations
 execute_open_market() {
     local operation_type="${1:-EXPAND}"
-    local amount="${2:-5000000000}"
+    local amount="${2:-50000000000}"
 
     echo -e "${PURPLE}💰 EXECUTING OPEN MARKET OPERATION${NC}"
     echo -e "${YELLOW}Operation: $operation_type${NC}"
@@ -68,13 +68,13 @@ execute_open_market() {
         -H "Content-Type: application/json" \
         -d "{\"type\": \"$operation_type\", \"amount\": $amount}")
 
-    if echo "$response" | node -e "try { const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')); process.exit(data.success ? 0 : 1); } catch(e) { process.exit(1); }" 2>/dev/null; then
+    if echo "$response" | jq -e '.success' > /dev/null; then
         echo -e "${GREEN}✅ Operation executed successfully${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "✅ Open market operation completed: $operation_type \$$amount"
     else
         echo -e "${RED}❌ Operation failed${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "❌ Open market operation failed: $operation_type \$$amount"
     fi
 }
@@ -97,13 +97,13 @@ launch_qe_program() {
         -H "Content-Type: application/json" \
         -d "{\"amount\": $qe_amount, \"duration\": $duration}")
 
-    if echo "$response" | node -e "try { const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')); process.exit(data.success ? 0 : 1); } catch(e) { process.exit(1); }" 2>/dev/null; then
+    if echo "$response" | jq -e '.success' > /dev/null; then
         echo -e "${GREEN}✅ QE Program launched successfully${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "✅ QE program launched: \$$qe_amount over $duration months"
     else
         echo -e "${RED}❌ QE Program launch failed${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "❌ QE program launch failed"
     fi
 }
@@ -121,15 +121,15 @@ manipulate_gold_standard() {
         -H "Content-Type: application/json" \
         -d "{\"action\": \"$action\"}")
 
-    if echo "$response" | node -e "try { const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')); process.exit(data.success ? 0 : 1); } catch(e) { process.exit(1); }" 2>/dev/null; then
+    if echo "$response" | jq -e '.success' > /dev/null; then
         echo -e "${GREEN}✅ Gold manipulation executed${NC}"
         local new_price=$(echo "$response" | jq -r '.new_gold_price')
         echo -e "${BLUE}New Gold Price: \$$new_price${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "✅ Gold manipulation completed: $action, new price: \$$new_price"
     else
         echo -e "${RED}❌ Gold manipulation failed${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "❌ Gold manipulation failed: $action"
     fi
 }
@@ -151,15 +151,15 @@ execute_currency_intervention() {
         -H "Content-Type: application/json" \
         -d "{\"currency\": \"$currency\", \"action\": \"$action\", \"amount\": $amount}")
 
-    if echo "$response" | node -e "try { const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')); process.exit(data.success ? 0 : 1); } catch(e) { process.exit(1); }" 2>/dev/null; then
+    if echo "$response" | jq -e '.success' > /dev/null; then
         echo -e "${GREEN}✅ Currency intervention executed${NC}"
         local new_dxy=$(echo "$response" | jq -r '.new_dollar_index')
         echo -e "${BLUE}New Dollar Index: $new_dxy${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "✅ Currency intervention completed: $action $currency, new DXY: $new_dxy"
     else
         echo -e "${RED}❌ Currency intervention failed${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "❌ Currency intervention failed: $action $currency"
     fi
 }
@@ -347,13 +347,13 @@ set_inflation_target() {
         -H "Content-Type: application/json" \
         -d "{\"target\": $target}")
 
-    if echo "$response" | node -e "try { const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')); process.exit(data.success ? 0 : 1); } catch(e) { process.exit(1); }" 2>/dev/null; then
+    if echo "$response" | jq -e '.success' > /dev/null; then
         echo -e "${GREEN}✅ Inflation target set successfully${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "✅ Inflation target set: $target%"
     else
         echo -e "${RED}❌ Failed to set inflation target${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "❌ Failed to set inflation target: $target%"
     fi
 }
@@ -502,13 +502,13 @@ execute_stress_test() {
         -H "Content-Type: application/json" \
         -d "{\"scenario\": \"$scenario\"}")
 
-    if echo "$response" | node -e "try { const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')); process.exit(data.success ? 0 : 1); } catch(e) { process.exit(1); }" 2>/dev/null; then
+    if echo "$response" | jq -e '.success' > /dev/null; then
         echo -e "${GREEN}✅ Banking stress test completed${NC}"
         echo "$response" | jq '.banking_health'
         log_operation "✅ Banking stress test completed: $scenario"
     else
         echo -e "${RED}❌ Stress test failed${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "❌ Banking stress test failed: $scenario"
     fi
 }
@@ -526,13 +526,13 @@ execute_emergency_liquidity() {
         -H "Content-Type: application/json" \
         -d "{\"amount\": $amount}")
 
-    if echo "$response" | node -e "try { const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')); process.exit(data.success ? 0 : 1); } catch(e) { process.exit(1); }" 2>/dev/null; then
+    if echo "$response" | jq -e '.success' > /dev/null; then
         echo -e "${GREEN}✅ Emergency liquidity injection completed${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "✅ Emergency liquidity injection completed: \$$amount"
     else
         echo -e "${RED}❌ Emergency liquidity injection failed${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "❌ Emergency liquidity injection failed: \$$amount"
     fi
 }
@@ -544,13 +544,13 @@ monitor_financial_stability() {
 
     local response=$(curl -s "$API_BASE/api/fed-monetary/stability")
 
-    if echo "$response" | node -e "try { const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')); process.exit(data.success ? 0 : 1); } catch(e) { process.exit(1); }" 2>/dev/null; then
+    if echo "$response" | jq -e '.success' > /dev/null; then
         echo -e "${GREEN}✅ Stability metrics retrieved${NC}"
         echo "$response" | jq '.stability_metrics'
         log_operation "✅ Financial stability metrics retrieved"
     else
         echo -e "${RED}❌ Failed to get stability metrics${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "❌ Failed to retrieve stability metrics"
     fi
 }
@@ -571,13 +571,13 @@ execute_yield_curve_control() {
         -H "Content-Type: application/json" \
         -d "{\"target_curve\": {\"2Y\": $target_2y, \"5Y\": $target_5y, \"10Y\": $target_10y, \"30Y\": $target_30y}}")
 
-    if echo "$response" | node -e "try { const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')); process.exit(data.success ? 0 : 1); } catch(e) { process.exit(1); }" 2>/dev/null; then
+    if echo "$response" | jq -e '.success' > /dev/null; then
         echo -e "${GREEN}✅ Yield curve control executed${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "✅ Yield curve control executed"
     else
         echo -e "${RED}❌ Yield curve control failed${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "❌ Yield curve control failed"
     fi
 }
@@ -595,13 +595,13 @@ execute_international_coordination() {
         -H "Content-Type: application/json" \
         -d "{\"action\": \"$action\"}")
 
-    if echo "$response" | node -e "try { const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')); process.exit(data.success ? 0 : 1); } catch(e) { process.exit(1); }" 2>/dev/null; then
+    if echo "$response" | jq -e '.success' > /dev/null; then
         echo -e "${GREEN}✅ International coordination executed${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "✅ International coordination executed: $action"
     else
         echo -e "${RED}❌ International coordination failed${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "❌ International coordination failed: $action"
     fi
 }
@@ -619,13 +619,13 @@ activate_circuit_breaker() {
         -H "Content-Type: application/json" \
         -d "{\"reason\": \"$reason\"}")
 
-    if echo "$response" | node -e "try { const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')); process.exit(data.success ? 0 : 1); } catch(e) { process.exit(1); }" 2>/dev/null; then
+    if echo "$response" | jq -e '.success' > /dev/null; then
         echo -e "${GREEN}✅ Circuit breaker activated${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "✅ Circuit breaker activated: $reason"
     else
         echo -e "${RED}❌ Circuit breaker activation failed${NC}"
-        echo "$response" | node -e "try { console.log(JSON.stringify(JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')), null, 2)); } catch(e) { console.log('Invalid JSON response'); }"
+        echo "$response" | jq '.'
         log_operation "❌ Circuit breaker activation failed: $reason"
     fi
 }
