@@ -52,7 +52,7 @@ localPort = 8088
 externalPort = 6000
 
 [workflows]
-runButton = "Run"
+runButton = "AWS Systems Manager Deployment"
 
 [[workflows.workflow]]
 name = "Project"
@@ -339,3 +339,60 @@ args = "npm run dev"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "Trading Terminal"
+
+[[workflows.workflow]]
+name = "AWS Systems Manager Deployment"
+author = 44616077
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x aws-deployment-connector.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x workflow-aws-integration.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🚀 AWS Systems Manager Deployment Starting...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"=============================================\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./aws-deployment-connector.sh setup"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 5"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./workflow-aws-integration.sh hybrid"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"✅ AWS Systems Manager Deployment Active\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"📊 Checking deployment status...\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./workflow-aws-integration.sh status"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🔗 AWS Console URLs:\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"https://ap-northeast-1.console.aws.amazon.com/systems-manager/automation/execute/AWSQuickSetupType-SetupJITNAResources?region=ap-northeast-1#AutomationAssumeRole=arn%3Aaws%3Aiam%3A%3A207567762473%3Arole%2FAWS-QuickSetup-JITNA-LocalAdministrationRole\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
