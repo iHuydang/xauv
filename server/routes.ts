@@ -983,6 +983,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get available attack vectors
   app.get("/api/attack/vectors", async (req, res) => {
+    ```tool_code
     try {
       const { quickAttackSystem } = await import("./quick-attack-system.js");
       const vectors = quickAttackSystem.getAvailableVectors();
@@ -1901,6 +1902,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         error: "Failed to execute shell scanner",
+      });
+    }
+  });
+
+  app.get("/api/auth/user", async (req, res) => {
+    res.json({ user: req.user || null });
+  });
+
+  // Federal Reserve System Status
+  app.get("/api/fed-monetary/status", async (req, res) => {
+    try {
+      const { fedSystem } = await import("./fed-monetary-control-system.js");
+      const status = await fedSystem.getSystemStatus();
+      res.json({ success: true, data: status });
+    } catch (error) {
+      console.error('Fed system status error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to get Fed system status",
+        details: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
