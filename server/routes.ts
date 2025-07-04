@@ -983,8 +983,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get available attack vectors
   app.get("/api/attack/vectors", async (req, res) => {
-    ```tool_code
-    try {```tool_code
+    try {
       const { quickAttackSystem } = await import("./quick-attack-system.js");
       const vectors = quickAttackSystem.getAvailableVectors();
       res.json({ vectors });
