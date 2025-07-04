@@ -336,3 +336,291 @@ case "${1:-help}" in
         show_help
         ;;
 esac
+#!/bin/bash
+
+# Federal Reserve Monetary Control System Commands
+# Advanced central bank monetary policy tools
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+NC='\033[0m' # No Color
+
+# API Base URL
+API_BASE="http://localhost:5000"
+
+# Log function
+log_operation() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> logs/federal-reserve.log
+}
+
+# Display header
+show_header() {
+    echo -e "${BLUE}================================================${NC}"
+    echo -e "${BLUE}🏛️  FEDERAL RESERVE MONETARY CONTROL SYSTEM  🏛️${NC}"
+    echo -e "${BLUE}================================================${NC}"
+    echo -e "${GREEN}Academic Implementation of Central Bank Tools${NC}"
+    echo -e "${BLUE}================================================${NC}"
+    echo
+}
+
+# Get system status
+get_status() {
+    echo -e "${BLUE}📊 Getting Federal Reserve System Status...${NC}"
+    
+    response=$(curl -s "$API_BASE/api/fed-monetary/status")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ System Status Retrieved${NC}"
+        echo "$response" | jq '.data'
+    else
+        echo -e "${RED}❌ Failed to get status${NC}"
+        echo "$response" | jq '.'
+    fi
+}
+
+# Execute open market operation
+open_market_operation() {
+    local type="${1:-EXPAND}"
+    local amount="${2:-50000000000}"
+    
+    echo -e "${BLUE}💰 Executing Open Market Operation: $type${NC}"
+    echo -e "${BLUE}💵 Amount: \$$(echo $amount | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta')${NC}"
+    
+    response=$(curl -s -X POST "$API_BASE/api/fed-monetary/open-market" \
+        -H "Content-Type: application/json" \
+        -d "{\"type\": \"$type\", \"amount\": $amount}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ Open Market Operation Executed${NC}"
+        echo "$response" | jq '.'
+        log_operation "✅ Open Market Operation: $type \$$(echo $amount | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta')"
+    else
+        echo -e "${RED}❌ Operation Failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ Open Market Operation failed: $type"
+    fi
+}
+
+# Launch Quantitative Easing
+launch_qe() {
+    local amount="${1:-1000000000000}"
+    local duration="${2:-12}"
+    
+    echo -e "${PURPLE}🖨️  LAUNCHING QUANTITATIVE EASING PROGRAM${NC}"
+    echo -e "${PURPLE}💰 Total Amount: \$$(echo $amount | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta')${NC}"
+    echo -e "${PURPLE}⏱️  Duration: $duration months${NC}"
+    
+    response=$(curl -s -X POST "$API_BASE/api/fed-monetary/qe" \
+        -H "Content-Type: application/json" \
+        -d "{\"amount\": $amount, \"duration\": $duration}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ QE Program Launched${NC}"
+        echo "$response" | jq '.'
+        log_operation "✅ QE Program launched: \$$(echo $amount | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta') over $duration months"
+    else
+        echo -e "${RED}❌ QE Launch Failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ QE Program launch failed"
+    fi
+}
+
+# Execute emergency measures
+emergency_measures() {
+    local crisis="${1:-FINANCIAL_CRISIS}"
+    
+    echo -e "${RED}🚨 ACTIVATING EMERGENCY MONETARY MEASURES${NC}"
+    echo -e "${RED}⚠️  Crisis Type: $crisis${NC}"
+    
+    response=$(curl -s -X POST "$API_BASE/api/fed-monetary/emergency-measures" \
+        -H "Content-Type: application/json" \
+        -d "{\"crisis\": \"$crisis\"}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ Emergency Measures Activated${NC}"
+        echo "$response" | jq '.'
+        log_operation "✅ Emergency measures activated: $crisis"
+    else
+        echo -e "${RED}❌ Emergency Activation Failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ Emergency measures failed: $crisis"
+    fi
+}
+
+# Launch CBDC
+launch_cbdc() {
+    local name="${1:-FedCoin}"
+    local supply="${2:-1000000000000}"
+    
+    echo -e "${PURPLE}💰 LAUNCHING CENTRAL BANK DIGITAL CURRENCY${NC}"
+    echo -e "${PURPLE}🪙 Name: $name${NC}"
+    echo -e "${PURPLE}📊 Supply: $(echo $supply | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta') tokens${NC}"
+    
+    response=$(curl -s -X POST "$API_BASE/api/fed-monetary/launch-cbdc" \
+        -H "Content-Type: application/json" \
+        -d "{\"name\": \"$name\", \"supply\": $supply}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ CBDC Launched Successfully${NC}"
+        echo "$response" | jq '.'
+        log_operation "✅ CBDC launched: $name with supply $(echo $supply | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta')"
+    else
+        echo -e "${RED}❌ CBDC Launch Failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ CBDC launch failed: $name"
+    fi
+}
+
+# Implement negative rates
+negative_rates() {
+    local rate="${1:--0.5}"
+    
+    echo -e "${BLUE}📉 IMPLEMENTING NEGATIVE INTEREST RATES${NC}"
+    echo -e "${BLUE}📊 Target Rate: $rate%${NC}"
+    
+    response=$(curl -s -X POST "$API_BASE/api/fed-monetary/negative-rates" \
+        -H "Content-Type: application/json" \
+        -d "{\"rate\": $rate}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ Negative Rates Implemented${NC}"
+        echo "$response" | jq '.'
+        log_operation "✅ Negative rates implemented: $rate%"
+    else
+        echo -e "${RED}❌ Negative Rates Failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ Negative rates failed: $rate%"
+    fi
+}
+
+# Execute helicopter money
+helicopter_money() {
+    local amount="${1:-1000000000000}"
+    
+    echo -e "${YELLOW}🚁 EXECUTING HELICOPTER MONEY${NC}"
+    echo -e "${YELLOW}💰 Amount: \$$(echo $amount | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta')${NC}"
+    
+    response=$(curl -s -X POST "$API_BASE/api/fed-monetary/helicopter-money" \
+        -H "Content-Type: application/json" \
+        -d "{\"amount\": $amount}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ Helicopter Money Executed${NC}"
+        echo "$response" | jq '.'
+        log_operation "✅ Helicopter money executed: \$$(echo $amount | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta')"
+    else
+        echo -e "${RED}❌ Helicopter Money Failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ Helicopter money failed"
+    fi
+}
+
+# Start real-time monitoring
+start_monitoring() {
+    echo -e "${BLUE}📡 STARTING REAL-TIME ECONOMIC MONITORING${NC}"
+    
+    response=$(curl -s -X POST "$API_BASE/api/fed-monetary/start-monitoring" \
+        -H "Content-Type: application/json" \
+        -d "{}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ Real-Time Monitoring Started${NC}"
+        echo "$response" | jq '.'
+        log_operation "✅ Real-time monitoring started"
+    else
+        echo -e "${RED}❌ Monitoring Start Failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ Real-time monitoring failed to start"
+    fi
+}
+
+# Run stress test
+stress_test() {
+    local scenario="${1:-FINANCIAL_CRISIS}"
+    
+    echo -e "${PURPLE}🧪 RUNNING STRESS TEST${NC}"
+    echo -e "${PURPLE}📊 Scenario: $scenario${NC}"
+    
+    response=$(curl -s -X POST "$API_BASE/api/fed-monetary/stress-test" \
+        -H "Content-Type: application/json" \
+        -d "{\"scenario\": \"$scenario\"}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ Stress Test Completed${NC}"
+        echo "$response" | jq '.'
+        log_operation "✅ Stress test completed: $scenario"
+    else
+        echo -e "${RED}❌ Stress Test Failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ Stress test failed: $scenario"
+    fi
+}
+
+# Show help
+show_help() {
+    echo -e "${BLUE}Available Commands:${NC}"
+    echo -e "${GREEN}  status${NC}                           - Get system status"
+    echo -e "${GREEN}  open-market [EXPAND|CONTRACT] [amt]${NC}  - Execute open market operation"
+    echo -e "${GREEN}  qe [amount] [duration]${NC}           - Launch quantitative easing"
+    echo -e "${GREEN}  emergency [crisis_type]${NC}          - Activate emergency measures"
+    echo -e "${GREEN}  cbdc [name] [supply]${NC}             - Launch central bank digital currency"
+    echo -e "${GREEN}  negative-rates [rate]${NC}            - Implement negative interest rates"
+    echo -e "${GREEN}  helicopter [amount]${NC}              - Execute helicopter money"
+    echo -e "${GREEN}  monitoring${NC}                       - Start real-time monitoring"
+    echo -e "${GREEN}  stress-test [scenario]${NC}           - Run stress test"
+    echo -e "${GREEN}  help${NC}                             - Show this help"
+    echo
+    echo -e "${YELLOW}Emergency Crisis Types:${NC}"
+    echo -e "  FINANCIAL_CRISIS, HYPERINFLATION, DEFLATION, BANK_RUN"
+    echo
+    echo -e "${YELLOW}Stress Test Scenarios:${NC}"
+    echo -e "  GREAT_DEPRESSION, HYPERINFLATION, FINANCIAL_CRISIS"
+}
+
+# Main command handler
+main() {
+    show_header
+    
+    # Create logs directory if it doesn't exist
+    mkdir -p logs
+    
+    case "${1:-help}" in
+        "status")
+            get_status
+            ;;
+        "open-market")
+            open_market_operation "$2" "$3"
+            ;;
+        "qe")
+            launch_qe "$2" "$3"
+            ;;
+        "emergency")
+            emergency_measures "$2"
+            ;;
+        "cbdc")
+            launch_cbdc "$2" "$3"
+            ;;
+        "negative-rates")
+            negative_rates "$2"
+            ;;
+        "helicopter")
+            helicopter_money "$2"
+            ;;
+        "monitoring")
+            start_monitoring
+            ;;
+        "stress-test")
+            stress_test "$2"
+            ;;
+        "help"|*)
+            show_help
+            ;;
+    esac
+}
+
+# Run main function with all arguments
+main "$@"

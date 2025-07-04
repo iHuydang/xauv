@@ -326,6 +326,336 @@ class FederalReserveMonetaryControlSystem extends EventEmitter {
     }, 30000); // Every 30 seconds
   }
 
+  // Emergency monetary policy tools
+  async executeEmergencyMonetaryMeasures(crisis: "FINANCIAL_CRISIS" | "HYPERINFLATION" | "DEFLATION" | "BANK_RUN") {
+    console.log(`🚨 EMERGENCY MONETARY MEASURES ACTIVATED: ${crisis}`);
+    
+    switch (crisis) {
+      case "FINANCIAL_CRISIS":
+        // Unlimited liquidity provision
+        await this.executeOpenMarketOperation("EXPAND", 5000000000000); // $5T
+        this.monetaryPolicy.fedFundsRate = 0.25; // Emergency rate
+        await this.executeQuantitativeEasing(3000000000000, 6); // $3T over 6 months
+        break;
+        
+      case "HYPERINFLATION":
+        // Aggressive tightening
+        await this.executeOpenMarketOperation("CONTRACT", 2000000000000); // $2T
+        this.monetaryPolicy.fedFundsRate = 15.0; // Volcker shock levels
+        this.marketControl.inflationExpectations = 2.0; // Reset expectations
+        break;
+        
+      case "DEFLATION":
+        // Helicopter money
+        await this.executeHelicopterMoney(1000000000000); // $1T direct injection
+        this.monetaryPolicy.fedFundsRate = 0.0; // Zero lower bound
+        break;
+        
+      case "BANK_RUN":
+        // Unlimited bank support
+        await this.activateDiscountWindowUnlimited();
+        await this.guaranteeAllBankDeposits();
+        break;
+    }
+    
+    this.emit("emergencyMeasuresActivated", { crisis, timestamp: Date.now() });
+  }
+
+  // Central Bank Digital Currency (CBDC) system
+  async launchCBDC(name: string, supply: number) {
+    console.log(`💰 LAUNCHING CENTRAL BANK DIGITAL CURRENCY: ${name}`);
+    console.log(`📊 Initial Supply: ${supply.toLocaleString()} digital dollars`);
+    
+    const cbdc = {
+      name,
+      supply,
+      issuedDate: Date.now(),
+      distributionChannels: ["COMMERCIAL_BANKS", "DIRECT_DISTRIBUTION", "GOVERNMENT_PAYMENTS"],
+      features: ["PROGRAMMABLE_MONEY", "NEGATIVE_INTEREST", "EXPIRATION_DATES", "SPENDING_RESTRICTIONS"]
+    };
+    
+    // Phase out physical cash gradually
+    this.monetaryPolicy.m1Supply *= 0.7; // 30% reduction in physical money
+    
+    this.emit("cbdcLaunched", { cbdc, newMonetaryBase: this.monetaryPolicy.m1Supply });
+    return cbdc;
+  }
+
+  // Negative Interest Rate Policy (NIRP)
+  async implementNegativeRates(targetRate: number) {
+    console.log(`📉 IMPLEMENTING NEGATIVE INTEREST RATES: ${targetRate}%`);
+    
+    if (targetRate >= 0) {
+      throw new Error("Rate must be negative for NIRP");
+    }
+    
+    this.monetaryPolicy.fedFundsRate = targetRate;
+    
+    // Banks charged for excess reserves
+    const excessReserveCharge = Math.abs(targetRate) * 0.5;
+    console.log(`🏦 Banks charged ${excessReserveCharge}% on excess reserves`);
+    
+    // Stimulate lending through penalty rates
+    await this.executeOpenMarketOperation("EXPAND", 500000000000);
+    
+    this.emit("negativeRatesImplemented", { targetRate, excessReserveCharge });
+  }
+
+  // Yield Curve Control
+  async implementYieldCurveControl(targetYield: number, maturity: string) {
+    console.log(`📈 YIELD CURVE CONTROL: ${maturity} target ${targetYield}%`);
+    
+    const currentYield = this.marketControl.bondYields[maturity];
+    if (!currentYield) {
+      throw new Error(`Unknown maturity: ${maturity}`);
+    }
+    
+    const yieldGap = currentYield - targetYield;
+    
+    if (yieldGap > 0.1) {
+      // Yield too high - buy bonds to lower yield
+      const purchaseAmount = Math.abs(yieldGap) * 100000000000; // $100B per 1% gap
+      await this.executeOpenMarketOperation("EXPAND", purchaseAmount);
+      console.log(`📉 Purchasing ${purchaseAmount.toLocaleString()} in ${maturity} bonds`);
+    } else if (yieldGap < -0.1) {
+      // Yield too low - sell bonds to raise yield
+      const saleAmount = Math.abs(yieldGap) * 80000000000; // $80B per 1% gap
+      await this.executeOpenMarketOperation("CONTRACT", saleAmount);
+      console.log(`📈 Selling ${saleAmount.toLocaleString()} in ${maturity} bonds`);
+    }
+    
+    this.marketControl.bondYields[maturity] = targetYield;
+  }
+
+  // Forward Guidance System
+  async issueForwardGuidance(guidance: string, timeHorizon: number) {
+    console.log(`📢 FORWARD GUIDANCE ISSUED: "${guidance}"`);
+    console.log(`⏰ Time Horizon: ${timeHorizon} months`);
+    
+    const forwardGuidance = {
+      message: guidance,
+      timeHorizon,
+      issuedDate: Date.now(),
+      credibility: this.calculateForwardGuidanceCredibility(),
+      marketReaction: this.simulateMarketReaction(guidance)
+    };
+    
+    // Adjust market expectations based on guidance
+    if (guidance.includes("low") || guidance.includes("accommodative")) {
+      this.marketControl.inflationExpectations += 0.2;
+      this.marketControl.bondYields["10Y"] -= 0.15;
+    } else if (guidance.includes("tight") || guidance.includes("restrictive")) {
+      this.marketControl.inflationExpectations -= 0.1;
+      this.marketControl.bondYields["10Y"] += 0.20;
+    }
+    
+    this.emit("forwardGuidanceIssued", forwardGuidance);
+    return forwardGuidance;
+  }
+
+  // International Swap Lines
+  async activateSwapLines(targetCurrency: string, amount: number) {
+    console.log(`🔄 ACTIVATING SWAP LINES: ${amount.toLocaleString()} ${targetCurrency}`);
+    
+    const swapLines = {
+      ECB: { currency: "EUR", capacity: 1000000000000, rate: 0.5 },
+      BOJ: { currency: "JPY", capacity: 500000000000, rate: 0.3 },
+      BOE: { currency: "GBP", capacity: 300000000000, rate: 0.4 },
+      SNB: { currency: "CHF", capacity: 200000000000, rate: 0.2 },
+      BOC: { currency: "CAD", capacity: 250000000000, rate: 0.6 }
+    };
+    
+    // Provide dollar liquidity to foreign central banks
+    this.monetaryPolicy.m1Supply += amount;
+    console.log(`💱 ${amount.toLocaleString()} USD provided to foreign central banks`);
+    
+    // Strengthen international monetary coordination
+    this.marketControl.dollarIndex += 0.5; // USD strengthens from demand
+    
+    this.emit("swapLinesActivated", { targetCurrency, amount, timestamp: Date.now() });
+  }
+
+  // Helicopter Money (Direct Monetary Transfers)
+  async executeHelicopterMoney(amount: number) {
+    console.log(`🚁 HELICOPTER MONEY: Direct transfer of ${amount.toLocaleString()}`);
+    
+    // Direct money creation and distribution
+    this.monetaryPolicy.m1Supply += amount;
+    this.monetaryPolicy.m2Supply += amount * 1.2;
+    
+    // Immediate inflation impact
+    this.marketControl.inflationExpectations += 1.5;
+    
+    // Gold price surge from monetary debasement
+    this.marketControl.goldPrice += (amount / 1000000000) * 50; // $50 per $1B
+    
+    console.log(`💰 ${amount.toLocaleString()} created and distributed directly to citizens`);
+    
+    this.emit("helicopterMoneyExecuted", { amount, newM1: this.monetaryPolicy.m1Supply });
+  }
+
+  // Unlimited Discount Window
+  async activateDiscountWindowUnlimited() {
+    console.log(`🏦 UNLIMITED DISCOUNT WINDOW ACTIVATED`);
+    
+    const discountWindow = {
+      capacity: "UNLIMITED",
+      rate: this.monetaryPolicy.fedFundsRate + 0.5,
+      collateralRequirements: "RELAXED",
+      termLengths: ["OVERNIGHT", "30_DAYS", "90_DAYS"]
+    };
+    
+    console.log(`📊 Banks can now borrow unlimited amounts at ${discountWindow.rate}%`);
+    
+    this.emit("discountWindowUnlimited", discountWindow);
+  }
+
+  // Deposit Insurance Guarantee
+  async guaranteeAllBankDeposits() {
+    console.log(`🛡️ UNLIMITED DEPOSIT INSURANCE GUARANTEE`);
+    
+    const guarantee = {
+      coverage: "UNLIMITED",
+      scope: "ALL_DEPOSITS",
+      duration: "INDEFINITE",
+      backstop: "FULL_FAITH_AND_CREDIT_US"
+    };
+    
+    console.log(`✅ All bank deposits now fully guaranteed by US government`);
+    
+    this.emit("depositGuaranteeActivated", guarantee);
+  }
+
+  // Calculate forward guidance credibility
+  private calculateForwardGuidanceCredibility(): number {
+    // Based on historical consistency and market trust
+    const historicalConsistency = 0.85;
+    const marketTrust = 0.78;
+    const economicConditions = 0.72;
+    
+    return (historicalConsistency + marketTrust + economicConditions) / 3;
+  }
+
+  // Simulate market reaction to guidance
+  private simulateMarketReaction(guidance: string): any {
+    const bondReaction = guidance.includes("low") ? -0.25 : 0.15;
+    const stockReaction = guidance.includes("accommodative") ? 2.5 : -1.8;
+    const dollarReaction = guidance.includes("tight") ? 0.8 : -0.5;
+    
+    return { bondReaction, stockReaction, dollarReaction };
+  }
+
+  // Enhanced stress testing
+  async runStressTest(scenario: string) {
+    console.log(`🧪 RUNNING STRESS TEST: ${scenario}`);
+    
+    const stressScenarios = {
+      "GREAT_DEPRESSION": {
+        unemploymentRate: 25,
+        gdpDecline: -30,
+        inflationRate: -10,
+        bankFailures: 40
+      },
+      "HYPERINFLATION": {
+        unemploymentRate: 15,
+        gdpDecline: -20,
+        inflationRate: 1000,
+        bankFailures: 10
+      },
+      "FINANCIAL_CRISIS": {
+        unemploymentRate: 12,
+        gdpDecline: -8,
+        inflationRate: 0.5,
+        bankFailures: 25
+      }
+    };
+    
+    const testResults = stressScenarios[scenario as keyof typeof stressScenarios];
+    
+    if (testResults) {
+      console.log(`📊 Stress test results:`, testResults);
+      
+      // Recommend policy response
+      const policyResponse = this.generatePolicyResponse(testResults);
+      console.log(`💡 Recommended policy response:`, policyResponse);
+      
+      this.emit("stressTestCompleted", { scenario, results: testResults, policyResponse });
+      return { results: testResults, policyResponse };
+    }
+    
+    throw new Error(`Unknown stress test scenario: ${scenario}`);
+  }
+
+  // Generate policy response recommendations
+  private generatePolicyResponse(stressResults: any): any {
+    const response = {
+      interestRateChange: 0,
+      quantitativeEasing: 0,
+      emergencyMeasures: [] as string[]
+    };
+    
+    if (stressResults.unemploymentRate > 15) {
+      response.interestRateChange = -2.0;
+      response.quantitativeEasing = 2000000000000;
+      response.emergencyMeasures.push("HELICOPTER_MONEY");
+    }
+    
+    if (stressResults.inflationRate > 100) {
+      response.interestRateChange = 10.0;
+      response.quantitativeEasing = -1000000000000;
+      response.emergencyMeasures.push("EMERGENCY_TIGHTENING");
+    }
+    
+    if (stressResults.bankFailures > 30) {
+      response.emergencyMeasures.push("UNLIMITED_DISCOUNT_WINDOW");
+      response.emergencyMeasures.push("DEPOSIT_GUARANTEE");
+    }
+    
+    return response;
+  }
+
+  // Real-time economic monitoring
+  async startRealTimeMonitoring() {
+    console.log(`📡 REAL-TIME ECONOMIC MONITORING ACTIVATED`);
+    
+    setInterval(() => {
+      const indicators = this.collectEconomicIndicators();
+      const threats = this.identifyThreats(indicators);
+      
+      if (threats.length > 0) {
+        console.log(`⚠️ THREATS DETECTED:`, threats);
+        this.emit("economicThreatsDetected", threats);
+      }
+    }, 30000); // Check every 30 seconds
+  }
+
+  // Collect economic indicators
+  private collectEconomicIndicators(): any {
+    return {
+      unemploymentRate: 3.8 + (Math.random() - 0.5) * 0.4,
+      inflationRate: this.marketControl.inflationExpectations + (Math.random() - 0.5) * 0.2,
+      gdpGrowthRate: 2.5 + (Math.random() - 0.5) * 1.0,
+      stockMarketVolatility: 15 + Math.random() * 10,
+      creditSpreads: 1.2 + Math.random() * 0.8,
+      dollarIndex: this.marketControl.dollarIndex + (Math.random() - 0.5) * 2,
+      goldPrice: this.marketControl.goldPrice + (Math.random() - 0.5) * 100
+    };
+  }
+
+  // Identify economic threats
+  private identifyThreats(indicators: any): string[] {
+    const threats = [];
+    
+    if (indicators.unemploymentRate > 6.0) threats.push("RISING_UNEMPLOYMENT");
+    if (indicators.inflationRate > 4.0) threats.push("HIGH_INFLATION");
+    if (indicators.inflationRate < 0.5) threats.push("DEFLATION_RISK");
+    if (indicators.stockMarketVolatility > 30) threats.push("MARKET_INSTABILITY");
+    if (indicators.creditSpreads > 3.0) threats.push("CREDIT_STRESS");
+    if (indicators.goldPrice > this.calculateGoldFairValue() * 1.5) threats.push("DOLLAR_WEAKNESS");
+    
+    return threats;
+  }
+
   // Get current system status
   getSystemStatus() {
     return {
@@ -334,6 +664,15 @@ class FederalReserveMonetaryControlSystem extends EventEmitter {
       gold_fair_value: this.calculateGoldFairValue(),
       optimal_fed_funds_rate: this.calculateOptimalFedFundsRate(),
       system_health: "OPERATIONAL",
+      emergency_tools: {
+        cbdc_ready: true,
+        negative_rates_capable: true,
+        yield_curve_control: true,
+        swap_lines_active: true,
+        helicopter_money_authorized: true,
+        unlimited_discount_window: true,
+        deposit_guarantee_available: true
+      }
     };
   }
 }
@@ -533,6 +872,241 @@ router.post("/fed-monetary/target-inflation", async (req, res) => {
       success: true,
       message: `Inflation target set to ${target}%`,
       policy_adjustments: fedSystem.getSystemStatus().monetary_policy,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+});
+
+// Emergency monetary measures
+router.post("/fed-monetary/emergency-measures", async (req, res) => {
+  try {
+    const { crisis } = req.body;
+    
+    const validCrises = ["FINANCIAL_CRISIS", "HYPERINFLATION", "DEFLATION", "BANK_RUN"];
+    if (!validCrises.includes(crisis)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid crisis type",
+      });
+    }
+
+    await fedSystem.executeEmergencyMonetaryMeasures(crisis);
+
+    res.json({
+      success: true,
+      message: `Emergency measures activated for ${crisis}`,
+      new_status: fedSystem.getSystemStatus(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+});
+
+// Launch CBDC
+router.post("/fed-monetary/launch-cbdc", async (req, res) => {
+  try {
+    const { name, supply } = req.body;
+    
+    if (!name || !supply) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: name, supply",
+      });
+    }
+
+    const cbdc = await fedSystem.launchCBDC(name, supply);
+
+    res.json({
+      success: true,
+      message: `CBDC ${name} launched successfully`,
+      cbdc_details: cbdc,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+});
+
+// Negative interest rates
+router.post("/fed-monetary/negative-rates", async (req, res) => {
+  try {
+    const { rate } = req.body;
+    
+    if (rate === undefined || rate >= 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Rate must be negative",
+      });
+    }
+
+    await fedSystem.implementNegativeRates(rate);
+
+    res.json({
+      success: true,
+      message: `Negative interest rates implemented: ${rate}%`,
+      new_fed_funds_rate: fedSystem.getSystemStatus().monetary_policy.fedFundsRate,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+});
+
+// Yield curve control
+router.post("/fed-monetary/yield-curve-control", async (req, res) => {
+  try {
+    const { maturity, target_yield } = req.body;
+    
+    if (!maturity || target_yield === undefined) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: maturity, target_yield",
+      });
+    }
+
+    await fedSystem.implementYieldCurveControl(target_yield, maturity);
+
+    res.json({
+      success: true,
+      message: `Yield curve control implemented: ${maturity} at ${target_yield}%`,
+      new_yields: fedSystem.getSystemStatus().market_control.bondYields,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+});
+
+// Forward guidance
+router.post("/fed-monetary/forward-guidance", async (req, res) => {
+  try {
+    const { message, time_horizon } = req.body;
+    
+    if (!message || !time_horizon) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: message, time_horizon",
+      });
+    }
+
+    const guidance = await fedSystem.issueForwardGuidance(message, time_horizon);
+
+    res.json({
+      success: true,
+      message: "Forward guidance issued successfully",
+      guidance_details: guidance,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+});
+
+// Activate swap lines
+router.post("/fed-monetary/swap-lines", async (req, res) => {
+  try {
+    const { currency, amount } = req.body;
+    
+    if (!currency || !amount) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: currency, amount",
+      });
+    }
+
+    await fedSystem.activateSwapLines(currency, amount);
+
+    res.json({
+      success: true,
+      message: `Swap lines activated: ${amount.toLocaleString()} ${currency}`,
+      new_dollar_index: fedSystem.getSystemStatus().market_control.dollarIndex,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+});
+
+// Helicopter money
+router.post("/fed-monetary/helicopter-money", async (req, res) => {
+  try {
+    const { amount } = req.body;
+    
+    if (!amount) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameter: amount",
+      });
+    }
+
+    await fedSystem.executeHelicopterMoney(amount);
+
+    res.json({
+      success: true,
+      message: `Helicopter money executed: $${amount.toLocaleString()}`,
+      new_money_supply: fedSystem.getSystemStatus().monetary_policy.m1Supply,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+});
+
+// Stress testing
+router.post("/fed-monetary/stress-test", async (req, res) => {
+  try {
+    const { scenario } = req.body;
+    
+    if (!scenario) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameter: scenario",
+      });
+    }
+
+    const testResults = await fedSystem.runStressTest(scenario);
+
+    res.json({
+      success: true,
+      message: `Stress test completed: ${scenario}`,
+      test_results: testResults,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+});
+
+// Start real-time monitoring
+router.post("/fed-monetary/start-monitoring", async (req, res) => {
+  try {
+    await fedSystem.startRealTimeMonitoring();
+
+    res.json({
+      success: true,
+      message: "Real-time economic monitoring started",
+      monitoring_status: "ACTIVE",
     });
   } catch (error) {
     res.status(500).json({

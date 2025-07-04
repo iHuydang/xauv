@@ -49,6 +49,22 @@ export default function FederalReserveControl() {
   const [currencyAction, setCurrencyAction] = useState<'STRENGTHEN' | 'WEAKEN'>('STRENGTHEN');
   const [currencyAmount, setCurrencyAmount] = useState('10000000000');
   const [inflationTarget, setInflationTarget] = useState('2.0');
+  
+  // Emergency tools states
+  const [emergencyType, setEmergencyType] = useState<'FINANCIAL_CRISIS' | 'HYPERINFLATION' | 'DEFLATION' | 'BANK_RUN'>('FINANCIAL_CRISIS');
+  const [cbdcName, setCbdcName] = useState('FedCoin');
+  const [cbdcSupply, setCbdcSupply] = useState('1000000000000');
+  const [negativeRate, setNegativeRate] = useState('-0.5');
+  const [helicopterAmount, setHelicopterAmount] = useState('1000000000000');
+  
+  // Advanced controls states
+  const [yieldMaturity, setYieldMaturity] = useState('10Y');
+  const [yieldTarget, setYieldTarget] = useState('3.0');
+  const [guidanceMessage, setGuidanceMessage] = useState('Rates will remain low for extended period');
+  const [guidanceHorizon, setGuidanceHorizon] = useState('12');
+  const [swapCurrency, setSwapCurrency] = useState('EUR');
+  const [swapAmount, setSwapAmount] = useState('100000000000');
+  const [stressScenario, setStressScenario] = useState('FINANCIAL_CRISIS');
 
   useEffect(() => {
     loadSystemStatus();
@@ -214,6 +230,258 @@ export default function FederalReserveControl() {
     }
   };
 
+  const executeEmergencyMeasures = async () => {
+    setIsLoading(true);
+    setMessage('');
+    
+    try {
+      const response = await fetch('/api/fed-monetary/emergency-measures', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          crisis: emergencyType
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage(`🚨 ${data.message}`);
+        loadSystemStatus();
+      } else {
+        setMessage(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      setMessage(`❌ Emergency measures failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const launchCBDC = async () => {
+    setIsLoading(true);
+    setMessage('');
+    
+    try {
+      const response = await fetch('/api/fed-monetary/launch-cbdc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: cbdcName,
+          supply: parseInt(cbdcSupply)
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage(`💰 ${data.message}`);
+        loadSystemStatus();
+      } else {
+        setMessage(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      setMessage(`❌ CBDC launch failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const implementNegativeRates = async () => {
+    setIsLoading(true);
+    setMessage('');
+    
+    try {
+      const response = await fetch('/api/fed-monetary/negative-rates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rate: parseFloat(negativeRate)
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage(`📉 ${data.message}`);
+        loadSystemStatus();
+      } else {
+        setMessage(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      setMessage(`❌ Negative rates failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const executeHelicopterMoney = async () => {
+    setIsLoading(true);
+    setMessage('');
+    
+    try {
+      const response = await fetch('/api/fed-monetary/helicopter-money', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: parseInt(helicopterAmount)
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage(`🚁 ${data.message}`);
+        loadSystemStatus();
+      } else {
+        setMessage(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      setMessage(`❌ Helicopter money failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const implementYieldCurveControl = async () => {
+    setIsLoading(true);
+    setMessage('');
+    
+    try {
+      const response = await fetch('/api/fed-monetary/yield-curve-control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          maturity: yieldMaturity,
+          target_yield: parseFloat(yieldTarget)
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage(`📈 ${data.message}`);
+        loadSystemStatus();
+      } else {
+        setMessage(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      setMessage(`❌ Yield curve control failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const issueForwardGuidance = async () => {
+    setIsLoading(true);
+    setMessage('');
+    
+    try {
+      const response = await fetch('/api/fed-monetary/forward-guidance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: guidanceMessage,
+          time_horizon: parseInt(guidanceHorizon)
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage(`📢 Forward guidance issued successfully`);
+        loadSystemStatus();
+      } else {
+        setMessage(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      setMessage(`❌ Forward guidance failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const activateSwapLines = async () => {
+    setIsLoading(true);
+    setMessage('');
+    
+    try {
+      const response = await fetch('/api/fed-monetary/swap-lines', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currency: swapCurrency,
+          amount: parseInt(swapAmount)
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage(`🔄 ${data.message}`);
+        loadSystemStatus();
+      } else {
+        setMessage(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      setMessage(`❌ Swap lines failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const runStressTest = async () => {
+    setIsLoading(true);
+    setMessage('');
+    
+    try {
+      const response = await fetch('/api/fed-monetary/stress-test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scenario: stressScenario
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage(`🧪 Stress test completed: ${stressScenario}`);
+      } else {
+        setMessage(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      setMessage(`❌ Stress test failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const startRealTimeMonitoring = async () => {
+    setIsLoading(true);
+    setMessage('');
+    
+    try {
+      const response = await fetch('/api/fed-monetary/start-monitoring', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage(`📡 Real-time monitoring started`);
+      } else {
+        setMessage(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      setMessage(`❌ Monitoring failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     if (amount >= 1e12) return `$${(amount / 1e12).toFixed(2)}T`;
     if (amount >= 1e9) return `$${(amount / 1e9).toFixed(2)}B`;
@@ -335,12 +603,18 @@ export default function FederalReserveControl() {
 
         {/* Control Panels */}
         <Tabs defaultValue="open-market" className="space-y-6">
-          <TabsList className="grid grid-cols-5 w-full">
+          <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="open-market">Open Market Ops</TabsTrigger>
             <TabsTrigger value="qe">Quantitative Easing</TabsTrigger>
             <TabsTrigger value="gold">Gold Control</TabsTrigger>
             <TabsTrigger value="currency">Currency Intervention</TabsTrigger>
+          </TabsList>
+          
+          <TabsList className="grid grid-cols-4 w-full mt-2">
             <TabsTrigger value="inflation">Inflation Targeting</TabsTrigger>
+            <TabsTrigger value="emergency">Emergency Tools</TabsTrigger>
+            <TabsTrigger value="advanced">Advanced Controls</TabsTrigger>
+            <TabsTrigger value="monitoring">Real-time Monitor</TabsTrigger>
           </TabsList>
 
           <TabsContent value="open-market">
@@ -545,6 +819,292 @@ export default function FederalReserveControl() {
                 </div>
                 <Button onClick={executeInflationTargeting} disabled={isLoading} className="w-full">
                   {isLoading ? 'Adjusting...' : 'Set Inflation Target'}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="emergency">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>🚨 Emergency Measures</CardTitle>
+                  <CardDescription>
+                    Activate emergency monetary policy responses
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Crisis Type</label>
+                    <Select value={emergencyType} onValueChange={(value: any) => setEmergencyType(value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="FINANCIAL_CRISIS">Financial Crisis</SelectItem>
+                        <SelectItem value="HYPERINFLATION">Hyperinflation</SelectItem>
+                        <SelectItem value="DEFLATION">Deflation</SelectItem>
+                        <SelectItem value="BANK_RUN">Bank Run</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={executeEmergencyMeasures} disabled={isLoading} className="w-full bg-red-600">
+                    {isLoading ? 'Activating...' : `Activate ${emergencyType} Response`}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>💰 Launch CBDC</CardTitle>
+                  <CardDescription>
+                    Launch Central Bank Digital Currency
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">CBDC Name</label>
+                    <Input
+                      type="text"
+                      value={cbdcName}
+                      onChange={(e) => setCbdcName(e.target.value)}
+                      placeholder="FedCoin"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Initial Supply</label>
+                    <Input
+                      type="number"
+                      value={cbdcSupply}
+                      onChange={(e) => setCbdcSupply(e.target.value)}
+                      placeholder="1000000000000"
+                    />
+                  </div>
+                  <Button onClick={launchCBDC} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Launching...' : 'Launch CBDC'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>📉 Negative Interest Rates</CardTitle>
+                  <CardDescription>
+                    Implement negative interest rate policy
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Target Rate (%)</label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={negativeRate}
+                      onChange={(e) => setNegativeRate(e.target.value)}
+                      placeholder="-0.5"
+                    />
+                  </div>
+                  <Button onClick={implementNegativeRates} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Implementing...' : 'Implement Negative Rates'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>🚁 Helicopter Money</CardTitle>
+                  <CardDescription>
+                    Direct monetary transfers to citizens
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Amount (USD)</label>
+                    <Input
+                      type="number"
+                      value={helicopterAmount}
+                      onChange={(e) => setHelicopterAmount(e.target.value)}
+                      placeholder="1000000000000"
+                    />
+                  </div>
+                  <Button onClick={executeHelicopterMoney} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Executing...' : 'Execute Helicopter Money'}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="advanced">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>📈 Yield Curve Control</CardTitle>
+                  <CardDescription>
+                    Control specific maturity yields
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Maturity</label>
+                      <Select value={yieldMaturity} onValueChange={setYieldMaturity}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="2Y">2 Year</SelectItem>
+                          <SelectItem value="10Y">10 Year</SelectItem>
+                          <SelectItem value="30Y">30 Year</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Target Yield (%)</label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={yieldTarget}
+                        onChange={(e) => setYieldTarget(e.target.value)}
+                        placeholder="3.0"
+                      />
+                    </div>
+                  </div>
+                  <Button onClick={implementYieldCurveControl} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Implementing...' : 'Implement Yield Control'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>📢 Forward Guidance</CardTitle>
+                  <CardDescription>
+                    Communicate future policy intentions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Guidance Message</label>
+                    <Input
+                      type="text"
+                      value={guidanceMessage}
+                      onChange={(e) => setGuidanceMessage(e.target.value)}
+                      placeholder="Rates will remain low for extended period"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Time Horizon (months)</label>
+                    <Input
+                      type="number"
+                      value={guidanceHorizon}
+                      onChange={(e) => setGuidanceHorizon(e.target.value)}
+                      placeholder="12"
+                    />
+                  </div>
+                  <Button onClick={issueForwardGuidance} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Issuing...' : 'Issue Forward Guidance'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>🔄 International Swap Lines</CardTitle>
+                  <CardDescription>
+                    Provide dollar liquidity to foreign central banks
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Currency</label>
+                      <Select value={swapCurrency} onValueChange={setSwapCurrency}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="EUR">Euro</SelectItem>
+                          <SelectItem value="JPY">Japanese Yen</SelectItem>
+                          <SelectItem value="GBP">British Pound</SelectItem>
+                          <SelectItem value="CHF">Swiss Franc</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Amount (USD)</label>
+                      <Input
+                        type="number"
+                        value={swapAmount}
+                        onChange={(e) => setSwapAmount(e.target.value)}
+                        placeholder="100000000000"
+                      />
+                    </div>
+                  </div>
+                  <Button onClick={activateSwapLines} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Activating...' : 'Activate Swap Lines'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>🧪 Stress Testing</CardTitle>
+                  <CardDescription>
+                    Test system resilience under extreme scenarios
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Stress Scenario</label>
+                    <Select value={stressScenario} onValueChange={setStressScenario}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="GREAT_DEPRESSION">Great Depression</SelectItem>
+                        <SelectItem value="HYPERINFLATION">Hyperinflation</SelectItem>
+                        <SelectItem value="FINANCIAL_CRISIS">Financial Crisis</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={runStressTest} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Running...' : 'Run Stress Test'}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="monitoring">
+            <Card>
+              <CardHeader>
+                <CardTitle>📡 Real-Time Economic Monitoring</CardTitle>
+                <CardDescription>
+                  Monitor economic indicators and detect threats in real-time
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-gray-600">System Status</div>
+                    <div className="text-xl font-bold text-green-600">OPERATIONAL</div>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-gray-600">Monitoring</div>
+                    <div className="text-xl font-bold text-blue-600">ACTIVE</div>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-gray-600">Threats Detected</div>
+                    <div className="text-xl font-bold text-yellow-600">0</div>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-gray-600">Last Update</div>
+                    <div className="text-xl font-bold text-gray-600">Live</div>
+                  </div>
+                </div>
+                <Button onClick={startRealTimeMonitoring} disabled={isLoading} className="w-full">
+                  {isLoading ? 'Starting...' : 'Start Real-Time Monitoring'}
                 </Button>
               </CardContent>
             </Card>
