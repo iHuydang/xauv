@@ -45,7 +45,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  let server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -91,7 +91,7 @@ app.use((req, res, next) => {
   });
 
   // Start the server with error handling
-  const server = app.listen(port, '0.0.0.0', () => {
+  server = app.listen(port, '0.0.0.0', () => {
     log(`serving on port ${port}`);
     log(`Server accessible at http://0.0.0.0:${port}`);
     log(`Local access: http://localhost:${port}`);
