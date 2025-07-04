@@ -24,6 +24,25 @@ log_operation() {
     echo -e "$1"
 }
 
+# Function to check if jq is available
+check_jq() {
+    # Check for local jq installation first
+    if command -v ./node_modules/.bin/jq >/dev/null 2>&1; then
+        JQ_CMD="./node_modules/.bin/jq"
+        return 0
+    elif command -v ~/.config/npm/node_global/bin/jq >/dev/null 2>&1; then
+        JQ_CMD="~/.config/npm/node_global/bin/jq"
+        return 0
+    elif command -v jq >/dev/null 2>&1; then
+        JQ_CMD="jq"
+        return 0
+    else
+        echo -e "${YELLOW}⚠️ jq not found, using raw JSON output${NC}"
+        JQ_CMD=""
+        return 1
+    fi
+}
+
 # Launch CBDC system
 launch_cbdc_system() {
     local cbdc_name="${1:-FedCoin}"
@@ -39,14 +58,18 @@ launch_cbdc_system() {
         -H "Content-Type: application/json" \
         -d "{\"name\": \"$cbdc_name\", \"supply\": $initial_supply}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ CBDC launched successfully${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ CBDC $cbdc_name launched successfully"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ CBDC launched successfully${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ CBDC $cbdc_name launched successfully"
+        else
+            echo -e "${RED}❌ CBDC launch failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ CBDC launch failed: $cbdc_name"
+        fi
     else
-        echo -e "${RED}❌ CBDC launch failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ CBDC launch failed: $cbdc_name"
+        echo "$response"
     fi
 }
 
@@ -63,14 +86,18 @@ implement_negative_rates() {
         -H "Content-Type: application/json" \
         -d "{\"rate\": $negative_rate}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Negative rates implemented${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Negative rates implemented: $negative_rate%"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Negative rates implemented${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ Negative rates implemented: $negative_rate%"
+        else
+            echo -e "${RED}❌ Negative rates implementation failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Negative rates failed: $negative_rate%"
+        fi
     else
-        echo -e "${RED}❌ Negative rates implementation failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Negative rates failed: $negative_rate%"
+        echo "$response"
     fi
 }
 
@@ -87,14 +114,18 @@ execute_helicopter_money() {
         -H "Content-Type: application/json" \
         -d "{\"amount\": $amount}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Helicopter money distributed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Helicopter money completed: \$$amount"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Helicopter money distributed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ Helicopter money completed: \$$amount"
+        else
+            echo -e "${RED}❌ Helicopter money failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Helicopter money failed: \$$amount"
+        fi
     else
-        echo -e "${RED}❌ Helicopter money failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Helicopter money failed: \$$amount"
+        echo "$response"
     fi
 }
 
@@ -113,14 +144,18 @@ activate_swap_lines() {
         -H "Content-Type: application/json" \
         -d "{\"currency\": \"$currency\", \"amount\": $amount}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Swap lines activated${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Swap lines activated: $currency \$$amount"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Swap lines activated${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ Swap lines activated: $currency \$$amount"
+        else
+            echo -e "${RED}❌ Swap lines activation failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Swap lines failed: $currency \$$amount"
+        fi
     else
-        echo -e "${RED}❌ Swap lines activation failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Swap lines failed: $currency \$$amount"
+        echo "$response"
     fi
 }
 
@@ -131,25 +166,29 @@ get_fed_status() {
 
     local response=$(curl -s "$API_BASE/api/fed-monetary/status")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ System operational${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ System operational${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
 
-        # Extract key metrics
-        local fed_rate=$(echo "$response" | jq -r '.data.monetary_policy.fedFundsRate')
-        local m1_supply=$(echo "$response" | jq -r '.data.monetary_policy.m1Supply')
-        local gold_price=$(echo "$response" | jq -r '.data.market_control.goldPrice')
+            # Extract key metrics
+            local fed_rate=$(echo "$response" | $JQ_CMD -r '.data.monetary_policy.fedFundsRate')
+            local m1_supply=$(echo "$response" | $JQ_CMD -r '.data.monetary_policy.m1Supply')
+            local gold_price=$(echo "$response" | $JQ_CMD -r '.data.market_control.goldPrice')
 
-        echo -e "${YELLOW}Key Metrics:${NC}"
-        echo -e "Fed Funds Rate: ${fed_rate}%"
-        echo -e "M1 Supply: \$$(echo "$m1_supply" | numfmt --to=iec)"
-        echo -e "Gold Price: \$${gold_price}"
+            echo -e "${YELLOW}Key Metrics:${NC}"
+            echo -e "Fed Funds Rate: ${fed_rate}%"
+            echo -e "M1 Supply: \$$(echo "$m1_supply" | numfmt --to=iec)"
+            echo -e "Gold Price: \$$gold_price"
 
-        log_operation "✅ Fed status retrieved successfully"
+            log_operation "✅ Fed status retrieved successfully"
+        else
+            echo -e "${RED}❌ Failed to get Fed status${NC}"
+            echo "$response"
+            log_operation "❌ Failed to retrieve Fed status"
+        fi
     else
-        echo -e "${RED}❌ Failed to get Fed status${NC}"
         echo "$response"
-        log_operation "❌ Failed to retrieve Fed status"
     fi
 }
 
@@ -168,14 +207,18 @@ execute_open_market() {
         -H "Content-Type: application/json" \
         -d "{\"type\": \"$operation_type\", \"amount\": $amount}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Operation executed successfully${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Open market operation completed: $operation_type \$$amount"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Operation executed successfully${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ Open market operation completed: $operation_type \$$amount"
+        else
+            echo -e "${RED}❌ Operation failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Open market operation failed: $operation_type \$$amount"
+        fi
     else
-        echo -e "${RED}❌ Operation failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Open market operation failed: $operation_type \$$amount"
+        echo "$response"
     fi
 }
 
@@ -197,14 +240,18 @@ launch_qe_program() {
         -H "Content-Type: application/json" \
         -d "{\"amount\": $qe_amount, \"duration\": $duration}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ QE Program launched successfully${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ QE program launched: \$$qe_amount over $duration months"
+   if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ QE Program launched successfully${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ QE program launched: \$$qe_amount over $duration months"
+        else
+            echo -e "${RED}❌ QE Program launch failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ QE program launch failed"
+        fi
     else
-        echo -e "${RED}❌ QE Program launch failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ QE program launch failed"
+        echo "$response"
     fi
 }
 
@@ -221,16 +268,20 @@ manipulate_gold_standard() {
         -H "Content-Type: application/json" \
         -d "{\"action\": \"$action\"}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Gold manipulation executed${NC}"
-        local new_price=$(echo "$response" | jq -r '.new_gold_price')
-        echo -e "${BLUE}New Gold Price: \$$new_price${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Gold manipulation completed: $action, new price: \$$new_price"
+   if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Gold manipulation executed${NC}"
+            local new_price=$(echo "$response" | $JQ_CMD -r '.new_gold_price')
+            echo -e "${BLUE}New Gold Price: \$$new_price${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ Gold manipulation completed: $action, new price: \$$new_price"
+        else
+            echo -e "${RED}❌ Gold manipulation failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Gold manipulation failed: $action"
+        fi
     else
-        echo -e "${RED}❌ Gold manipulation failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Gold manipulation failed: $action"
+        echo "$response"
     fi
 }
 
@@ -251,16 +302,16 @@ execute_currency_intervention() {
         -H "Content-Type: application/json" \
         -d "{\"currency\": \"$currency\", \"action\": \"$action\", \"amount\": $amount}")
 
-    if command -v jq >/dev/null 2>&1; then
-        if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
+   if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
             echo -e "${GREEN}✅ Currency intervention executed${NC}"
-            local new_dxy=$(echo "$response" | jq -r '.new_dollar_index')
+            local new_dxy=$(echo "$response" | $JQ_CMD -r '.new_dollar_index')
             echo -e "${BLUE}New Dollar Index: $new_dxy${NC}"
-            echo "$response" | jq '.' 2>/dev/null || echo "$response"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "$response"
             log_operation "✅ Currency intervention completed: $action $currency, new DXY: $new_dxy"
         else
             echo -e "${RED}❌ Currency intervention failed${NC}"
-            echo "$response" | jq '.' 2>/dev/null || echo "$response"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "$response"
             log_operation "❌ Currency intervention failed: $action $currency"
         fi
     else
@@ -404,9 +455,9 @@ execute_emergency_vnd_devaluation() {
     local gold_response=$(curl -s -X POST "$API_BASE/api/world-gold/vnd-coordination" \
         -H "Content-Type: application/json" \
         -d "{\"target_vnd_rate\": $target_rate, \"timeframe\": $timeframe}")
-    
-    if command -v jq >/dev/null 2>&1; then
-        echo "$gold_response" | jq '.'
+
+    if [[ -n "$JQ_CMD" ]]; then
+        echo "$gold_response" | $JQ_CMD '.'
     else
         echo "$gold_response"
     fi
@@ -416,9 +467,9 @@ execute_emergency_vnd_devaluation() {
     local sjc_response=$(curl -s -X POST "$API_BASE/api/sjc-pressure/vnd-devaluation-impact" \
         -H "Content-Type: application/json" \
         -d "{\"vnd_rate\": $target_rate, \"intensity\": \"EXTREME\"}")
-    
-    if command -v jq >/dev/null 2>&1; then
-        echo "$sjc_response" | jq '.'
+
+    if [[ -n "$JQ_CMD" ]]; then
+        echo "$sjc_response" | $JQ_CMD '.'
     else
         echo "$sjc_response"
     fi
@@ -471,14 +522,18 @@ set_inflation_target() {
         -H "Content-Type: application/json" \
         -d "{\"target\": $target}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Inflation target set successfully${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Inflation target set: $target%"
+   if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Inflation target set successfully${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ Inflation target set: $target%"
+        else
+            echo -e "${RED}❌ Failed to set inflation target${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Failed to set inflation target: $target%"
+        fi
     else
-        echo -e "${RED}❌ Failed to set inflation target${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Failed to set inflation target: $target%"
+        echo "$response"
     fi
 }
 
@@ -633,14 +688,18 @@ execute_stress_test() {
         -H "Content-Type: application/json" \
         -d "{\"scenario\": \"$scenario\"}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Banking stress test completed${NC}"
-        echo "$response" | jq '.banking_health'
-        log_operation "✅ Banking stress test completed: $scenario"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Banking stress test completed${NC}"
+            echo "$response" | $JQ_CMD '.banking_health'
+            log_operation "✅ Banking stress test completed: $scenario"
+        else
+            echo -e "${RED}❌ Stress test failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Banking stress test failed: $scenario"
+        fi
     else
-        echo -e "${RED}❌ Stress test failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Banking stress test failed: $scenario"
+        echo "$response"
     fi
 }
 
@@ -648,7 +707,7 @@ execute_stress_test() {
 execute_emergency_liquidity() {
     local amount="${1:-200000000000}"
 
-    echo -e "${RED}🚨 EMERGENCY LIQUIDITY INJECTION${NC}"
+    echo -e "${RED} 🚨 EMERGENCY LIQUIDITY INJECTION${NC}"
     echo -e "${YELLOW}Amount: \$$(echo "$amount" | numfmt --to=iec)${NC}"
 
     log_operation "🚨 Executing emergency liquidity injection: \$$amount"
@@ -657,14 +716,18 @@ execute_emergency_liquidity() {
         -H "Content-Type: application/json" \
         -d "{\"amount\": $amount}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Emergency liquidity injection completed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Emergency liquidity injection completed: \$$amount"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Emergency liquidity injection completed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ Emergency liquidity injection completed: \$$amount"
+        else
+            echo -e "${RED}❌ Emergency liquidity injection failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Emergency liquidity injection failed: \$$amount"
+        fi
     else
-        echo -e "${RED}❌ Emergency liquidity injection failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Emergency liquidity injection failed: \$$amount"
+        echo "$response"
     fi
 }
 
@@ -675,14 +738,18 @@ monitor_financial_stability() {
 
     local response=$(curl -s "$API_BASE/api/fed-monetary/stability")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Stability metrics retrieved${NC}"
-        echo "$response" | jq '.stability_metrics'
-        log_operation "✅ Financial stability metrics retrieved"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Stability metrics retrieved${NC}"
+            echo "$response" | $JQ_CMD '.stability_metrics'
+            log_operation "✅ Financial stability metrics retrieved"
+        else
+            echo -e "${RED}❌ Failed to get stability metrics${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Failed to retrieve stability metrics"
+        fi
     else
-        echo -e "${RED}❌ Failed to get stability metrics${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Failed to retrieve stability metrics"
+        echo "$response"
     fi
 }
 
@@ -702,14 +769,18 @@ execute_yield_curve_control() {
         -H "Content-Type: application/json" \
         -d "{\"target_curve\": {\"2Y\": $target_2y, \"5Y\": $target_5y, \"10Y\": $target_10y, \"30Y\": $target_30y}}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Yield curve control executed${NC}"
-        echo "$response" |jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Yield curve control executed"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Yield curve control executed${NC}"
+            echo "$response" |$JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ Yield curve control executed"
+        else
+            echo -e "${RED}❌ Yield curve control failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Yield curve control failed"
+        fi
     else
-        echo -e "${RED}❌ Yield curve control failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Yield curve control failed"
+        echo "$response"
     fi
 }
 
@@ -726,14 +797,18 @@ execute_international_coordination() {
         -H "Content-Type: application/json" \
         -d "{\"action\": \"$action\"}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ International coordination executed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ International coordination executed: $action"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ International coordination executed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ International coordination executed: $action"
+        else
+            echo -e "${RED}❌ International coordination failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ International coordination failed: $action"
+        fi
     else
-        echo -e "${RED}❌ International coordination failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ International coordination failed: $action"
+        echo "$response"
     fi
 }
 
@@ -750,14 +825,18 @@ activate_circuit_breaker() {
         -H "Content-Type: application/json" \
         -d "{\"reason\": \"$reason\"}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Circuit breaker activated${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Circuit breaker activated: $reason"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Circuit breaker activated${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ Circuit breaker activated: $reason"
+        else
+            echo -e "${RED}❌ Circuit breaker activation failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Circuit breaker activation failed: $reason"
+        fi
     else
-        echo -e "${RED}❌ Circuit breaker activation failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Circuit breaker activation failed: $reason"
+        echo "$response"
     fi
 }
 
@@ -809,14 +888,18 @@ launch_cbdc_system() {
         -H "Content-Type: application/json" \
         -d "{\"name\": \"$cbdc_name\", \"supply\": $initial_supply}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ CBDC launched successfully${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ CBDC $cbdc_name launched successfully"
+   if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ CBDC launched successfully${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ CBDC $cbdc_name launched successfully"
+        else
+            echo -e "${RED}❌ CBDC launch failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ CBDC launch failed: $cbdc_name"
+        fi
     else
-        echo -e "${RED}❌ CBDC launch failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ CBDC launch failed: $cbdc_name"
+        echo "$response"
     fi
 }
 
@@ -833,14 +916,18 @@ implement_negative_rates() {
         -H "Content-Type: application/json" \
         -d "{\"rate\": $negative_rate}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Negative rates implemented${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Negative rates implemented: $negative_rate%"
+    if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Negative rates implemented${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ Negative rates implemented: $negative_rate%"
+        else
+            echo -e "${RED}❌ Negative rates implementation failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Negative rates failed: $negative_rate%"
+        fi
     else
-        echo -e "${RED}❌ Negative rates implementation failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Negative rates failed: $negative_rate%"
+        echo "$response"
     fi
 }
 
@@ -857,14 +944,18 @@ execute_helicopter_money() {
         -H "Content-Type: application/json" \
         -d "{\"amount\": $amount}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Helicopter money distributed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Helicopter money completed: \$$amount"
+   if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Helicopter money distributed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ Helicopter money completed: \$$amount"
+        else
+            echo -e "${RED}❌ Helicopter money failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Helicopter money failed: \$$amount"
+        fi
     else
-        echo -e "${RED}❌ Helicopter money failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Helicopter money failed: \$$amount"
+        echo "$response"
     fi
 }
 
@@ -883,16 +974,29 @@ activate_swap_lines() {
         -H "Content-Type: application/json" \
         -d "{\"currency\": \"$currency\", \"amount\": $amount}")
 
-    if echo "$response" | jq -e '.success' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ Swap lines activated${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "✅ Swap lines activated: $currency \$$amount"
+   if [[ -n "$JQ_CMD" ]]; then
+        if echo "$response" | $JQ_CMD -e '.success' >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Swap lines activated${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "✅ Swap lines activated: $currency \$$amount"
+        else
+            echo -e "${RED}❌ Swap lines activation failed${NC}"
+            echo "$response" | $JQ_CMD '.' 2>/dev/null || echo "Invalid JSON response"
+            log_operation "❌ Swap lines failed: $currency \$$amount"
+        fi
     else
-        echo -e "${RED}❌ Swap lines activation failed${NC}"
-        echo "$response" | jq '.' 2>/dev/null || echo "Invalid JSON response"
-        log_operation "❌ Swap lines failed: $currency \$$amount"
+        echo "$response"
     fi
 }
+
+# Main function
+main() {
+    echo -e "${BLUE}🏛️ Federal Reserve Command Interface${NC}"
+    echo "====================================="
+    echo
+
+    # Initialize jq command
+    check_jq
 
 # Main command handler
 case "${1:-help}" in
@@ -981,3 +1085,6 @@ case "${1:-help}" in
         show_help
         ;;
 esac
+}
+
+main "$@"
