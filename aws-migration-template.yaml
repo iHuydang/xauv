@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS Application Migration Service Setup'
+
+Parameters:
+  InstanceId:
+    Type: String
+    Default: 'i-05c4d8f39e43b8280'
+    Description: 'EC2 Instance ID for migration'
+
+Resources:
+  AppRegistryApplicationStackAssociation:
+    Type: AWS::ServiceCatalogAppRegistry::ResourceAssociation
+    Properties:
+      Application: arn:aws:servicecatalog:ap-northeast-1:207567762473:/applications/0eju8n6pts35orkeq2rhez420p
+      Resource: !Ref 'AWS::StackId'
+      ResourceType: CFN_STACK
+
+  MigrationServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: AWS-Migration-Service-Role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: mgn.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSApplicationMigrationAgentInstallationPolicy
+
+Outputs:
+  StackStatus:
+    Description: 'Stack deployment status'
+    Value: 'Deployed successfully'
+  
+  InstanceId:
+    Description: 'Target EC2 Instance ID'
+    Value: !Ref InstanceId
+    
+  MigrationRole:
+    Description: 'Migration Service Role ARN'
+    Value: !GetAtt MigrationServiceRole.Arn
