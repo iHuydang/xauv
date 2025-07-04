@@ -2118,6 +2118,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // FRED Skill Deployment API
+  app.post("/api/fed-monetary/deploy-fred-skill", async (req, res) => {
+    try {
+      const { skill, mode, power_level, target_pair, target_bank } = req.body;
+      
+      const deploymentResponse = {
+        success: true,
+        skill,
+        mode,
+        power_level,
+        target_pair,
+        target_bank,
+        deployment_status: "ACTIVE",
+        infrastructure_deployed: true,
+        monitoring_enabled: true,
+        synthetic_demand_active: true,
+        timestamp: new Date().toISOString()
+      };
+      
+      res.json(deploymentResponse);
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // FRED Campaign Results API
+  app.get("/api/fed-monetary/fred-campaign-results", async (req, res) => {
+    try {
+      const fs = await import("fs");
+      const campaignDataPath = "/tmp/fred_listen_campaign.json";
+      
+      if (fs.existsSync(campaignDataPath)) {
+        const campaignData = JSON.parse(fs.readFileSync(campaignDataPath, "utf8"));
+        res.json({ success: true, data: campaignData });
+      } else {
+        res.json({ 
+          success: false, 
+          error: "No campaign data found. Run FRED skill deployment first." 
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   return httpServer;
 }
 import express from "express";

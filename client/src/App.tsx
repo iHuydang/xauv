@@ -12,6 +12,7 @@ import WorldGoldControl from "@/pages/WorldGoldControl";
 import CoinrankingMarketMaker from "@/pages/CoinrankingMarketMaker";
 import SecBotBypassDashboard from "@/pages/SecBotBypassDashboard";
 import FederalReserveControl from "./pages/FederalReserveControl";
+import FREDSkillPage from "@/pages/FREDSkillPage";
 import TwelveDataDashboard from "@/pages/TwelveDataDashboard";
 import NYFedMarketsPage from "@/pages/NYFedMarketsPage";
 import NotFound from "@/pages/not-found";
@@ -45,6 +46,7 @@ function Router() {
           <Route path="/world-gold" component={WorldGoldControl} />
           <Route path="/secbot-bypass" component={SecBotBypassDashboard} />
           <Route path="/fred-gold-attack" component={FredGoldAttack} />
+          <Route path="/fred-skill" component={FREDSkillPage} />
           <Route path="/twelvedata" component={TwelveDataDashboard} />
           <Route path="/coinranking" component={CoinrankingMarketMaker} />
           <Route path="/market-compliance" component={MarketCompliancePanel} />
