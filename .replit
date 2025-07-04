@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["deepin.dwayland", "miniball", "emacsPackages.solo-jazz-theme"]
+packages = ["mailutils"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -13,25 +13,25 @@ run = ["npm", "run", "start"]
 
 [[ports]]
 localPort = 5000
-externalPort = 5000
 
 [[ports]]
-localPort = 5001
-externalPort = 3001
-
-[[ports]]
-localPort = 5002
-externalPort = 3002
-
-[[ports]]
-localPort = 8085
+localPort = 8080
 externalPort = 80
 
 [[ports]]
-localPort = 8086
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 8082
 externalPort = 3000
 
+[[ports]]
+localPort = 8083
+externalPort = 3001
+
 [workflows]
+runButton = "Start Server"
 
 [[workflows.workflow]]
 name = "Project"
@@ -92,6 +92,10 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Vietnam Gold Attack"
 
 [[workflows.workflow]]
 name = "Liquidity Scanner"
@@ -219,3 +223,28 @@ args = "  }' | jq '.'"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "scripts/vietnam-gold-destroyer.sh coordinated"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "scripts/multi-ip-gold-attack.sh devastation"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "api/tradermade/sjc/coordinate-attack"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "fsapi-liquidity-drain"
+
+[[workflows.workflow]]
+name = "Start Server"
+author = 44173314
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Market Trading System"
