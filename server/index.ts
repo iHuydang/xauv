@@ -9,6 +9,10 @@ import { liquidityScanner } from './liquidity-scanner';
 import enhancedGoldAttackRoutes from './enhanced-gold-attack-routes';
 import enhancedForexApiRoutes from './enhanced-forex-api-routes';
 import marketComplianceRoutes from './market-compliance-routes';
+import newsRoutes from './news-routes';
+import tradermadeRoutes from './tradermade-api-routes';
+import aiSJCRoutes from './ai-sjc-routes';
+import marketImpactRoutes from './market-impact-routes';
 
 const app = express();
 app.use(express.json());
@@ -67,6 +71,10 @@ app.use((req, res, next) => {
   app.use('/api/enhanced-gold', enhancedGoldAttackRoutes);
   app.use('/api/enhanced-forex', enhancedForexApiRoutes);
   app.use('/api/market-compliance', marketComplianceRoutes);
+  app.use('/api/news', newsRoutes);
+  app.use('/api/tradermade', tradermadeRoutes);
+  app.use('/api/ai-sjc', aiSJCRoutes);
+  app.use('/api/market', marketImpactRoutes);
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
