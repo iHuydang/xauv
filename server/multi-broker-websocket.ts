@@ -203,7 +203,7 @@ export class MultiBrokerWebSocketManager extends EventEmitter {
     );
 
     await Promise.allSettled(connectionPromises);
-    
+
     console.log(`✅ Connected to ${this.connections.size} brokers out of ${this.brokerConfigs.size} configured`);
     this.emit('all_connections_started', {
       connected: this.connections.size,
@@ -595,7 +595,7 @@ export class MultiBrokerWebSocketManager extends EventEmitter {
     }
 
     const attempts = this.reconnectAttempts.get(brokerId) || 0;
-    
+
     if (attempts >= config.maxReconnectAttempts) {
       console.error(`❌ Max reconnection attempts reached for ${config.name}`);
       this.emit('broker_failed', { brokerId, broker: config.name });
@@ -680,7 +680,7 @@ export class MultiBrokerWebSocketManager extends EventEmitter {
 
   getConnectionStatus(): any {
     const status: any = {};
-    
+
     this.brokerConfigs.forEach((config, brokerId) => {
       const ws = this.connections.get(brokerId);
       status[brokerId] = {
@@ -707,9 +707,93 @@ export class MultiBrokerWebSocketManager extends EventEmitter {
 
     this.connections.clear();
     this.reconnectAttempts.clear();
-    
+
     console.log('✅ All broker connections stopped');
     this.emit('all_connections_stopped');
+  }
+
+  private async connectProvider(provider: any): Promise<void> {
+    try {
+      console.log(`🔌 Connecting to ${provider.name}...`);
+
+      // Check if hostname resolution might fail
+      const url = new URL(provider.url);
+      if (this.isDNSProblematic(url.hostname)) {
+        console.log(`⚠️ Potential DNS issue detected for ${url.hostname}, using fallback...`);
+        provider.url = this.getAlternativeEndpoint(provider.id) || provider.url;
+      }
+
+      const ws = new WebSocket(provider.url);
+
+      ws.on('open', () => {
+        console.log(`✅ ${provider.name} connected`);
+        this.providers.set(provider.id, { ...provider, ws, status: 'connected' });
+      });
+
+      ws.on('message', (data) => {
+        this.handleMessage(provider.id, data);
+      });
+
+      ws.on('error', (error) => {
+        console.error(`❌ ${provider.name} error:`, error);
+        this.providers.set(provider.id, { ...provider, status: 'error' });
+
+        // Handle DNS errors specifically
+        if (error.message?.includes('ENOTFOUND') || error.message?.includes('getaddrinfo')) {
+          console.log(`🔄 DNS error detected, switching to backup endpoint...`);
+          this.handleDNSError(provider);
+        }
+      });
+
+      ws.on('close', (code) => {
+        console.log(`📴 ${provider.name} disconnected: ${code}`);
+        this.providers.set(provider.id, { ...provider, status: 'disconnected' });
+
+        // Don't auto-reconnect for certain providers to prevent spam
+        if (!['exness', 'coingecko'].includes(provider.id)) {
+          setTimeout(() => {
+            this.connectProvider(provider);
+          }, 30000);
+        }
+      });
+
+    } catch (error) {
+      console.error(`Failed to connect to ${provider.name}:`, error);
+    }
+  }
+
+  private isDNSProblematic(hostname: string): boolean {
+    const problematicHosts = [
+      'ws.coingecko.com',
+      'rtapi-sg.excalls.mobi',
+      'api.tradermade.com'
+    ];
+    return problematicHosts.includes(hostname);
+  }
+
+  private getAlternativeEndpoint(providerId: string): string | null {
+    const alternatives: Record<string, string> = {
+      'coingecko': 'wss://stream.binance.com:9443/ws/btcusdt@ticker',
+      'tradermade': 'wss://api.kraken.com/ws/2',
+      'exness': null // Disable auto-reconnect for Exness
+    };
+
+    return alternatives[providerId] || null;
+  }
+
+  private handleDNSError(provider: any): void {
+    const alternative = this.getAlternativeEndpoint(provider.id);
+    if (alternative) {
+      console.log(`🔄 Switching ${provider.name} to alternative endpoint: ${alternative}`);
+      provider.url = alternative;
+
+      // Retry with alternative endpoint after 5 seconds
+      setTimeout(() => {
+        this.connectProvider(provider);
+      }, 5000);
+    } else {
+      console.log(`❌ No alternative endpoint available for ${provider.name}`);
+    }
   }
 }
 

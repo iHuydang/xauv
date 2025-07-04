@@ -54,6 +54,12 @@ export class WebSocketStatusMonitor extends EventEmitter {
     } else if (status === 'error') {
       connection.lastError = error;
       connection.retryCount++;
+      
+      // Handle DNS resolution errors
+      if (error?.includes('ENOTFOUND') || error?.includes('getaddrinfo')) {
+        console.log(`🔍 DNS Resolution failed for ${connection.name}, attempting fallback...`);
+        this.handleDNSFallback(connection);
+      }
     }
 
     this.connections.set(providerId, connection);
@@ -62,6 +68,28 @@ export class WebSocketStatusMonitor extends EventEmitter {
     console.log(`📊 WebSocket Status Update: ${connection.name} - ${status.toUpperCase()}`);
     if (error) {
       console.log(`❌ Error: ${error}`);
+    }
+  }
+
+  private handleDNSFallback(connection: WebSocketStatus): void {
+    const dnsMapping: Record<string, string> = {
+      'ws.coingecko.com': '104.26.3.35',
+      'api.tradermade.com': '104.21.48.240',
+      'api.twelvedata.com': '172.67.74.226',
+      'rtapi-sg.excalls.mobi': '3.1.200.10'
+    };
+
+    try {
+      const url = new URL(connection.url);
+      const fallbackIP = dnsMapping[url.hostname];
+      
+      if (fallbackIP) {
+        console.log(`🔄 Using fallback IP ${fallbackIP} for ${url.hostname}`);
+        connection.url = connection.url.replace(url.hostname, fallbackIP);
+        this.emit('dns_fallback_applied', { connection, fallbackIP });
+      }
+    } catch (error) {
+      console.log(`❌ Failed to apply DNS fallback: ${error}`);
     }
   }
 
