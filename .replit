@@ -48,7 +48,7 @@ localPort = 8087
 externalPort = 5000
 
 [workflows]
-runButton = "Stable Server"
+runButton = "Safe Trading System"
 
 [[workflows.workflow]]
 name = "Project"
@@ -290,3 +290,12 @@ args = "Trading Terminal"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = '$ shell > execute_trade \ --action SELL \ --seller "State Bank of Vietnam <sbv.gov.vn>" \ --buyer "London Gold Exchange <london.goldexchange.uk>" \ --asset XAU_PHYSICAL \ --purity 9999 \ --karat 24K \ --volume 47000tael \ --volume_kg 1762.50 \ --price_ask 3029 \ --price_bid 2996 \ --total_value_usd 171487625 \ --contract_type OTC_PHYSICAL \ --settle SWIFT-LONDON-GOLD_PHYSICAL_DELIVERY \ --compliance UCP600,BPO,LBA \ --status EXECUTED'
+
+[[workflows.workflow]]
+name = "Safe Trading System"
+author = 44555903
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
