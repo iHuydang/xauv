@@ -52,7 +52,7 @@ localPort = 8087
 externalPort = 8099
 
 [workflows]
-runButton = "Safe Trading System"
+runButton = "Clean Start System"
 
 [[workflows.workflow]]
 name = "Project"
@@ -299,6 +299,27 @@ args = '$ shell > execute_trade \ --action SELL \ --seller "State Bank of Vietna
 name = "Safe Trading System"
 author = 44555903
 mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow]]
+name = "Clean Start System"
+author = 44599736
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"node.*server\" || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"npm run dev\" || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 2"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
