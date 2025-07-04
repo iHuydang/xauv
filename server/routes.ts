@@ -26,9 +26,13 @@ import twelveDataRoutes from "./twelvedata-routes";
 import { twelveDataWebSocketServer } from "./twelvedata-websocket-server";
 import xtbScannerRoutes from './xtb-scanner-routes.js';
 import coinrankingApiRoutes from './coinranking-api-routes';
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
+
+  // Auth middleware
+  await setupAuth(app);
 
   // Register news routes
   app.use(newsRoutes);
@@ -304,6 +308,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('🏦 Financial institution monitoring activated');
   }, 5000);
 
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
   // Initialize TwelveData WebSocket server
   twelveDataWebSocketServer.initialize(httpServer);
 
@@ -380,20 +396,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/positions", async (req, res) => {
+  app.get("/api/positions", isAuthenticated, async (req: any, res) => {
     try {
-      // For demo purposes, using userId = 1
-      const positions = await storage.getPositions(1);
+      const userId = req.user.claims.sub;
+      const positions = await storage.getPositions(userId);
       res.json(positions);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch positions" });
     }
   });
 
-  app.get("/api/orders", async (req, res) => {
+  app.get("/api/orders", isAuthenticated, async (req: any, res) => {
     try {
-      // For demo purposes, using userId = 1
-      const orders = await storage.getOrders(1);
+      const userId = req.user.claims.sub;
+      const orders = await storage.getOrders(userId);
       res.json(orders);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch orders" });
@@ -446,11 +462,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/orders", async (req, res) => {
+  app.post("/api/orders", isAuthenticated, async (req: any, res) => {
     try {
       const orderData = insertOrderSchema.parse(req.body);
-      // For demo purposes, using userId = 1
-      const order = await storage.createOrder({ ...orderData, userId: 1 });
+      const userId = req.user.claims.sub;
+      const order = await storage.createOrder({ ...orderData, userId });
 
       // For market orders, immediately execute them
       if (orderData.orderType === "market") {
@@ -460,7 +476,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Create position
           const position = await storage.createPosition({
-            userId: 1,
+            userId,
             symbol: orderData.symbol,
             type: orderData.type,
             volume: orderData.volume,

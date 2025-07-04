@@ -1,11 +1,25 @@
-import { users, symbols, positions, orders, type User, type InsertUser, type Symbol, type InsertSymbol, type Position, type InsertPosition, type Order, type InsertOrder } from "@shared/schema";
+import {
+  users,
+  symbols,
+  positions,
+  orders,
+  type User,
+  type UpsertUser,
+  type Symbol,
+  type InsertSymbol,
+  type Position,
+  type InsertPosition,
+  type Order,
+  type InsertOrder,
+} from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  // User methods
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  updateUserBalance(userId: number, balance: string, equity: string): Promise<void>;
+  // User methods for Replit Auth
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  updateUserBalance(userId: string, balance: string, equity: string): Promise<void>;
 
   // Symbol methods
   getSymbols(): Promise<Symbol[]>;
@@ -14,40 +28,24 @@ export interface IStorage {
   createSymbol(symbol: InsertSymbol): Promise<Symbol>;
 
   // Position methods
-  getPositions(userId: number): Promise<Position[]>;
+  getPositions(userId: string): Promise<Position[]>;
   createPosition(position: InsertPosition): Promise<Position>;
   updatePosition(id: number, currentPrice: string, pnl: string): Promise<void>;
   closePosition(id: number, closedAt: Date): Promise<void>;
 
   // Order methods
-  getOrders(userId: number): Promise<Order[]>;
+  getOrders(userId: string): Promise<Order[]>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrderStatus(id: number, status: string, executedAt?: Date): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private symbols: Map<string, Symbol>;
-  private positions: Map<number, Position>;
-  private orders: Map<number, Order>;
-  private currentUserId: number;
-  private currentPositionId: number;
-  private currentOrderId: number;
-
+export class DatabaseStorage implements IStorage {
   constructor() {
-    this.users = new Map();
-    this.symbols = new Map();
-    this.positions = new Map();
-    this.orders = new Map();
-    this.currentUserId = 1;
-    this.currentPositionId = 1;
-    this.currentOrderId = 1;
-
-    // Initialize default symbols
+    // Initialize default symbols on first run
     this.initializeDefaultSymbols();
   }
 
-  private initializeDefaultSymbols() {
+  private async initializeDefaultSymbols() {
     const defaultSymbols = [
       // Forex Major Pairs
       { symbol: "EURUSD", name: "Euro vs US Dollar", bid: "1.08520", ask: "1.08535" },
@@ -90,154 +88,155 @@ export class MemStorage implements IStorage {
       { symbol: "SOLUSD", name: "Solana vs US Dollar", bid: "238.45", ask: "238.85" },
     ];
 
-    defaultSymbols.forEach((symbolData, index) => {
-      const symbol: Symbol = {
-        id: index + 1,
-        symbol: symbolData.symbol,
-        name: symbolData.name,
-        bid: symbolData.bid,
-        ask: symbolData.ask,
-        change: (Math.random() * 2 - 1).toFixed(5), // Random change between -1 and 1
-        changePercent: (Math.random() * 4 - 2).toFixed(2), // Random percentage between -2% and 2%
-        updatedAt: new Date(),
-      };
-      this.symbols.set(symbolData.symbol, symbol);
-    });
+    try {
+      // Check if symbols already exist
+      const existingSymbols = await db.select().from(symbols).limit(1);
+      if (existingSymbols.length > 0) {
+        return; // Symbols already initialized
+      }
+
+      // Insert default symbols
+      for (const symbolData of defaultSymbols) {
+        await db.insert(symbols).values({
+          symbol: symbolData.symbol,
+          name: symbolData.name,
+          bid: symbolData.bid,
+          ask: symbolData.ask,
+          change: (Math.random() * 2 - 1).toFixed(5),
+          changePercent: (Math.random() * 4 - 2).toFixed(2),
+        }).onConflictDoNothing();
+      }
+    } catch (error) {
+      console.error('Error initializing default symbols:', error);
+    }
   }
 
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+  // User methods for Replit Auth
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = {
-      ...insertUser,
-      id,
-      balance: "10000.00",
-      equity: "10000.00",
-      createdAt: new Date(),
-    };
-    this.users.set(id, user);
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
     return user;
   }
 
-  async updateUserBalance(userId: number, balance: string, equity: string): Promise<void> {
-    const user = this.users.get(userId);
-    if (user) {
-      user.balance = balance;
-      user.equity = equity;
-      this.users.set(userId, user);
-    }
+  async updateUserBalance(userId: string, balance: string, equity: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ balance, equity, updatedAt: new Date() })
+      .where(eq(users.id, userId));
   }
 
+  // Symbol methods
   async getSymbols(): Promise<Symbol[]> {
-    return Array.from(this.symbols.values());
+    return await db.select().from(symbols);
   }
 
   async getSymbol(symbol: string): Promise<Symbol | undefined> {
-    return this.symbols.get(symbol);
+    const [symbolData] = await db
+      .select()
+      .from(symbols)
+      .where(eq(symbols.symbol, symbol));
+    return symbolData || undefined;
   }
 
   async updateSymbolPrice(symbol: string, bid: string, ask: string, change: string, changePercent: string): Promise<void> {
-    const symbolData = this.symbols.get(symbol);
-    if (symbolData) {
-      symbolData.bid = bid;
-      symbolData.ask = ask;
-      symbolData.change = change;
-      symbolData.changePercent = changePercent;
-      symbolData.updatedAt = new Date();
-      this.symbols.set(symbol, symbolData);
-    }
+    await db
+      .update(symbols)
+      .set({
+        bid,
+        ask,
+        change,
+        changePercent,
+        updatedAt: new Date(),
+      })
+      .where(eq(symbols.symbol, symbol));
   }
 
   async createSymbol(insertSymbol: InsertSymbol): Promise<Symbol> {
-    const id = this.symbols.size + 1;
-    const symbol: Symbol = {
-      ...insertSymbol,
-      id,
-      change: insertSymbol.change || "0",
-      changePercent: insertSymbol.changePercent || "0",
-      updatedAt: new Date(),
-    };
-    this.symbols.set(insertSymbol.symbol, symbol);
+    const [symbol] = await db
+      .insert(symbols)
+      .values({
+        ...insertSymbol,
+        change: insertSymbol.change || "0",
+        changePercent: insertSymbol.changePercent || "0",
+      })
+      .returning();
     return symbol;
   }
 
-  async getPositions(userId: number): Promise<Position[]> {
-    return Array.from(this.positions.values()).filter(position => position.userId === userId && position.status === "open");
+  // Position methods
+  async getPositions(userId: string): Promise<Position[]> {
+    return await db
+      .select()
+      .from(positions)
+      .where(eq(positions.userId, userId));
   }
 
   async createPosition(insertPosition: InsertPosition): Promise<Position> {
-    const id = this.currentPositionId++;
-    const position: Position = {
-      ...insertPosition,
-      id,
-      currentPrice: insertPosition.openPrice,
-      stopLoss: insertPosition.stopLoss || null,
-      takeProfit: insertPosition.takeProfit || null,
-      pnl: "0.00",
-      status: "open",
-      openedAt: new Date(),
-      closedAt: null,
-    };
-    this.positions.set(id, position);
+    const [position] = await db
+      .insert(positions)
+      .values({
+        ...insertPosition,
+        currentPrice: insertPosition.openPrice,
+        pnl: "0.00",
+        status: "open",
+      })
+      .returning();
     return position;
   }
 
   async updatePosition(id: number, currentPrice: string, pnl: string): Promise<void> {
-    const position = this.positions.get(id);
-    if (position) {
-      position.currentPrice = currentPrice;
-      position.pnl = pnl;
-      this.positions.set(id, position);
-    }
+    await db
+      .update(positions)
+      .set({ currentPrice, pnl })
+      .where(eq(positions.id, id));
   }
 
   async closePosition(id: number, closedAt: Date): Promise<void> {
-    const position = this.positions.get(id);
-    if (position) {
-      position.status = "closed";
-      position.closedAt = closedAt;
-      this.positions.set(id, position);
-    }
+    await db
+      .update(positions)
+      .set({ status: "closed", closedAt })
+      .where(eq(positions.id, id));
   }
 
-  async getOrders(userId: number): Promise<Order[]> {
-    return Array.from(this.orders.values()).filter(order => order.userId === userId && order.status === "pending");
+  // Order methods
+  async getOrders(userId: string): Promise<Order[]> {
+    return await db
+      .select()
+      .from(orders)
+      .where(eq(orders.userId, userId));
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
-    const id = this.currentOrderId++;
-    const order: Order = {
-      ...insertOrder,
-      id,
-      stopLoss: insertOrder.stopLoss || null,
-      takeProfit: insertOrder.takeProfit || null,
-      orderType: insertOrder.orderType || "market",
-      price: insertOrder.price || null,
-      status: "pending",
-      createdAt: new Date(),
-      executedAt: null,
-    };
-    this.orders.set(id, order);
+    const [order] = await db
+      .insert(orders)
+      .values({
+        ...insertOrder,
+        status: "pending",
+      })
+      .returning();
     return order;
   }
 
   async updateOrderStatus(id: number, status: string, executedAt?: Date): Promise<void> {
-    const order = this.orders.get(id);
-    if (order) {
-      order.status = status;
-      if (executedAt) {
-        order.executedAt = executedAt;
-      }
-      this.orders.set(id, order);
-    }
+    await db
+      .update(orders)
+      .set({ status, executedAt })
+      .where(eq(orders.id, id));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
