@@ -7,11 +7,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import TradingTerminal from "@/pages/trading-terminal";
 import AttackControl from "@/pages/AttackControl";
-import WorldGoldControl from "@/pages/WorldGoldControl";
-import SecBotBypassDashboard from "@/pages/SecBotBypassDashboard";
 import FredGoldAttack from "@/pages/FredGoldAttack";
-import TwelveDataDashboard from "@/pages/TwelveDataDashboard";
+import WorldGoldControl from "@/pages/WorldGoldControl";
 import CoinrankingMarketMaker from "@/pages/CoinrankingMarketMaker";
+import SecBotBypassDashboard from "@/pages/SecBotBypassDashboard";
+import FederalReserveControl from "./pages/FederalReserveControl";
+import TwelveDataDashboard from "@/pages/TwelveDataDashboard";
 import NotFound from "@/pages/not-found";
 import MarketCompliancePanel from './components/MarketCompliancePanel';
 import Landing from "@/pages/landing";
@@ -46,6 +47,7 @@ function Router() {
           <Route path="/twelvedata" component={TwelveDataDashboard} />
           <Route path="/coinranking" component={CoinrankingMarketMaker} />
           <Route path="/market-compliance" component={MarketCompliancePanel} />
+          <Route path="/federal-reserve" component={FederalReserveControl} />
         </>
       )}
       <Route component={NotFound} />

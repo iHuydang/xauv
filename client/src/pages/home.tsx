@@ -7,7 +7,7 @@ import type { User as UserType } from "@shared/schema";
 
 export default function Home() {
   const { user } = useAuth();
-  
+
   // Type guard to ensure user is properly typed
   if (!user) {
     return (
@@ -19,7 +19,7 @@ export default function Home() {
       </div>
     );
   }
-  
+
   const typedUser = user as UserType;
 
   return (
@@ -156,6 +156,7 @@ export default function Home() {
             </CardContent>
           </Card>
 
+          
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="text-white">Quick Links</CardTitle>
