@@ -273,7 +273,7 @@ show_help() {
     echo ""
     echo "Usage: $0 [COMMAND] [PARAMETERS]"
     echo ""
-    echo "Available commands:"
+    echo "Basic commands:"
     echo "  status                          - Get current Fed system status"
     echo "  expand [amount]                 - Execute expansionary open market operation"
     echo "  contract [amount]               - Execute contractionary open market operation"
@@ -282,8 +282,19 @@ show_help() {
     echo "  gold-release                    - Release gold price suppression"
     echo "  currency [currency] [action] [amount] - Execute currency intervention"
     echo "  inflation [target]              - Set inflation target"
+    echo ""
+    echo "Advanced commands:"
+    echo "  stress-test [scenario]          - Execute banking stress test (MILD/SEVERE/EXTREME)"
+    echo "  emergency-liquidity [amount]    - Emergency liquidity injection"
+    echo "  stability                       - Monitor financial stability metrics"
+    echo "  yield-curve [2y] [5y] [10y] [30y] - Execute yield curve control"
+    echo "  international [action]          - International coordination (COORDINATED_EASING/TIGHTENING)"
+    echo "  circuit-breaker [reason]        - Activate market circuit breaker"
+    echo ""
+    echo "Crisis protocols:"
     echo "  emergency                       - Execute emergency response protocol"
     echo "  attack                          - Execute coordinated policy attack"
+    echo "  advanced-crisis                 - Execute advanced crisis response"
     echo "  monitor [interval]              - Start auto monitoring mode"
     echo "  help                           - Show this help"
     echo ""
@@ -293,8 +304,187 @@ show_help() {
     echo "  $0 qe 2000000000000 12"
     echo "  $0 currency EUR WEAKEN 15000000000"
     echo "  $0 inflation 2.5"
+    echo "  $0 stress-test SEVERE"
+    echo "  $0 emergency-liquidity 500000000000"
+    echo "  $0 yield-curve 0.25 0.5 0.75 1.0"
+    echo "  $0 international COORDINATED_EASING"
+    echo "  $0 circuit-breaker \"Market crash detected\""
     echo ""
     echo "Logs are saved to: $LOG_FILE"
+}
+
+# Banking stress test
+execute_stress_test() {
+    local scenario="${1:-MILD}"
+    
+    echo -e "${YELLOW}🏦 BANKING STRESS TEST${NC}"
+    echo -e "${RED}Scenario: $scenario${NC}"
+    
+    log_operation "🏦 Executing banking stress test: $scenario"
+    
+    local response=$(curl -s -X POST "$API_BASE/api/fed-monetary/stress-test" \
+        -H "Content-Type: application/json" \
+        -d "{\"scenario\": \"$scenario\"}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ Banking stress test completed${NC}"
+        echo "$response" | jq '.banking_health'
+        log_operation "✅ Banking stress test completed: $scenario"
+    else
+        echo -e "${RED}❌ Stress test failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ Banking stress test failed: $scenario"
+    fi
+}
+
+# Emergency liquidity injection
+execute_emergency_liquidity() {
+    local amount="${1:-200000000000}"
+    
+    echo -e "${RED}🚨 EMERGENCY LIQUIDITY INJECTION${NC}"
+    echo -e "${YELLOW}Amount: \$$(echo "$amount" | numfmt --to=iec)${NC}"
+    
+    log_operation "🚨 Executing emergency liquidity injection: \$$amount"
+    
+    local response=$(curl -s -X POST "$API_BASE/api/fed-monetary/emergency-liquidity" \
+        -H "Content-Type: application/json" \
+        -d "{\"amount\": $amount}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ Emergency liquidity injection completed${NC}"
+        echo "$response" | jq '.'
+        log_operation "✅ Emergency liquidity injection completed: \$$amount"
+    else
+        echo -e "${RED}❌ Emergency liquidity injection failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ Emergency liquidity injection failed: \$$amount"
+    fi
+}
+
+# Financial stability monitoring
+monitor_financial_stability() {
+    echo -e "${BLUE}📊 FINANCIAL STABILITY MONITORING${NC}"
+    log_operation "📊 Monitoring financial stability"
+    
+    local response=$(curl -s "$API_BASE/api/fed-monetary/stability")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ Stability metrics retrieved${NC}"
+        echo "$response" | jq '.stability_metrics'
+        log_operation "✅ Financial stability metrics retrieved"
+    else
+        echo -e "${RED}❌ Failed to get stability metrics${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ Failed to retrieve stability metrics"
+    fi
+}
+
+# Yield curve control
+execute_yield_curve_control() {
+    local target_2y="${1:-2.5}"
+    local target_5y="${2:-2.8}"
+    local target_10y="${3:-3.0}"
+    local target_30y="${4:-3.2}"
+    
+    echo -e "${PURPLE}📈 YIELD CURVE CONTROL${NC}"
+    echo -e "${YELLOW}Targets: 2Y=${target_2y}%, 5Y=${target_5y}%, 10Y=${target_10y}%, 30Y=${target_30y}%${NC}"
+    
+    log_operation "📈 Executing yield curve control"
+    
+    local response=$(curl -s -X POST "$API_BASE/api/fed-monetary/yield-curve-control" \
+        -H "Content-Type: application/json" \
+        -d "{\"target_curve\": {\"2Y\": $target_2y, \"5Y\": $target_5y, \"10Y\": $target_10y, \"30Y\": $target_30y}}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ Yield curve control executed${NC}"
+        echo "$response" | jq '.'
+        log_operation "✅ Yield curve control executed"
+    else
+        echo -e "${RED}❌ Yield curve control failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ Yield curve control failed"
+    fi
+}
+
+# International coordination
+execute_international_coordination() {
+    local action="${1:-COORDINATED_EASING}"
+    
+    echo -e "${BLUE}🌍 INTERNATIONAL COORDINATION${NC}"
+    echo -e "${YELLOW}Action: $action${NC}"
+    
+    log_operation "🌍 Executing international coordination: $action"
+    
+    local response=$(curl -s -X POST "$API_BASE/api/fed-monetary/international-coordination" \
+        -H "Content-Type: application/json" \
+        -d "{\"action\": \"$action\"}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ International coordination executed${NC}"
+        echo "$response" | jq '.'
+        log_operation "✅ International coordination executed: $action"
+    else
+        echo -e "${RED}❌ International coordination failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ International coordination failed: $action"
+    fi
+}
+
+# Market circuit breaker
+activate_circuit_breaker() {
+    local reason="${1:-Market volatility spike}"
+    
+    echo -e "${RED}🛑 MARKET CIRCUIT BREAKER${NC}"
+    echo -e "${YELLOW}Reason: $reason${NC}"
+    
+    log_operation "🛑 Activating market circuit breaker: $reason"
+    
+    local response=$(curl -s -X POST "$API_BASE/api/fed-monetary/circuit-breaker" \
+        -H "Content-Type: application/json" \
+        -d "{\"reason\": \"$reason\"}")
+    
+    if echo "$response" | jq -e '.success' > /dev/null; then
+        echo -e "${GREEN}✅ Circuit breaker activated${NC}"
+        echo "$response" | jq '.'
+        log_operation "✅ Circuit breaker activated: $reason"
+    else
+        echo -e "${RED}❌ Circuit breaker activation failed${NC}"
+        echo "$response" | jq '.'
+        log_operation "❌ Circuit breaker activation failed: $reason"
+    fi
+}
+
+# Advanced crisis response
+advanced_crisis_response() {
+    echo -e "${RED}🚨 ADVANCED CRISIS RESPONSE PROTOCOL${NC}"
+    log_operation "🚨 Initiating advanced crisis response"
+    
+    # Step 1: Stress test to assess situation
+    echo -e "${PURPLE}Phase 1: Emergency Banking Stress Test${NC}"
+    execute_stress_test "EXTREME"
+    sleep 3
+    
+    # Step 2: Emergency liquidity injection
+    echo -e "${PURPLE}Phase 2: Emergency Liquidity Injection${NC}"
+    execute_emergency_liquidity 500000000000
+    sleep 3
+    
+    # Step 3: Yield curve control
+    echo -e "${PURPLE}Phase 3: Emergency Yield Curve Control${NC}"
+    execute_yield_curve_control 0.25 0.5 0.75 1.0
+    sleep 3
+    
+    # Step 4: International coordination
+    echo -e "${PURPLE}Phase 4: International Coordination${NC}"
+    execute_international_coordination "COORDINATED_EASING"
+    sleep 3
+    
+    # Step 5: Circuit breaker if needed
+    echo -e "${PURPLE}Phase 5: Market Circuit Breaker${NC}"
+    activate_circuit_breaker "Advanced crisis response protocol"
+    
+    echo -e "${GREEN}✅ Advanced crisis response protocol completed${NC}"
+    log_operation "✅ Advanced crisis response protocol completed"
 }
 
 # Main command handler
@@ -331,6 +521,27 @@ case "${1:-help}" in
         ;;
     "monitor")
         auto_monitor "${2:-60}"
+        ;;
+    "stress-test")
+        execute_stress_test "${2:-MILD}"
+        ;;
+    "emergency-liquidity")
+        execute_emergency_liquidity "${2:-200000000000}"
+        ;;
+    "stability")
+        monitor_financial_stability
+        ;;
+    "yield-curve")
+        execute_yield_curve_control "${2:-2.5}" "${3:-2.8}" "${4:-3.0}" "${5:-3.2}"
+        ;;
+    "international")
+        execute_international_coordination "${2:-COORDINATED_EASING}"
+        ;;
+    "circuit-breaker")
+        activate_circuit_breaker "${2:-Market volatility spike}"
+        ;;
+    "advanced-crisis")
+        advanced_crisis_response
         ;;
     "help"|*)
         show_help

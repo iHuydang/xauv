@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,7 +37,7 @@ export default function FederalReserveControl() {
   const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  
+
   // Form states
   const [operationType, setOperationType] = useState<'EXPAND' | 'CONTRACT'>('EXPAND');
   const [operationAmount, setOperationAmount] = useState('50000000000');
@@ -49,14 +48,14 @@ export default function FederalReserveControl() {
   const [currencyAction, setCurrencyAction] = useState<'STRENGTHEN' | 'WEAKEN'>('STRENGTHEN');
   const [currencyAmount, setCurrencyAmount] = useState('10000000000');
   const [inflationTarget, setInflationTarget] = useState('2.0');
-  
+
   // Emergency tools states
   const [emergencyType, setEmergencyType] = useState<'FINANCIAL_CRISIS' | 'HYPERINFLATION' | 'DEFLATION' | 'BANK_RUN'>('FINANCIAL_CRISIS');
   const [cbdcName, setCbdcName] = useState('FedCoin');
   const [cbdcSupply, setCbdcSupply] = useState('1000000000000');
   const [negativeRate, setNegativeRate] = useState('-0.5');
   const [helicopterAmount, setHelicopterAmount] = useState('1000000000000');
-  
+
   // Advanced controls states
   const [yieldMaturity, setYieldMaturity] = useState('10Y');
   const [yieldTarget, setYieldTarget] = useState('3.0');
@@ -68,7 +67,7 @@ export default function FederalReserveControl() {
 
   useEffect(() => {
     loadSystemStatus();
-    
+
     // Refresh every 10 seconds
     const interval = setInterval(loadSystemStatus, 10000);
     return () => clearInterval(interval);
@@ -78,7 +77,7 @@ export default function FederalReserveControl() {
     try {
       const response = await fetch('/api/fed-monetary/status');
       const data = await response.json();
-      
+
       if (data.success) {
         setSystemStatus(data.data);
       }
@@ -90,7 +89,7 @@ export default function FederalReserveControl() {
   const executeOpenMarketOperation = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/open-market', {
         method: 'POST',
@@ -100,9 +99,9 @@ export default function FederalReserveControl() {
           amount: parseInt(operationAmount)
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`✅ ${data.message}`);
         setSystemStatus(data.new_status);
@@ -119,7 +118,7 @@ export default function FederalReserveControl() {
   const executeQuantitativeEasing = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/qe', {
         method: 'POST',
@@ -129,9 +128,9 @@ export default function FederalReserveControl() {
           duration: parseInt(qeDuration)
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`✅ ${data.message}`);
       } else {
@@ -147,7 +146,7 @@ export default function FederalReserveControl() {
   const executeGoldManipulation = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/gold-manipulation', {
         method: 'POST',
@@ -156,9 +155,9 @@ export default function FederalReserveControl() {
           action: goldAction
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`✅ ${data.message} - New Gold Price: $${data.new_gold_price.toFixed(2)}`);
         loadSystemStatus();
@@ -175,7 +174,7 @@ export default function FederalReserveControl() {
   const executeCurrencyIntervention = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/currency-intervention', {
         method: 'POST',
@@ -186,9 +185,9 @@ export default function FederalReserveControl() {
           amount: parseInt(currencyAmount)
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`✅ ${data.message} - New DXY: ${data.new_dollar_index.toFixed(2)}`);
         loadSystemStatus();
@@ -205,7 +204,7 @@ export default function FederalReserveControl() {
   const executeInflationTargeting = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/target-inflation', {
         method: 'POST',
@@ -214,9 +213,9 @@ export default function FederalReserveControl() {
           target: parseFloat(inflationTarget)
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`✅ ${data.message}`);
         loadSystemStatus();
@@ -233,7 +232,7 @@ export default function FederalReserveControl() {
   const executeEmergencyMeasures = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/emergency-measures', {
         method: 'POST',
@@ -242,9 +241,9 @@ export default function FederalReserveControl() {
           crisis: emergencyType
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`🚨 ${data.message}`);
         loadSystemStatus();
@@ -261,7 +260,7 @@ export default function FederalReserveControl() {
   const launchCBDC = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/launch-cbdc', {
         method: 'POST',
@@ -271,9 +270,9 @@ export default function FederalReserveControl() {
           supply: parseInt(cbdcSupply)
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`💰 ${data.message}`);
         loadSystemStatus();
@@ -290,7 +289,7 @@ export default function FederalReserveControl() {
   const implementNegativeRates = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/negative-rates', {
         method: 'POST',
@@ -299,9 +298,9 @@ export default function FederalReserveControl() {
           rate: parseFloat(negativeRate)
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`📉 ${data.message}`);
         loadSystemStatus();
@@ -318,7 +317,7 @@ export default function FederalReserveControl() {
   const executeHelicopterMoney = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/helicopter-money', {
         method: 'POST',
@@ -327,9 +326,9 @@ export default function FederalReserveControl() {
           amount: parseInt(helicopterAmount)
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`🚁 ${data.message}`);
         loadSystemStatus();
@@ -346,7 +345,7 @@ export default function FederalReserveControl() {
   const implementYieldCurveControl = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/yield-curve-control', {
         method: 'POST',
@@ -356,9 +355,9 @@ export default function FederalReserveControl() {
           target_yield: parseFloat(yieldTarget)
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`📈 ${data.message}`);
         loadSystemStatus();
@@ -375,7 +374,7 @@ export default function FederalReserveControl() {
   const issueForwardGuidance = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/forward-guidance', {
         method: 'POST',
@@ -385,9 +384,9 @@ export default function FederalReserveControl() {
           time_horizon: parseInt(guidanceHorizon)
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`📢 Forward guidance issued successfully`);
         loadSystemStatus();
@@ -404,7 +403,7 @@ export default function FederalReserveControl() {
   const activateSwapLines = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/swap-lines', {
         method: 'POST',
@@ -414,9 +413,9 @@ export default function FederalReserveControl() {
           amount: parseInt(swapAmount)
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`🔄 ${data.message}`);
         loadSystemStatus();
@@ -433,7 +432,7 @@ export default function FederalReserveControl() {
   const runStressTest = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/stress-test', {
         method: 'POST',
@@ -442,9 +441,9 @@ export default function FederalReserveControl() {
           scenario: stressScenario
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`🧪 Stress test completed: ${stressScenario}`);
       } else {
@@ -460,16 +459,16 @@ export default function FederalReserveControl() {
   const startRealTimeMonitoring = async () => {
     setIsLoading(true);
     setMessage('');
-    
+
     try {
       const response = await fetch('/api/fed-monetary/start-monitoring', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMessage(`📡 Real-time monitoring started`);
       } else {
@@ -604,430 +603,30 @@ export default function FederalReserveControl() {
         {/* Control Panels */}
         <Tabs defaultValue="open-market" className="space-y-6">
           <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="open-market">Open Market Ops</TabsTrigger>
-            <TabsTrigger value="qe">Quantitative Easing</TabsTrigger>
-            <TabsTrigger value="gold">Gold Control</TabsTrigger>
-            <TabsTrigger value="currency">Currency Intervention</TabsTrigger>
-          </TabsList>
-          
-          <TabsList className="grid grid-cols-4 w-full mt-2">
-            <TabsTrigger value="inflation">Inflation Targeting</TabsTrigger>
-            <TabsTrigger value="emergency">Emergency Tools</TabsTrigger>
-            <TabsTrigger value="advanced">Advanced Controls</TabsTrigger>
-            <TabsTrigger value="monitoring">Real-time Monitor</TabsTrigger>
+            <TabsTrigger value="basic">Basic Operations</TabsTrigger>
+            <TabsTrigger value="advanced">Advanced Tools</TabsTrigger>
+            <TabsTrigger value="stability">Financial Stability</TabsTrigger>
+            <TabsTrigger value="emergency">Emergency Protocols</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="open-market">
-            <Card>
-              <CardHeader>
-                <CardTitle>💰 Open Market Operations</CardTitle>
-                <CardDescription>
-                  Execute bond purchases/sales to control money supply and interest rates
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Operation Type</label>
-                    <Select value={operationType} onValueChange={(value: 'EXPAND' | 'CONTRACT') => setOperationType(value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="EXPAND">EXPAND (Buy Bonds)</SelectItem>
-                        <SelectItem value="CONTRACT">CONTRACT (Sell Bonds)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Amount (USD)</label>
-                    <Input
-                      type="number"
-                      value={operationAmount}
-                      onChange={(e) => setOperationAmount(e.target.value)}
-                      placeholder="50000000000"
-                    />
-                  </div>
-                </div>
-                <Button onClick={executeOpenMarketOperation} disabled={isLoading} className="w-full">
-                  {isLoading ? 'Executing...' : `Execute ${operationType} Operation`}
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="qe">
-            <Card>
-              <CardHeader>
-                <CardTitle>🖨️ Quantitative Easing Program</CardTitle>
-                <CardDescription>
-                  Large-scale asset purchase program to inject liquidity
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Total Amount (USD)</label>
-                    <Input
-                      type="number"
-                      value={qeAmount}
-                      onChange={(e) => setQeAmount(e.target.value)}
-                      placeholder="1000000000000"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Duration (Months)</label>
-                    <Input
-                      type="number"
-                      value={qeDuration}
-                      onChange={(e) => setQeDuration(e.target.value)}
-                      placeholder="12"
-                    />
-                  </div>
-                </div>
-                <div className="text-sm text-gray-600">
-                  Monthly Purchase: {formatCurrency(parseInt(qeAmount) / parseInt(qeDuration))}
-                </div>
-                <Button onClick={executeQuantitativeEasing} disabled={isLoading} className="w-full">
-                  {isLoading ? 'Starting QE...' : 'Start QE Program'}
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="gold">
-            <Card>
-              <CardHeader>
-                <CardTitle>🥇 Gold Standard Manipulation</CardTitle>
-                <CardDescription>
-                  Control gold price through coordinated central bank operations
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Gold Control Action</label>
-                  <Select value={goldAction} onValueChange={(value: 'SUPPRESS' | 'RELEASE') => setGoldAction(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="SUPPRESS">SUPPRESS (Central Bank Sales)</SelectItem>
-                      <SelectItem value="RELEASE">RELEASE (Stop Suppression)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium">Current Price:</span>
-                    <span className="ml-2">${systemStatus.market_control.goldPrice.toFixed(2)}</span>
-                  </div>
-                  <div>
-                    <span className="font-medium">Fair Value:</span>
-                    <span className="ml-2">${systemStatus.gold_fair_value.toFixed(2)}</span>
-                  </div>
-                </div>
-                <Button onClick={executeGoldManipulation} disabled={isLoading} className="w-full">
-                  {isLoading ? 'Executing...' : `${goldAction} Gold Price`}
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="currency">
-            <Card>
-              <CardHeader>
-                <CardTitle>💱 Currency Intervention</CardTitle>
-                <CardDescription>
-                  Direct intervention in forex markets to influence exchange rates
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Target Currency</label>
-                    <Select value={currencyTarget} onValueChange={setCurrencyTarget}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="USD">USD</SelectItem>
-                        <SelectItem value="EUR">EUR</SelectItem>
-                        <SelectItem value="JPY">JPY</SelectItem>
-                        <SelectItem value="GBP">GBP</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Action</label>
-                    <Select value={currencyAction} onValueChange={(value: 'STRENGTHEN' | 'WEAKEN') => setCurrencyAction(value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="STRENGTHEN">STRENGTHEN</SelectItem>
-                        <SelectItem value="WEAKEN">WEAKEN</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Amount (USD)</label>
-                    <Input
-                      type="number"
-                      value={currencyAmount}
-                      onChange={(e) => setCurrencyAmount(e.target.value)}
-                      placeholder="10000000000"
-                    />
-                  </div>
-                </div>
-                <Button onClick={executeCurrencyIntervention} disabled={isLoading} className="w-full">
-                  {isLoading ? 'Executing...' : `${currencyAction} ${currencyTarget}`}
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="inflation">
-            <Card>
-              <CardHeader>
-                <CardTitle>🎯 Inflation Targeting</CardTitle>
-                <CardDescription>
-                  Set inflation targets and adjust monetary policy accordingly
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Target Inflation Rate (%)</label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={inflationTarget}
-                    onChange={(e) => setInflationTarget(e.target.value)}
-                    placeholder="2.0"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium">Current Expectations:</span>
-                    <span className="ml-2">{systemStatus.market_control.inflationExpectations.toFixed(1)}%</span>
-                  </div>
-                  <div>
-                    <span className="font-medium">Target Gap:</span>
-                    <span className="ml-2">
-                      {(parseFloat(inflationTarget) - systemStatus.market_control.inflationExpectations).toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-                <Button onClick={executeInflationTargeting} disabled={isLoading} className="w-full">
-                  {isLoading ? 'Adjusting...' : 'Set Inflation Target'}
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="emergency">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TabsContent value="basic">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>🚨 Emergency Measures</CardTitle>
-                  <CardDescription>
-                    Activate emergency monetary policy responses
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Crisis Type</label>
-                    <Select value={emergencyType} onValueChange={(value: any) => setEmergencyType(value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="FINANCIAL_CRISIS">Financial Crisis</SelectItem>
-                        <SelectItem value="HYPERINFLATION">Hyperinflation</SelectItem>
-                        <SelectItem value="DEFLATION">Deflation</SelectItem>
-                        <SelectItem value="BANK_RUN">Bank Run</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button onClick={executeEmergencyMeasures} disabled={isLoading} className="w-full bg-red-600">
-                    {isLoading ? 'Activating...' : `Activate ${emergencyType} Response`}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>💰 Launch CBDC</CardTitle>
-                  <CardDescription>
-                    Launch Central Bank Digital Currency
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">CBDC Name</label>
-                    <Input
-                      type="text"
-                      value={cbdcName}
-                      onChange={(e) => setCbdcName(e.target.value)}
-                      placeholder="FedCoin"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Initial Supply</label>
-                    <Input
-                      type="number"
-                      value={cbdcSupply}
-                      onChange={(e) => setCbdcSupply(e.target.value)}
-                      placeholder="1000000000000"
-                    />
-                  </div>
-                  <Button onClick={launchCBDC} disabled={isLoading} className="w-full">
-                    {isLoading ? 'Launching...' : 'Launch CBDC'}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>📉 Negative Interest Rates</CardTitle>
-                  <CardDescription>
-                    Implement negative interest rate policy
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Target Rate (%)</label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={negativeRate}
-                      onChange={(e) => setNegativeRate(e.target.value)}
-                      placeholder="-0.5"
-                    />
-                  </div>
-                  <Button onClick={implementNegativeRates} disabled={isLoading} className="w-full">
-                    {isLoading ? 'Implementing...' : 'Implement Negative Rates'}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>🚁 Helicopter Money</CardTitle>
-                  <CardDescription>
-                    Direct monetary transfers to citizens
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Amount (USD)</label>
-                    <Input
-                      type="number"
-                      value={helicopterAmount}
-                      onChange={(e) => setHelicopterAmount(e.target.value)}
-                      placeholder="1000000000000"
-                    />
-                  </div>
-                  <Button onClick={executeHelicopterMoney} disabled={isLoading} className="w-full">
-                    {isLoading ? 'Executing...' : 'Execute Helicopter Money'}
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="advanced">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>📈 Yield Curve Control</CardTitle>
-                  <CardDescription>
-                    Control specific maturity yields
-                  </CardDescription>
+                  <CardTitle>💰 Open Market Operations</CardTitle>
+                  <CardDescription>Execute bond purchases/sales to control money supply</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Maturity</label>
-                      <Select value={yieldMaturity} onValueChange={setYieldMaturity}>
+                      <label className="block text-sm font-medium mb-2">Operation Type</label>
+                      <Select value={operationType} onValueChange={(value: 'EXPAND' | 'CONTRACT') => setOperationType(value)}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="2Y">2 Year</SelectItem>
-                          <SelectItem value="10Y">10 Year</SelectItem>
-                          <SelectItem value="30Y">30 Year</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Target Yield (%)</label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        value={yieldTarget}
-                        onChange={(e) => setYieldTarget(e.target.value)}
-                        placeholder="3.0"
-                      />
-                    </div>
-                  </div>
-                  <Button onClick={implementYieldCurveControl} disabled={isLoading} className="w-full">
-                    {isLoading ? 'Implementing...' : 'Implement Yield Control'}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>📢 Forward Guidance</CardTitle>
-                  <CardDescription>
-                    Communicate future policy intentions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Guidance Message</label>
-                    <Input
-                      type="text"
-                      value={guidanceMessage}
-                      onChange={(e) => setGuidanceMessage(e.target.value)}
-                      placeholder="Rates will remain low for extended period"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Time Horizon (months)</label>
-                    <Input
-                      type="number"
-                      value={guidanceHorizon}
-                      onChange={(e) => setGuidanceHorizon(e.target.value)}
-                      placeholder="12"
-                    />
-                  </div>
-                  <Button onClick={issueForwardGuidance} disabled={isLoading} className="w-full">
-                    {isLoading ? 'Issuing...' : 'Issue Forward Guidance'}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>🔄 International Swap Lines</CardTitle>
-                  <CardDescription>
-                    Provide dollar liquidity to foreign central banks
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Currency</label>
-                      <Select value={swapCurrency} onValueChange={setSwapCurrency}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="EUR">Euro</SelectItem>
-                          <SelectItem value="JPY">Japanese Yen</SelectItem>
-                          <SelectItem value="GBP">British Pound</SelectItem>
-                          <SelectItem value="CHF">Swiss Franc</SelectItem>
+                          <SelectItem value="EXPAND">EXPAND (Buy Bonds)</SelectItem>
+                          <SelectItem value="CONTRACT">CONTRACT (Sell Bonds)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1035,79 +634,304 @@ export default function FederalReserveControl() {
                       <label className="block text-sm font-medium mb-2">Amount (USD)</label>
                       <Input
                         type="number"
-                        value={swapAmount}
-                        onChange={(e) => setSwapAmount(e.target.value)}
-                        placeholder="100000000000"
+                        value={operationAmount}
+                        onChange={(e) => setOperationAmount(e.target.value)}
+                        placeholder="50000000000"
                       />
                     </div>
                   </div>
-                  <Button onClick={activateSwapLines} disabled={isLoading} className="w-full">
-                    {isLoading ? 'Activating...' : 'Activate Swap Lines'}
+                  <Button onClick={executeOpenMarketOperation} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Executing...' : `Execute ${operationType} Operation`}
                   </Button>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>🧪 Stress Testing</CardTitle>
-                  <CardDescription>
-                    Test system resilience under extreme scenarios
-                  </CardDescription>
+                  <CardTitle>🖨️ Quantitative Easing</CardTitle>
+                  <CardDescription>Large-scale asset purchase program</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Total Amount (USD)</label>
+                      <Input
+                        type="number"
+                        value={qeAmount}
+                        onChange={(e) => setQeAmount(e.target.value)}
+                        placeholder="1000000000000"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Duration (Months)</label>
+                      <Input
+                        type="number"
+                        value={qeDuration}
+                        onChange={(e) => setQeDuration(e.target.value)}
+                        placeholder="12"
+                      />
+                    </div>
+                  </div>
+                  <Button onClick={executeQuantitativeEasing} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Starting QE...' : 'Start QE Program'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>🥇 Gold Control</CardTitle>
+                  <CardDescription>Manipulate gold prices through central bank operations</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Stress Scenario</label>
-                    <Select value={stressScenario} onValueChange={setStressScenario}>
+                    <label className="block text-sm font-medium mb-2">Action</label>
+                    <Select value={goldAction} onValueChange={(value: 'SUPPRESS' | 'RELEASE') => setGoldAction(value)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="GREAT_DEPRESSION">Great Depression</SelectItem>
-                        <SelectItem value="HYPERINFLATION">Hyperinflation</SelectItem>
-                        <SelectItem value="FINANCIAL_CRISIS">Financial Crisis</SelectItem>
+                        <SelectItem value="SUPPRESS">SUPPRESS (Central Bank Sales)</SelectItem>
+                        <SelectItem value="RELEASE">RELEASE (Stop Suppression)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button onClick={runStressTest} disabled={isLoading} className="w-full">
-                    {isLoading ? 'Running...' : 'Run Stress Test'}
+                  <Button onClick={executeGoldManipulation} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Executing...' : `${goldAction} Gold Price`}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>💱 Currency Intervention</CardTitle>
+                  <CardDescription>Direct forex market intervention</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Currency</label>
+                      <Select value={currencyTarget} onValueChange={setCurrencyTarget}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="USD">USD</SelectItem>
+                          <SelectItem value="EUR">EUR</SelectItem>
+                          <SelectItem value="JPY">JPY</SelectItem>
+                          <SelectItem value="GBP">GBP</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Action</label>
+                      <Select value={currencyAction} onValueChange={(value: 'STRENGTHEN' | 'WEAKEN') => setCurrencyAction(value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="STRENGTHEN">STRENGTHEN</SelectItem>
+                          <SelectItem value="WEAKEN">WEAKEN</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Amount (USD)</label>
+                      <Input
+                        type="number"
+                        value={currencyAmount}
+                        onChange={(e) => setCurrencyAmount(e.target.value)}
+                        placeholder="10000000000"
+                      />
+                    </div>
+                  </div>
+                  <Button onClick={executeCurrencyIntervention} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Executing...' : `${currencyAction} ${currencyTarget}`}
                   </Button>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
-          <TabsContent value="monitoring">
-            <Card>
-              <CardHeader>
-                <CardTitle>📡 Real-Time Economic Monitoring</CardTitle>
-                <CardDescription>
-                  Monitor economic indicators and detect threats in real-time
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-sm text-gray-600">System Status</div>
-                    <div className="text-xl font-bold text-green-600">OPERATIONAL</div>
+          <TabsContent value="advanced">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>🎯 Inflation Targeting</CardTitle>
+                  <CardDescription>Set precise inflation targets</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Target Inflation Rate (%)</label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={inflationTarget}
+                      onChange={(e) => setInflationTarget(e.target.value)}
+                      placeholder="2.0"
+                    />
                   </div>
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-sm text-gray-600">Monitoring</div>
-                    <div className="text-xl font-bold text-blue-600">ACTIVE</div>
+                  <Button onClick={executeInflationTargeting} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Adjusting...' : 'Set Inflation Target'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>📈 Yield Curve Control</CardTitle>
+                  <CardDescription>Target specific yield curve shape</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    {Object.entries(yieldCurveTargets).map(([maturity, yield_val]) => (
+                      <div key={maturity}>
+                        <label className="block text-sm font-medium mb-2">{maturity} Target (%)</label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={yield_val}
+                          onChange={(e) => setYieldCurveTargets(prev => ({...prev, [maturity]: e.target.value}))}
+                        />
+                      </div>
+                    ))}
                   </div>
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-sm text-gray-600">Threats Detected</div>
-                    <div className="text-xl font-bold text-yellow-600">0</div>
+                  <Button onClick={executeYieldCurveControl} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Controlling...' : 'Execute Yield Curve Control'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>🌍 International Coordination</CardTitle>
+                  <CardDescription>Coordinate with other central banks</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Coordination Action</label>
+                    <Select value={coordinationAction} onValueChange={(value: 'COORDINATED_EASING' | 'COORDINATED_TIGHTENING') => setCoordinationAction(value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="COORDINATED_EASING">COORDINATED EASING</SelectItem>
+                        <SelectItem value="COORDINATED_TIGHTENING">COORDINATED TIGHTENING</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-sm text-gray-600">Last Update</div>
-                    <div className="text-xl font-bold text-gray-600">Live</div>
+                  <Button onClick={executeInternationalCoordination} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Coordinating...' : 'Execute International Coordination'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>🏦 Banking Stress Test</CardTitle>
+                  <CardDescription>Test banking system resilience</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Stress Test Scenario</label>
+                    <Select value={stressTestScenario} onValueChange={(value: 'MILD' | 'SEVERE' | 'EXTREME') => setStressTestScenario(value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="MILD">MILD STRESS</SelectItem>
+                        <SelectItem value="SEVERE">SEVERE STRESS</SelectItem>
+                        <SelectItem value="EXTREME">EXTREME STRESS</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                </div>
-                <Button onClick={startRealTimeMonitoring} disabled={isLoading} className="w-full">
-                  {isLoading ? 'Starting...' : 'Start Real-Time Monitoring'}
-                </Button>
-              </CardContent>
-            </Card>
+                  <Button onClick={executeStressTest} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Testing...' : 'Run Banking Stress Test'}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="stability">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>📊 Financial Stability Metrics</CardTitle>
+                  <CardDescription>Real-time stability monitoring</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {stabilityMetrics && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Systemic Risk:</span>
+                        <span className="font-mono">{stabilityMetrics.systemic_risk?.toFixed(3) || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Credit Spreads:</span>
+                        <span className="font-mono">{stabilityMetrics.credit_spreads?.toFixed(0) || 'N/A'} bps</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Volatility Index:</span>
+                        <span className="font-mono">{stabilityMetrics.volatility_index?.toFixed(2) || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Market Liquidity:</span>
+                        <span className="font-mono">{stabilityMetrics.market_liquidity?.toFixed(2) || 'N/A'}</span>
+                      </div>
+                    </div>
+                  )}
+                  <Button onClick={loadStabilityMetrics} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Loading...' : 'Refresh Stability Metrics'}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="emergency">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>🚨 Emergency Liquidity Injection</CardTitle>
+                  <CardDescription>Crisis response liquidity provision</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Emergency Amount (USD)</label>
+                    <Input
+                      type="number"
+                      value={emergencyAmount}
+                      onChange={(e) => setEmergencyAmount(e.target.value)}
+                      placeholder="200000000000"
+                    />
+                  </div>
+                  <Button onClick={executeEmergencyLiquidity} disabled={isLoading} className="w-full bg-red-600 hover:bg-red-700">
+                    {isLoading ? 'Injecting...' : 'Execute Emergency Liquidity'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>🛑 Market Circuit Breaker</CardTitle>
+                  <CardDescription>Activate emergency market controls</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Emergency Reason</label>
+                    <Input
+                      value={circuitBreakerReason}
+                      onChange={(e) => setCircuitBreakerReason(e.target.value)}
+                      placeholder="Market volatility spike"
+                    />
+                  </div>
+                  <Button onClick={activateCircuitBreaker} disabled={isLoading} className="w-full bg-red-600 hover:bg-red-700">
+                    {isLoading ? 'Activating...' : 'Activate Circuit Breaker'}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
 

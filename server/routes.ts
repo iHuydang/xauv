@@ -984,7 +984,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get available attack vectors
   app.get("/api/attack/vectors", async (req, res) => {
     ```tool_code
-    try {
+    try {```tool_code
       const { quickAttackSystem } = await import("./quick-attack-system.js");
       const vectors = quickAttackSystem.getAvailableVectors();
       res.json({ vectors });
@@ -1088,13 +1088,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { target } = req.body;
       const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
-      const result = await fedMonetaryControlSystem.executeInflationTargeting(target);
+      const result = await fedMonetaryControlSystem.targetInflationRate(target);
       res.json({ success: true, ...result });
     } catch (error) {
       console.error('Inflation targeting error:', error);
       res.status(500).json({ 
         success: false, 
-        error: "Failed to execute inflation targeting",
+        error: "Failed to target inflation rate",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Banking stress test
+  app.post("/api/fed-monetary/stress-test", async (req, res) => {
+    try {
+      const { scenario } = req.body;
+      const { fedSystem } = await import("./fed-monetary-control-system.js");
+      const result = await fedSystem.executeBankingStressTest(scenario);
+      res.json({ success: true, banking_health: result });
+    } catch (error) {
+      console.error('Stress test error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to execute stress test",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Emergency liquidity injection
+  app.post("/api/fed-monetary/emergency-liquidity", async (req, res) => {
+    try {
+      const { amount } = req.body;
+      const { fedSystem } = await import("./fed-monetary-control-system.js");
+      await fedSystem.executeEmergencyLiquidityInjection(amount);
+      res.json({ 
+        success: true, 
+        message: `Emergency liquidity injection of $${amount.toLocaleString()} executed`,
+        new_status: fedSystem.getSystemStatus()
+      });
+    } catch (error) {
+      console.error('Emergency liquidity error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to execute emergency liquidity injection",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Financial stability monitoring
+  app.get("/api/fed-monetary/stability", async (req, res) => {
+    try {
+      const { fedSystem } = await import("./fed-monetary-control-system.js");
+      const metrics = await fedSystem.monitorFinancialStability();
+      res.json({ success: true, stability_metrics: metrics });
+    } catch (error) {
+      console.error('Stability monitoring error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to get stability metrics",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Yield curve control
+  app.post("/api/fed-monetary/yield-curve-control", async (req, res) => {
+    try {
+      const { target_curve } = req.body;
+      const { fedSystem } = await import("./fed-monetary-control-system.js");
+      await fedSystem.executeYieldCurveControl(target_curve);
+      res.json({ 
+        success: true, 
+        message: "Yield curve control executed",
+        new_yields: fedSystem.getSystemStatus().market_control.bondYields
+      });
+    } catch (error) {
+      console.error('Yield curve control error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to execute yield curve control",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // International coordination
+  app.post("/api/fed-monetary/international-coordination", async (req, res) => {
+    try {
+      const { action } = req.body;
+      const { fedSystem } = await import("./fed-monetary-control-system.js");
+      await fedSystem.executeInternationalCoordination(action);
+      res.json({ 
+        success: true, 
+        message: `International coordination ${action} executed`,
+        new_status: fedSystem.getSystemStatus()
+      });
+    } catch (error) {
+      console.error('International coordination error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to execute international coordination",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Market circuit breaker
+  app.post("/api/fed-monetary/circuit-breaker", async (req, res) => {
+    try {
+      const { reason } = req.body;
+      const { fedSystem } = await import("./fed-monetary-control-system.js");
+      await fedSystem.activateMarketCircuitBreaker(reason);
+      res.json({ 
+        success: true, 
+        message: `Market circuit breaker activated: ${reason}`,
+        new_status: fedSystem.getSystemStatus()
+      });
+    } catch (error) {
+      console.error('Circuit breaker error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to activate circuit breaker",
         details: error instanceof Error ? error.message : "Unknown error"
       });
     }
@@ -1782,7 +1899,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Start continuous monitoring
   app.post("/api/liquidity/monitor/start", async (req, res) => {
     try {
-      const { side = "both", interval = 15 } = req.body;
+      const { side = "both", interval = 15 }= req.body;
       const { liquidityScannerAPI } = await import("./liquidity-scanner-api");
 
       const monitorId = liquidityScannerAPI.startMonitoring(side, interval);
