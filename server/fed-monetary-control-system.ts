@@ -1396,3 +1396,178 @@ router.post("/fed-monetary/start-monitoring", async (req, res) => {
 // This line integrates the updated getSystemStatus method and adds new API endpoints for advanced monetary tools.
 export { fedSystem };
 export default router;
+
+
+// VND-specific pressure endpoint
+router.post("/fed-monetary/vnd-specific-pressure", async (req, res) => {
+  try {
+    const { direction, intensity, amount } = req.body;
+
+    if (!direction || !intensity || !amount) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: direction, intensity, amount",
+      });
+    }
+
+    log_operation(`🇺🇸🇻🇳 VND-specific pressure: ${direction} with ${intensity} intensity`);
+
+    // Simulate VND-specific pressure mechanisms
+    const vndPressureResult = {
+      direction,
+      intensity,
+      amount,
+      overnight_swap_pressure: amount * 0.15,
+      fx_intervention_impact: amount * 0.25,
+      estimated_vnd_movement: direction === "STRENGTHEN_USD" ? 0.8 : -0.6,
+      coordination_with_sbv: "ACTIVE", // State Bank of Vietnam
+      timestamp: new Date().toISOString()
+    };
+
+    // Apply pressure to USD/VND rate
+    if (direction === "STRENGTHEN_USD") {
+      // Strengthen USD against VND
+      fedSystem.marketControl.dollarIndex += 0.5;
+    } else {
+      // Weaken USD against VND
+      fedSystem.marketControl.dollarIndex -= 0.3;
+    }
+
+    res.json({
+      success: true,
+      message: `VND-specific pressure executed: ${direction}`,
+      data: vndPressureResult,
+      new_dollar_index: fedSystem.marketControl.dollarIndex
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to execute VND-specific pressure",
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+// Multi-currency USD pressure endpoint
+router.post("/fed-monetary/multi-currency-pressure", async (req, res) => {
+  try {
+    const { currencies, action, base_amount } = req.body;
+
+    if (!currencies || !action || !base_amount) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: currencies, action, base_amount",
+      });
+    }
+
+    log_operation(`🌍 Multi-currency pressure: ${action} against ${currencies}`);
+
+    const currencyList = currencies.split(',');
+    const results = [];
+
+    for (const currency of currencyList) {
+      let specific_amount = base_amount;
+      
+      // Currency-specific multipliers
+      switch (currency.trim()) {
+        case 'VND':
+          specific_amount = base_amount * 2; // Double pressure for VND
+          break;
+        case 'CNY':
+          specific_amount = base_amount * 3; // Triple pressure for CNY
+          break;
+        case 'EUR':
+          specific_amount = base_amount * 2;
+          break;
+      }
+
+      // Execute intervention for each currency
+      if (action === "STRENGTHEN_USD") {
+        await fedSystem.executeCurrencyIntervention(currency.trim(), "WEAKEN", specific_amount);
+      } else {
+        await fedSystem.executeCurrencyIntervention(currency.trim(), "STRENGTHEN", specific_amount);
+      }
+
+      results.push({
+        currency: currency.trim(),
+        amount: specific_amount,
+        action: action === "STRENGTHEN_USD" ? "WEAKEN" : "STRENGTHEN"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `Multi-currency pressure executed against ${currencyList.length} currencies`,
+      data: {
+        currencies: results,
+        total_impact: base_amount * currencyList.length,
+        new_dollar_index: fedSystem.marketControl.dollarIndex
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to execute multi-currency pressure",
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+// USD dominance operation endpoint
+router.post("/fed-monetary/usd-dominance-operation", async (req, res) => {
+  try {
+    const { target_currencies, intensity } = req.body;
+
+    if (!target_currencies || !intensity) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: target_currencies, intensity",
+      });
+    }
+
+    log_operation(`🚨 USD dominance operation: ${intensity} intensity against ${target_currencies}`);
+
+    const currencies = target_currencies.split(',');
+    const operations = [];
+
+    // Phase 1: VND special targeting
+    if (currencies.includes('VND')) {
+      await fedSystem.executeCurrencyIntervention("VND", "WEAKEN", 10000000000);
+      operations.push({ phase: "VND_TARGETING", amount: 10000000000 });
+    }
+
+    // Phase 2: Major currencies
+    const majorCurrencies = currencies.filter(c => ['EUR', 'JPY', 'GBP', 'CHF'].includes(c.trim()));
+    for (const currency of majorCurrencies) {
+      await fedSystem.executeCurrencyIntervention(currency.trim(), "WEAKEN", 5000000000);
+      operations.push({ phase: "MAJOR_CURRENCIES", currency: currency.trim(), amount: 5000000000 });
+    }
+
+    // Phase 3: Emerging market currencies
+    const emergingCurrencies = currencies.filter(c => ['CNY', 'KRW', 'THB', 'SGD'].includes(c.trim()));
+    for (const currency of emergingCurrencies) {
+      await fedSystem.executeCurrencyIntervention(currency.trim(), "WEAKEN", 3000000000);
+      operations.push({ phase: "EMERGING_MARKETS", currency: currency.trim(), amount: 3000000000 });
+    }
+
+    res.json({
+      success: true,
+      message: `USD dominance operation completed with ${intensity} intensity`,
+      data: {
+        operations,
+        total_currencies_targeted: currencies.length,
+        estimated_dollar_index_impact: currencies.length * 0.3,
+        new_dollar_index: fedSystem.marketControl.dollarIndex
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to execute USD dominance operation",
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
