@@ -39,8 +39,13 @@ export class AntiSlippageSystem extends EventEmitter {
 
   constructor() {
     super();
-    this.initializeAntiSlippage();
-    this.startSlippageMonitoring();
+    try {
+      this.initializeAntiSlippage();
+      this.startSlippageMonitoring();
+    } catch (error) {
+      console.error('⚠️ Anti-slippage system initialization failed:', error);
+      // Continue without blocking server startup
+    }
   }
 
   private initializeAntiSlippage(): void {
