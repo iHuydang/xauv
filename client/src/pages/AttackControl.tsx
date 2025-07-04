@@ -1,39 +1,20 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { apiRequest } from "@/lib/queryClient";
-import {
-  AlertTriangle,
-  Target,
-  Zap,
-  Shield,
-  TrendingDown,
-  Activity,
-} from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { apiRequest } from '@/lib/queryClient';
+import { AlertTriangle, Target, Zap, Shield, TrendingDown, Activity } from 'lucide-react';
 
 interface AttackVector {
   name: string;
-  intensity: "LOW" | "MEDIUM" | "HIGH" | "EXTREME";
+  intensity: 'LOW' | 'MEDIUM' | 'HIGH' | 'EXTREME';
   duration: number;
   targetSpread: number;
   volumeMultiplier: number;
@@ -45,7 +26,7 @@ interface AttackResult {
   attackId: string;
   startTime: string;
   endTime?: string;
-  status: "PREPARING" | "ACTIVE" | "COMPLETED" | "FAILED";
+  status: 'PREPARING' | 'ACTIVE' | 'COMPLETED' | 'FAILED';
   vectorsUsed: string[];
   damageInflicted: {
     spreadReduction: number;
@@ -66,93 +47,88 @@ interface LiquidityData {
   sellPrice: number;
   spread: number;
   spreadPercent: number;
-  liquidityLevel: "high" | "medium" | "low";
-  botSignal: "favorable" | "moderate" | "caution";
+  liquidityLevel: 'high' | 'medium' | 'low';
+  botSignal: 'favorable' | 'moderate' | 'caution';
 }
 
 export default function AttackControl() {
-  const [selectedVector, setSelectedVector] = useState("HF_SPREAD_PRESSURE");
+  const [selectedVector, setSelectedVector] = useState('HF_SPREAD_PRESSURE');
   const [autoTrigger, setAutoTrigger] = useState(false);
   const [monitoringActive, setMonitoringActive] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch available attack vectors
   const { data: vectorsData } = useQuery({
-    queryKey: ["/api/attack/vectors"],
-    refetchInterval: 10000,
+    queryKey: ['/api/attack/vectors'],
+    refetchInterval: 10000
   });
 
   // Fetch active attacks
   const { data: attacksData } = useQuery({
-    queryKey: ["/api/attack/status"],
-    refetchInterval: 2000,
+    queryKey: ['/api/attack/status'],
+    refetchInterval: 2000
   });
 
   // Fetch liquidity data
   const { data: liquidityData, refetch: refetchLiquidity } = useQuery({
-    queryKey: ["/api/liquidity/scan"],
-    refetchInterval: monitoringActive ? 5000 : false,
+    queryKey: ['/api/liquidity/scan'],
+    refetchInterval: monitoringActive ? 5000 : false
   });
 
   // Attack execution mutation
   const attackMutation = useMutation({
     mutationFn: async (params: { vector: string; autoTrigger: boolean }) => {
-      const response = await fetch("/api/attack/sjc-pressure", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
+      const response = await fetch('/api/attack/sjc-pressure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
       });
-      if (!response.ok) throw new Error("Attack failed");
+      if (!response.ok) throw new Error('Attack failed');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/attack/status"] });
-    },
+      queryClient.invalidateQueries({ queryKey: ['/api/attack/status'] });
+    }
   });
 
   // Stop attack mutation
   const stopAttackMutation = useMutation({
     mutationFn: async (attackId: string) => {
       const response = await fetch(`/api/attack/stop/${attackId}`, {
-        method: "POST",
+        method: 'POST',
       });
-      if (!response.ok) throw new Error("Stop attack failed");
+      if (!response.ok) throw new Error('Stop attack failed');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/attack/status"] });
-    },
+      queryClient.invalidateQueries({ queryKey: ['/api/attack/status'] });
+    }
   });
 
   // Monitoring control mutation
   const monitoringMutation = useMutation({
-    mutationFn: async (params: {
-      action: "start" | "stop";
-      intervalSeconds?: number;
-    }) => {
-      const response = await fetch("/api/liquidity/monitor", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
+    mutationFn: async (params: { action: 'start' | 'stop'; intervalSeconds?: number }) => {
+      const response = await fetch('/api/liquidity/monitor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
       });
-      if (!response.ok) throw new Error("Monitoring control failed");
+      if (!response.ok) throw new Error('Monitoring control failed');
       return response.json();
     },
     onSuccess: () => {
-      setMonitoringActive((prev) => !prev);
-    },
+      setMonitoringActive(prev => !prev);
+    }
   });
 
   const vectors: AttackVector[] = (vectorsData as any)?.vectors || [];
-  const activeAttacks: AttackResult[] =
-    (attacksData as any)?.activeAttacks || [];
-  const liquidityResults: LiquidityData[] =
-    (liquidityData as any)?.results || [];
+  const activeAttacks: AttackResult[] = (attacksData as any)?.activeAttacks || [];
+  const liquidityResults: LiquidityData[] = (liquidityData as any)?.results || [];
 
   const handleAttackLaunch = () => {
     attackMutation.mutate({
       vector: selectedVector,
-      autoTrigger,
+      autoTrigger
     });
   };
 
@@ -162,64 +138,46 @@ export default function AttackControl() {
 
   const toggleMonitoring = () => {
     monitoringMutation.mutate({
-      action: monitoringActive ? "stop" : "start",
-      intervalSeconds: 30,
+      action: monitoringActive ? 'stop' : 'start',
+      intervalSeconds: 30
     });
   };
 
   const getIntensityColor = (intensity: string) => {
     switch (intensity) {
-      case "LOW":
-        return "bg-green-500";
-      case "MEDIUM":
-        return "bg-yellow-500";
-      case "HIGH":
-        return "bg-orange-500";
-      case "EXTREME":
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
+      case 'LOW': return 'bg-green-500';
+      case 'MEDIUM': return 'bg-yellow-500';
+      case 'HIGH': return 'bg-orange-500';
+      case 'EXTREME': return 'bg-red-500';
+      default: return 'bg-gray-500';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "PREPARING":
-        return "bg-blue-500";
-      case "ACTIVE":
-        return "bg-red-500 animate-pulse";
-      case "COMPLETED":
-        return "bg-green-500";
-      case "FAILED":
-        return "bg-gray-500";
-      default:
-        return "bg-gray-500";
+      case 'PREPARING': return 'bg-blue-500';
+      case 'ACTIVE': return 'bg-red-500 animate-pulse';
+      case 'COMPLETED': return 'bg-green-500';
+      case 'FAILED': return 'bg-gray-500';
+      default: return 'bg-gray-500';
     }
   };
 
   const getLiquidityColor = (level: string) => {
     switch (level) {
-      case "high":
-        return "text-green-600";
-      case "medium":
-        return "text-yellow-600";
-      case "low":
-        return "text-red-600";
-      default:
-        return "text-gray-600";
+      case 'high': return 'text-green-600';
+      case 'medium': return 'text-yellow-600';
+      case 'low': return 'text-red-600';
+      default: return 'text-gray-600';
     }
   };
 
   const getBotSignalColor = (signal: string) => {
     switch (signal) {
-      case "favorable":
-        return "bg-green-100 text-green-800";
-      case "moderate":
-        return "bg-yellow-100 text-yellow-800";
-      case "caution":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case 'favorable': return 'bg-green-100 text-green-800';
+      case 'moderate': return 'bg-yellow-100 text-yellow-800';
+      case 'caution': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -263,22 +221,13 @@ export default function AttackControl() {
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="vector-select">Chọn Vector Tấn công</Label>
-                  <Select
-                    value={selectedVector}
-                    onValueChange={setSelectedVector}
-                  >
+                  <Select value={selectedVector} onValueChange={setSelectedVector}>
                     <SelectTrigger>
                       <SelectValue placeholder="Chọn vector tấn công" />
                     </SelectTrigger>
                     <SelectContent>
                       {vectors.map((vector, index) => (
-                        <SelectItem
-                          key={index}
-                          value={
-                            Object.keys(vectorsData?.vectors || {})[index] ||
-                            `vector-${index}`
-                          }
-                        >
+                        <SelectItem key={index} value={Object.keys(vectorsData?.vectors || {})[index] || `vector-${index}`}>
                           {vector.name}
                         </SelectItem>
                       ))}
@@ -295,26 +244,16 @@ export default function AttackControl() {
                   <Label htmlFor="auto-trigger">Tự động kích hoạt</Label>
                 </div>
 
-                {vectors.find(
-                  (_, index) =>
-                    Object.keys(vectorsData?.vectors || {})[index] ===
-                    selectedVector,
-                ) && (
+                {vectors.find((_, index) => Object.keys(vectorsData?.vectors || {})[index] === selectedVector) && (
                   <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <h4 className="font-semibold mb-2">Chi tiết Vector</h4>
                     {(() => {
-                      const vector = vectors.find(
-                        (_, index) =>
-                          Object.keys(vectorsData?.vectors || {})[index] ===
-                          selectedVector,
-                      );
+                      const vector = vectors.find((_, index) => Object.keys(vectorsData?.vectors || {})[index] === selectedVector);
                       return vector ? (
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span>Cường độ:</span>
-                            <Badge
-                              className={getIntensityColor(vector.intensity)}
-                            >
+                            <Badge className={getIntensityColor(vector.intensity)}>
                               {vector.intensity}
                             </Badge>
                           </div>
@@ -324,15 +263,11 @@ export default function AttackControl() {
                           </div>
                           <div className="flex justify-between">
                             <span>Spread mục tiêu:</span>
-                            <span>
-                              {vector.targetSpread.toLocaleString()} VND
-                            </span>
+                            <span>{vector.targetSpread.toLocaleString()} VND</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Tỷ lệ thành công:</span>
-                            <span>
-                              {(vector.successRate * 100).toFixed(1)}%
-                            </span>
+                            <span>{(vector.successRate * 100).toFixed(1)}%</span>
                           </div>
                         </div>
                       ) : null;
@@ -377,10 +312,7 @@ export default function AttackControl() {
                 ) : (
                   <div className="space-y-3">
                     {activeAttacks.map((attack) => (
-                      <div
-                        key={attack.attackId}
-                        className="p-3 border rounded-lg"
-                      >
+                      <div key={attack.attackId} className="p-3 border rounded-lg">
                         <div className="flex items-center justify-between mb-2">
                           <Badge className={getStatusColor(attack.status)}>
                             {attack.status}
@@ -389,24 +321,18 @@ export default function AttackControl() {
                             {new Date(attack.startTime).toLocaleTimeString()}
                           </span>
                         </div>
-
+                        
                         <div className="space-y-1 text-sm">
                           <div className="flex justify-between">
                             <span>Giảm Spread:</span>
                             <span className="font-mono">
-                              {attack.damageInflicted.spreadReduction.toFixed(
-                                0,
-                              )}{" "}
-                              VND
+                              {attack.damageInflicted.spreadReduction.toFixed(0)} VND
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span>Thanh khoản rút:</span>
                             <span className="font-mono">
-                              {attack.damageInflicted.liquidityDrained.toFixed(
-                                1,
-                              )}
-                              %
+                              {attack.damageInflicted.liquidityDrained.toFixed(1)}%
                             </span>
                           </div>
                           {attack.sjcResponse.defenseActivated && (
@@ -417,7 +343,7 @@ export default function AttackControl() {
                           )}
                         </div>
 
-                        {attack.status === "ACTIVE" && (
+                        {attack.status === 'ACTIVE' && (
                           <Button
                             onClick={() => handleStopAttack(attack.attackId)}
                             disabled={stopAttackMutation.isPending}
@@ -465,9 +391,7 @@ export default function AttackControl() {
                     <div className="text-2xl font-bold text-yellow-600">
                       {liquidityData.summary.mediumLiquidity}
                     </div>
-                    <p className="text-sm text-gray-600">
-                      Thanh khoản Trung bình
-                    </p>
+                    <p className="text-sm text-gray-600">Thanh khoản Trung bình</p>
                   </CardContent>
                 </Card>
                 <Card>
@@ -530,22 +454,19 @@ export default function AttackControl() {
 
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Thanh khoản:</span>
-                      <span
-                        className={`text-sm font-medium ${getLiquidityColor(result.liquidityLevel)}`}
-                      >
+                      <span className={`text-sm font-medium ${getLiquidityColor(result.liquidityLevel)}`}>
                         {result.liquidityLevel.toUpperCase()}
                       </span>
                     </div>
 
-                    {result.source === "SJC" &&
-                      result.liquidityLevel === "low" && (
-                        <Alert>
-                          <AlertTriangle className="h-4 w-4" />
-                          <AlertDescription>
-                            SJC có thanh khoản thấp - Có thể tấn công
-                          </AlertDescription>
-                        </Alert>
-                      )}
+                    {result.source === 'SJC' && result.liquidityLevel === 'low' && (
+                      <Alert>
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription>
+                          SJC có thanh khoản thấp - Có thể tấn công
+                        </AlertDescription>
+                      </Alert>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -556,7 +477,7 @@ export default function AttackControl() {
         <TabsContent value="status">
           <div className="space-y-6">
             <h2 className="text-xl font-semibold">Trạng thái Hệ thống</h2>
-
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
@@ -570,19 +491,13 @@ export default function AttackControl() {
                   <div className="flex justify-between">
                     <span>Đang hoạt động:</span>
                     <span className="font-bold text-red-600">
-                      {
-                        activeAttacks.filter((a) => a.status === "ACTIVE")
-                          .length
-                      }
+                      {activeAttacks.filter(a => a.status === 'ACTIVE').length}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Hoàn thành:</span>
                     <span className="font-bold text-green-600">
-                      {
-                        activeAttacks.filter((a) => a.status === "COMPLETED")
-                          .length
-                      }
+                      {activeAttacks.filter(a => a.status === 'COMPLETED').length}
                     </span>
                   </div>
                 </CardContent>
@@ -600,21 +515,13 @@ export default function AttackControl() {
                   <div className="flex justify-between">
                     <span>Mục tiêu dễ tấn công:</span>
                     <span className="font-bold text-orange-600">
-                      {
-                        liquidityResults.filter(
-                          (r) => r.liquidityLevel === "low",
-                        ).length
-                      }
+                      {liquidityResults.filter(r => r.liquidityLevel === 'low').length}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tín hiệu thuận lợi:</span>
                     <span className="font-bold text-green-600">
-                      {
-                        liquidityResults.filter(
-                          (r) => r.botSignal === "favorable",
-                        ).length
-                      }
+                      {liquidityResults.filter(r => r.botSignal === 'favorable').length}
                     </span>
                   </div>
                 </CardContent>

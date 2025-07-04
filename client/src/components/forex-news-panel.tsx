@@ -1,21 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  AlertTriangle,
-  TrendingUp,
-  TrendingDown,
-  Clock,
-  ExternalLink,
-} from "lucide-react";
+
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertTriangle, TrendingUp, TrendingDown, Clock, ExternalLink } from 'lucide-react';
 
 interface ForexNews {
   title: string;
   content: string;
   category: string;
-  impact: "low" | "medium" | "high";
+  impact: 'low' | 'medium' | 'high';
   source: string;
   timestamp: string;
   symbols?: string[];
@@ -23,8 +18,8 @@ interface ForexNews {
 
 interface TradingSignal {
   symbol: string;
-  type: "buy" | "sell";
-  strength: "weak" | "medium" | "strong";
+  type: 'buy' | 'sell';
+  strength: 'weak' | 'medium' | 'strong';
   timeframe: string;
   price: number;
   stopLoss?: number;
@@ -36,46 +31,35 @@ interface TradingSignal {
 
 export default function ForexNewsPanel() {
   const { data: forexNews } = useQuery<ForexNews[]>({
-    queryKey: ["/api/forex-news"],
+    queryKey: ['/api/forex-news'],
     refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
   });
 
   const { data: tradingSignals } = useQuery<TradingSignal[]>({
-    queryKey: ["/api/trading-signals"],
+    queryKey: ['/api/trading-signals'],
     refetchInterval: 2 * 60 * 1000, // Refresh every 2 minutes
   });
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case "high":
-        return "bg-red-500";
-      case "medium":
-        return "bg-yellow-500";
-      default:
-        return "bg-green-500";
+      case 'high': return 'bg-red-500';
+      case 'medium': return 'bg-yellow-500';
+      default: return 'bg-green-500';
     }
   };
 
   const getSignalColor = (type: string, strength: string) => {
-    if (type === "buy") {
-      return strength === "strong"
-        ? "bg-green-600"
-        : strength === "medium"
-          ? "bg-green-500"
-          : "bg-green-400";
+    if (type === 'buy') {
+      return strength === 'strong' ? 'bg-green-600' : strength === 'medium' ? 'bg-green-500' : 'bg-green-400';
     } else {
-      return strength === "strong"
-        ? "bg-red-600"
-        : strength === "medium"
-          ? "bg-red-500"
-          : "bg-red-400";
+      return strength === 'strong' ? 'bg-red-600' : strength === 'medium' ? 'bg-red-500' : 'bg-red-400';
     }
   };
 
   const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
+    return new Date(timestamp).toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -108,7 +92,7 @@ export default function ForexNewsPanel() {
               </span>
             </div>
           </div>
-
+          
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {forexNews?.map((news, index) => (
               <Card key={index} className="bg-gray-800 border-gray-700">
@@ -118,9 +102,7 @@ export default function ForexNewsPanel() {
                       {news.title}
                     </CardTitle>
                     <div className="flex items-center gap-2 text-xs">
-                      <Badge
-                        className={`${getImpactColor(news.impact)} text-white`}
-                      >
+                      <Badge className={`${getImpactColor(news.impact)} text-white`}>
                         {news.impact.toUpperCase()}
                       </Badge>
                       <span className="text-gray-400 flex items-center gap-1">
@@ -136,17 +118,11 @@ export default function ForexNewsPanel() {
                   </p>
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-blue-400">
-                        {news.source}
-                      </span>
+                      <span className="text-xs text-blue-400">{news.source}</span>
                       {news.symbols && (
                         <div className="flex gap-1">
-                          {news.symbols.slice(0, 3).map((symbol) => (
-                            <Badge
-                              key={symbol}
-                              variant="outline"
-                              className="text-xs"
-                            >
+                          {news.symbols.slice(0, 3).map(symbol => (
+                            <Badge key={symbol} variant="outline" className="text-xs">
                               {symbol}
                             </Badge>
                           ))}
@@ -167,20 +143,16 @@ export default function ForexNewsPanel() {
           <h3 className="text-lg font-semibold text-white">
             Tín Hiệu Trading Tự Động
           </h3>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {tradingSignals?.map((signal, index) => (
               <Card key={index} className="bg-gray-800 border-gray-700">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-white">
-                        {signal.symbol}
-                      </span>
-                      <Badge
-                        className={`${getSignalColor(signal.type, signal.strength)} text-white text-xs`}
-                      >
-                        {signal.type === "buy" ? (
+                      <span className="font-semibold text-white">{signal.symbol}</span>
+                      <Badge className={`${getSignalColor(signal.type, signal.strength)} text-white text-xs`}>
+                        {signal.type === 'buy' ? (
                           <TrendingUp className="w-3 h-3 mr-1" />
                         ) : (
                           <TrendingDown className="w-3 h-3 mr-1" />
@@ -191,11 +163,9 @@ export default function ForexNewsPanel() {
                         {signal.strength}
                       </Badge>
                     </div>
-                    <span className="text-xs text-gray-400">
-                      {signal.timeframe}
-                    </span>
+                    <span className="text-xs text-gray-400">{signal.timeframe}</span>
                   </div>
-
+                  
                   <div className="space-y-1 text-xs text-gray-300">
                     <div className="flex justify-between">
                       <span>Giá vào:</span>
@@ -204,30 +174,22 @@ export default function ForexNewsPanel() {
                     {signal.stopLoss && (
                       <div className="flex justify-between">
                         <span>Stop Loss:</span>
-                        <span className="font-mono text-red-400">
-                          {signal.stopLoss}
-                        </span>
+                        <span className="font-mono text-red-400">{signal.stopLoss}</span>
                       </div>
                     )}
                     {signal.takeProfit && (
                       <div className="flex justify-between">
                         <span>Take Profit:</span>
-                        <span className="font-mono text-green-400">
-                          {signal.takeProfit}
-                        </span>
+                        <span className="font-mono text-green-400">{signal.takeProfit}</span>
                       </div>
                     )}
                   </div>
-
+                  
                   <div className="mt-2 pt-2 border-t border-gray-700">
                     <p className="text-xs text-gray-400">{signal.reason}</p>
                     <div className="flex justify-between items-center mt-1">
-                      <span className="text-xs text-blue-400">
-                        {signal.source}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {formatTime(signal.timestamp)}
-                      </span>
+                      <span className="text-xs text-blue-400">{signal.source}</span>
+                      <span className="text-xs text-gray-500">{formatTime(signal.timestamp)}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -246,7 +208,7 @@ export default function ForexNewsPanel() {
 
 function BrokerConnectionPanel() {
   const { data: brokerAccounts } = useQuery({
-    queryKey: ["/api/broker-accounts"],
+    queryKey: ['/api/broker-accounts'],
     refetchInterval: 30 * 1000, // Refresh every 30 seconds
   });
 
@@ -255,7 +217,7 @@ function BrokerConnectionPanel() {
       <h3 className="text-lg font-semibold text-white mb-4">
         Kết Nối Các Sàn Giao Dịch
       </h3>
-
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {brokerAccounts?.map((account: any, index: number) => (
           <Card key={index} className="bg-gray-800 border-gray-700">
@@ -269,21 +231,15 @@ function BrokerConnectionPanel() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-400">Số dư:</span>
-                  <span className="text-white font-mono">
-                    ${account.balance.toLocaleString()}
-                  </span>
+                  <span className="text-white font-mono">${account.balance.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Equity:</span>
-                  <span className="text-white font-mono">
-                    ${account.equity.toLocaleString()}
-                  </span>
+                  <span className="text-white font-mono">${account.equity.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Margin Level:</span>
-                  <span className="text-white font-mono">
-                    {account.marginLevel.toFixed(1)}%
-                  </span>
+                  <span className="text-white font-mono">{account.marginLevel.toFixed(1)}%</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Positions:</span>

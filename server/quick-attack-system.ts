@@ -1,11 +1,11 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from 'events';
 
 export interface QuickAttackResult {
   attackId: string;
   target: string;
   intensity: string;
   timestamp: string;
-  status: "ACTIVE" | "COMPLETED" | "FAILED";
+  status: 'ACTIVE' | 'COMPLETED' | 'FAILED';
   damage: {
     spreadReduction: number;
     liquidityImpact: number;
@@ -17,10 +17,7 @@ export interface QuickAttackResult {
 export class QuickAttackSystem extends EventEmitter {
   private activeAttacks: Map<string, QuickAttackResult> = new Map();
 
-  async executeSJCPressureAttack(
-    intensity: "LOW" | "MEDIUM" | "HIGH" | "EXTREME" = "HIGH",
-    options: { sourceIP?: string } = {},
-  ): Promise<QuickAttackResult> {
+  async executeSJCPressureAttack(intensity: 'LOW' | 'MEDIUM' | 'HIGH' | 'EXTREME' = 'HIGH', options: { sourceIP?: string } = {}): Promise<QuickAttackResult> {
     const attackId = `SJC_${Date.now()}`;
     const timestamp = new Date().toISOString();
 
@@ -35,16 +32,16 @@ export class QuickAttackSystem extends EventEmitter {
 
     const attack: QuickAttackResult = {
       attackId,
-      target: "SJC",
+      target: 'SJC',
       intensity,
       timestamp,
-      status: "ACTIVE",
+      status: 'ACTIVE',
       damage: {
         spreadReduction: 0,
         liquidityImpact: 0,
-        marketPressure: 0,
+        marketPressure: 0
       },
-      recommendation: this.generateRecommendation(intensity, currentSpread),
+      recommendation: this.generateRecommendation(intensity, currentSpread)
     };
 
     this.activeAttacks.set(attackId, attack);
@@ -52,39 +49,33 @@ export class QuickAttackSystem extends EventEmitter {
     // Simulate attack phases
     await this.executeAttackPhases(attack, currentSpread, targetSpread);
 
-    attack.status = "COMPLETED";
-    console.log(
-      `✅ Tấn công ${attackId} hoàn thành - Giảm spread: ${attack.damage.spreadReduction.toFixed(0)} VND`,
-    );
+    attack.status = 'COMPLETED';
+    console.log(`✅ Tấn công ${attackId} hoàn thành - Giảm spread: ${attack.damage.spreadReduction.toFixed(0)} VND`);
 
-    this.emit("attackCompleted", attack);
+    this.emit('attackCompleted', attack);
     return attack;
   }
 
-  private async executeAttackPhases(
-    attack: QuickAttackResult,
-    currentSpread: number,
-    targetSpread: number,
-  ): Promise<void> {
+  private async executeAttackPhases(attack: QuickAttackResult, currentSpread: number, targetSpread: number): Promise<void> {
     const phases = [
-      { name: "Reconnaissance", duration: 1000, damageMultiplier: 0.1 },
-      { name: "Initial Pressure", duration: 2000, damageMultiplier: 0.3 },
-      { name: "Main Attack", duration: 3000, damageMultiplier: 0.5 },
-      { name: "Final Push", duration: 1500, damageMultiplier: 0.1 },
+      { name: 'Reconnaissance', duration: 1000, damageMultiplier: 0.1 },
+      { name: 'Initial Pressure', duration: 2000, damageMultiplier: 0.3 },
+      { name: 'Main Attack', duration: 3000, damageMultiplier: 0.5 },
+      { name: 'Final Push', duration: 1500, damageMultiplier: 0.1 }
     ];
 
     const totalSpreadReduction = currentSpread - targetSpread;
-
+    
     for (const phase of phases) {
       console.log(`⚔️ Phase: ${phase.name}`);
-
+      
       const phaseDamage = totalSpreadReduction * phase.damageMultiplier;
       attack.damage.spreadReduction += phaseDamage;
       attack.damage.liquidityImpact += Math.random() * 15;
       attack.damage.marketPressure += Math.random() * 20;
 
       await this.delay(phase.duration);
-
+      
       // Simulate SJC defensive responses
       if (Math.random() < 0.3) {
         console.log(`🛡️ SJC phản ứng phòng thủ phát hiện`);
@@ -93,10 +84,7 @@ export class QuickAttackSystem extends EventEmitter {
     }
   }
 
-  private generateRecommendation(
-    intensity: string,
-    currentSpread: number,
-  ): string {
+  private generateRecommendation(intensity: string, currentSpread: number): string {
     if (currentSpread > 80000) {
       return `Spread cao (${currentSpread.toLocaleString()} VND) - Tấn công ${intensity} được khuyến nghị`;
     } else if (currentSpread > 50000) {
@@ -107,42 +95,30 @@ export class QuickAttackSystem extends EventEmitter {
   }
 
   async scanLiquidityTargets(): Promise<any[]> {
-    console.log("🔍 Quét thanh khoản các mục tiêu vàng Việt Nam...");
+    console.log('🔍 Quét thanh khoản các mục tiêu vàng Việt Nam...');
 
     const targets = [
       {
-        source: "SJC",
+        source: 'SJC',
         buyPrice: 78500000 + Math.floor(Math.random() * 1000000),
         sellPrice: 79200000 + Math.floor(Math.random() * 1000000),
-        liquidityLevel:
-          Math.random() > 0.7 ? "low" : Math.random() > 0.4 ? "medium" : "high",
-        botSignal:
-          Math.random() > 0.6
-            ? "favorable"
-            : Math.random() > 0.3
-              ? "moderate"
-              : "caution",
+        liquidityLevel: Math.random() > 0.7 ? 'low' : Math.random() > 0.4 ? 'medium' : 'high',
+        botSignal: Math.random() > 0.6 ? 'favorable' : Math.random() > 0.3 ? 'moderate' : 'caution'
       },
       {
-        source: "PNJ",
+        source: 'PNJ',
         buyPrice: 78300000 + Math.floor(Math.random() * 800000),
         sellPrice: 78900000 + Math.floor(Math.random() * 800000),
-        liquidityLevel:
-          Math.random() > 0.6 ? "medium" : Math.random() > 0.3 ? "high" : "low",
-        botSignal:
-          Math.random() > 0.5
-            ? "moderate"
-            : Math.random() > 0.3
-              ? "favorable"
-              : "caution",
+        liquidityLevel: Math.random() > 0.6 ? 'medium' : Math.random() > 0.3 ? 'high' : 'low',
+        botSignal: Math.random() > 0.5 ? 'moderate' : Math.random() > 0.3 ? 'favorable' : 'caution'
       },
       {
-        source: "DOJI",
+        source: 'DOJI',
         buyPrice: 78100000 + Math.floor(Math.random() * 700000),
         sellPrice: 78700000 + Math.floor(Math.random() * 700000),
-        liquidityLevel: "medium",
-        botSignal: "moderate",
-      },
+        liquidityLevel: 'medium',
+        botSignal: 'moderate'
+      }
     ];
 
     // Calculate spreads and additional metrics
@@ -163,38 +139,38 @@ export class QuickAttackSystem extends EventEmitter {
   getAvailableVectors(): any[] {
     return [
       {
-        name: "High-Frequency Pressure",
-        intensity: "HIGH",
+        name: 'High-Frequency Pressure',
+        intensity: 'HIGH',
         duration: 300,
         targetSpread: 25000,
-        successRate: 0.85,
+        successRate: 0.85
       },
       {
-        name: "Liquidity Drainage",
-        intensity: "EXTREME",
+        name: 'Liquidity Drainage',
+        intensity: 'EXTREME',
         duration: 180,
         targetSpread: 35000,
-        successRate: 0.78,
+        successRate: 0.78
       },
       {
-        name: "Premium Exploitation",
-        intensity: "MEDIUM",
+        name: 'Premium Exploitation',
+        intensity: 'MEDIUM',
         duration: 600,
         targetSpread: 40000,
-        successRate: 0.92,
+        successRate: 0.92
       },
       {
-        name: "Stealth Micro-Pressure",
-        intensity: "LOW",
+        name: 'Stealth Micro-Pressure',
+        intensity: 'LOW',
         duration: 1800,
         targetSpread: 45000,
-        successRate: 0.95,
-      },
+        successRate: 0.95
+      }
     ];
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 

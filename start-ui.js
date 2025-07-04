@@ -1,29 +1,29 @@
 #!/usr/bin/env node
-import express from "express";
-import { createServer } from "http";
+import express from 'express';
+import { createServer } from 'http';
 
 // Simple UI server on port 3000
 const app = express();
 app.use(express.json());
 
-app.get("/api/gold-status", (req, res) => {
+app.get('/api/gold-status', (req, res) => {
   res.json({
-    status: "HOẠT ĐỘNG",
+    status: 'HOẠT ĐỘNG',
     exness_accounts: {
-      account1: "405691964 - Đã kết nối",
-      account2: "205251387 - Balance: $11,873+",
+      account1: '405691964 - Đã kết nối',
+      account2: '205251387 - Balance: $11,873+',
     },
     systems: {
-      world_gold_scanner: "Đang quét giá vàng thế giới",
-      vietnam_attack: "Hệ thống tấn công SJC sẵn sàng",
-      telegram_bot: "Bot Việt Nam đang gửi cảnh báo",
-      signal_tracking: "Đang theo dõi tín hiệu high-impact",
+      world_gold_scanner: 'Đang quét giá vàng thế giới',
+      vietnam_attack: 'Hệ thống tấn công SJC sẵn sàng',
+      telegram_bot: 'Bot Việt Nam đang gửi cảnh báo',
+      signal_tracking: 'Đang theo dõi tín hiệu high-impact'
     },
-    last_update: new Date().toLocaleString("vi-VN"),
+    last_update: new Date().toLocaleString('vi-VN')
   });
 });
 
-app.get("*", (req, res) => {
+app.get('*', (req, res) => {
   res.send(`
 <!DOCTYPE html>
 <html lang="vi">
@@ -361,17 +361,17 @@ app.get("*", (req, res) => {
 const PORT = 3000;
 const server = createServer(app);
 
-server.listen(PORT, "0.0.0.0", () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`🌟 Gold Trading System UI running on:`);
   console.log(`   Local: http://localhost:${PORT}`);
   console.log(`   Network: http://0.0.0.0:${PORT}`);
   console.log(`🎯 Hệ thống vàng đã sẵn sàng!`);
 });
 
-server.on("error", (err) => {
-  if (err.code === "EADDRINUSE") {
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
     console.log(`⚠️ Port ${PORT} busy, trying 8000...`);
-    server.listen(8000, "0.0.0.0", () => {
+    server.listen(8000, '0.0.0.0', () => {
       console.log(`🌟 Gold Trading System UI running on http://0.0.0.0:8000`);
     });
   }

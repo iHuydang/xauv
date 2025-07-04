@@ -159,62 +159,17 @@ market_impact_check() {
         esac
     done
 
-    # Validate inputs
-    if [[ -z "$symbols" ]]; then
-        symbols="EURUSD,GBPUSD,USDJPY"
-    fi
-    
-    if [[ -z "$timeframe" ]]; then
-        timeframe="1h"
-    fi
-
-    echo "Checking market impact for symbols: $symbols"
-    echo "Timeframe: $timeframe"
-    echo "Analysis depth: ${analysis_depth:-standard}"
-
-    # Send to API endpoint for processing
-    local api_data=$(cat <<EOF
-{
-    "symbols": "$(echo "$symbols" | tr ',' ' ' | xargs | tr ' ' ',')",
-    "timeframe": "$timeframe",
-    "analysis_depth": "${analysis_depth:-standard}",
-    "include_correlations": $include_correlations
-}
-EOF
-)
-
-    # Try API call first
-    local api_result=""
-    if curl -s -f -X POST "http://localhost:5000/api/market/impact-check" \
-        -H "Content-Type: application/json" \
-        -d "$api_data" >/dev/null 2>&1; then
-        
-        api_result=$(curl -s -X POST "http://localhost:5000/api/market/impact-check" \
-            -H "Content-Type: application/json" \
-            -d "$api_data")
-        
-        echo "$api_result"
-    else
-        # Fallback to local calculation
-        local symbol_array=(${symbols//,/ })
-        local impact_score=$(echo "scale=2; 5.0 + ${#symbol_array[@]} * 1.5" | bc 2>/dev/null || echo "7.5")
-        
-        echo "{
-            \"success\": true,
-            \"impact_score\": $impact_score,
-            \"affected_symbols\": [\"${symbols//,/\", \"}\"],
-            \"timeframe\": \"$timeframe\",
-            \"volatility_increase\": \"$(echo "scale=1; $impact_score * 2" | bc 2>/dev/null || echo "15.0")%\",
-            \"correlation_analysis\": {
-                \"positive\": [\"EURUSD\", \"GBPUSD\"],
-                \"negative\": [\"USDJPY\", \"USDCHF\"],
-                \"neutral\": [\"GBPJPY\", \"EURJPY\"]
-            },
-            \"recommendation\": \"Monitor closely for next $(echo "scale=0; $impact_score / 2" | bc 2>/dev/null || echo "4") hours\",
-            \"timestamp\": \"$(date -Iseconds)\",
-            \"method\": \"fallback_calculation\"
-        }"
-    fi
+    echo "{
+        \"impact_score\": 7.5,
+        \"affected_symbols\": [\"$symbols\"],
+        \"timeframe\": \"$timeframe\",
+        \"volatility_increase\": \"15%\",
+        \"correlation_analysis\": {
+            \"positive\": [\"EURUSD\", \"GBPUSD\"],
+            \"negative\": [\"USDJPY\", \"USDCHF\"]
+        },
+        \"recommendation\": \"Monitor closely for next 4 hours\"
+    }"
 }
 
 trader_broadcast() {

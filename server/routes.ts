@@ -4,206 +4,34 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertOrderSchema, insertPositionSchema } from "@shared/schema";
 import { z } from "zod";
-import { accountManager } from "./account-manager";
 import newsRoutes from "./news-routes";
-import sjcPressureRoutes from "./sjc-pressure-routes";
-import enhancedGoldAttackRoutes from "./enhanced-gold-attack-routes";
-import { vietnamGoldBrokerRoutes } from "./vietnam-gold-broker-routes";
+import enhancedForexRoutes from "./enhanced-forex-api-routes";
 import exnessDealingDeskRoutes from "./exness-dealing-desk-routes";
-import enhancedForexApiRoutes from "./enhanced-forex-api-routes";
 import tradermadeApiRoutes from "./tradermade-api-routes";
-import vietnamGoldTradingRoutes from "./vietnam-gold-trading-routes";
-import sjcNewsPropagationRoutes from "./news-propagation-routes";
-import ecnLiquidityRoutes from "./ecn-liquidity-routes";
-import financialInstitutionRoutes from "./financial-institution-routes";
-import { sjcGoldBridgeRoutes } from "./sjc-gold-bridge-routes";
-import { sjcDemoConverterRoutes } from "./sjc-demo-converter-routes";
-import { anonymousAccountRoutes } from "./anonymous-account-routes";
-import { highVolumeSJCRoutes } from "./high-volume-sjc-routes";
-import { internationalSJCRoutes } from "./international-sjc-routes";
-import { exnessMT5Connection } from "./exness-mt5-connection";
-import twelveDataRoutes from "./twelvedata-routes";
-import { twelveDataWebSocketServer } from "./twelvedata-websocket-server";
-import xtbScannerRoutes from "./xtb-scanner-routes.js";
-import coinrankingApiRoutes from "./coinranking-api-routes";
-import { setupAuth, isAuthenticated } from "./replitAuth";
-import fedMonetaryRoutes from "./fed-monetary-control-system";
-import nyFedMarketsRoutes from "./ny-fed-markets-api";
+import enhancedGoldAttackRoutes from "./enhanced-gold-attack-routes";
+import { forexNewsChecker } from "./forex-news-checker";
+import { tradingSignalAnalyzer } from "./trading-signals";
+import { brokerIntegration } from "./broker-integration";
+import { accountManager } from "./account-manager";
+import { signalProcessor } from "./signal-processor";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
-  // Auth middleware
-  await setupAuth(app);
-
   // Register news routes
   app.use(newsRoutes);
-
+  
   // Register enhanced forex API routes
-  app.use("/api", enhancedForexApiRoutes);
-
+  app.use('/api', enhancedForexRoutes);
+  
   // Register Exness dealing desk routes
-  app.use("/api", exnessDealingDeskRoutes);
-
+  app.use('/api', exnessDealingDeskRoutes);
+  
   // Register Tradermade API routes
-  app.use("/api", tradermadeApiRoutes);
-  app.use("/api", sjcPressureRoutes);
-
+  app.use('/api', tradermadeApiRoutes);
+  
   // Register Enhanced Gold Attack routes
-  app.use("/api", enhancedGoldAttackRoutes);
-  app.use("/api", exnessDealingDeskRoutes);
-  app.use("/api", vietnamGoldBrokerRoutes);
-  app.use("/api", vietnamGoldTradingRoutes);
-  app.use("/api", sjcNewsPropagationRoutes);
-  app.use("/api", ecnLiquidityRoutes);
-  app.use("/api", financialInstitutionRoutes);
-  app.use("/api", sjcGoldBridgeRoutes);
-  app.use("/api", sjcDemoConverterRoutes);
-  app.use("/api", anonymousAccountRoutes);
-  app.use("/api", highVolumeSJCRoutes);
-  app.use("/api", internationalSJCRoutes);
-  app.use("/api", twelveDataRoutes);
-  app.use("/api", coinrankingApiRoutes);
-  app.use("/api", fedMonetaryRoutes);
-  app.use("/api", nyFedMarketsRoutes);
-  app.use(xtbScannerRoutes);
-
-  // Add MT5 connection status endpoint
-  app.get("/api/exness-mt5/status", async (req, res) => {
-    try {
-      const status = exnessMT5Connection.getConnectionStatus();
-      res.json({
-        success: true,
-        data: {
-          ...status,
-          authentication: "Account 205307242 with real credentials",
-          server: "Exness-MT5Trial7",
-          wsUrl: "wss://rtapi-sg.excalls.mobi/rtapi/mt5/trial7",
-        },
-        message: "Exness MT5 connection status retrieved",
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: "Failed to get MT5 status",
-      });
-    }
-  });
-
-  // Check MT5 connection status
-  app.get("/api/exness-mt5/status", async (req, res) => {
-    try {
-      const status = exnessMT5Connection.getConnectionStatus();
-
-      res.json({
-        success: true,
-        data: {
-          ...status,
-          credentials: {
-            accountId: "205307242",
-            server: "Exness-MT5Trial7",
-            wsUrl: "wss://rtapi-sg.excalls.mobi/rtapi/mt5/trial7",
-          },
-          authentication: {
-            status: status.connected ? "authenticated" : "pending",
-            lastAttempt: new Date().toISOString(),
-          },
-        },
-        message: status.connected
-          ? "MT5 connection active"
-          : "MT5 connection pending",
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: "Failed to get MT5 status",
-      });
-    }
-  });
-
-  // Manual MT5 reconnection - chỉ khi cần thiết
-  app.post("/api/exness-mt5/reconnect", async (req, res) => {
-    try {
-      console.log("🔄 Manual reconnection requested for Exness MT5...");
-
-      // Kiểm tra xem có thật sự cần reconnect không
-      const status = exnessMT5Connection.getConnectionStatus();
-      if (status.connected && status.rtApiConnected) {
-        return res.json({
-          success: true,
-          message: "Connection is already stable, no reconnection needed",
-          status: status,
-        });
-      }
-
-      // Thực hiện manual reconnect
-      exnessMT5Connection.manualReconnect();
-
-      res.json({
-        success: true,
-        message: "Manual reconnection initiated (no auto-restart)",
-        autoReconnect: false,
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: "Failed to reconnect MT5",
-      });
-    }
-  });
-
-  // Bật/tắt auto-reconnection
-  app.post("/api/exness-mt5/auto-reconnect", async (req, res) => {
-    try {
-      const { enabled } = req.body;
-      exnessMT5Connection.setAutoReconnect(enabled === true);
-
-      res.json({
-        success: true,
-        message: `Auto-reconnect ${enabled ? "enabled" : "disabled"}`,
-        autoReconnectEnabled: enabled,
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: "Failed to set auto-reconnect",
-      });
-    }
-  });
-
-  // Add MT5 gold order placement
-  app.post("/api/exness-mt5/place-gold-order", async (req, res) => {
-    try {
-      const { symbol = "XAUUSD", volume = 50, orderType = "buy" } = req.body;
-
-      const orderId = await exnessMT5Connection.placeGoldOrder(
-        symbol,
-        volume,
-        orderType,
-      );
-
-      res.json({
-        success: true,
-        data: {
-          orderId,
-          symbol,
-          volume,
-          orderType,
-          accountId: "205307242",
-          server: "Exness-MT5Trial7",
-          sjcGoldEquivalent: `${(volume * 82.94).toFixed(2)} taels`,
-          physicalWeight: `${((volume * 82.94 * 37.5) / 1000).toFixed(2)} kg`,
-          internationalCoordination: "UBS Switzerland & EU Central Bank ready",
-        },
-        message: "Gold order placed successfully on MT5",
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: "Failed to place gold order",
-      });
-    }
-  });
+  app.use('/api', enhancedGoldAttackRoutes);
 
   // WebSocket news command endpoint
   app.post("/api/websocket/news", async (req, res) => {
@@ -212,24 +40,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Broadcast to WebSocket clients
       const message = {
-        command: command || "curl_news_post",
+        command: command || 'curl_news_post',
         ...data,
-        source: "HTTP API",
-        timestamp: new Date().toISOString(),
+        source: 'HTTP API',
+        timestamp: new Date().toISOString()
       };
 
       // Send to account manager WebSocket handler
       if (accountManager.newsClients && accountManager.newsClients.size > 0) {
         accountManager.broadcastToNewsClients({
-          type: "api_command",
-          data: message,
+          type: 'api_command',
+          data: message
         });
 
         res.json({
           success: true,
-          message: "Command sent to WebSocket clients",
+          message: 'Command sent to WebSocket clients',
           clients_notified: accountManager.newsClients.size,
-          command: command,
+          command: command
         });
       } else {
         // Handle directly if no WebSocket clients
@@ -237,14 +65,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         res.json({
           success: true,
-          message: "Command processed directly",
-          command: command,
+          message: 'Command processed directly',
+          command: command
         });
       }
     } catch (error) {
       res.status(500).json({
-        error: "Failed to process WebSocket news command",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to process WebSocket news command',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -256,129 +84,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(info);
     } catch (error) {
       res.status(500).json({
-        error: "Failed to get WebSocket info",
+        error: 'Failed to get WebSocket info'
       });
     }
   });
 
   // Start automatic forex news checking
-  // forexNewsChecker.startAutoCheck(10); // Check every 10 minutes - Temporarily disabled
+  forexNewsChecker.startAutoCheck(10); // Check every 10 minutes
 
   // Initialize signal tracking for Exness accounts
   setTimeout(async () => {
     await accountManager.initializeSignalTracking();
-    console.log("🎯 High-impact signal tracking system activated!");
+    console.log('🎯 High-impact signal tracking system activated!');
   }, 3000); // Start after 3 seconds
 
-  // Import và setup international portfolio routes
-  const internationalPortfolioRoutes = (
-    await import("./international-portfolio-routes.js")
-  ).default;
-  app.use("/api", internationalPortfolioRoutes);
-
-  // Import và setup physical gold sell routes
-  const physicalGoldSellRoutes = (
-    await import("./physical-gold-sell-routes.js")
-  ).default;
-  app.use("/api", physicalGoldSellRoutes);
-
-  // Initialize financial institution arbitrage monitoring
-  setTimeout(async () => {
-    const { financialInstitutionBroker } = await import(
-      "./financial-institution-broker.js"
-    );
-
-    financialInstitutionBroker.on(
-      "arbitrageOpportunity",
-      (opportunity: any) => {
-        console.log(
-          `⚡ ARBITRAGE ALERT: ${opportunity.priceDifference.toLocaleString()} VND opportunity detected`,
-        );
-        console.log(
-          `   Between: ${opportunity.institution1} <-> ${opportunity.institution2}`,
-        );
-        console.log(
-          `   Recommended volume: ${opportunity.recommendedVolume} grams`,
-        );
-
-        // Broadcast to WebSocket clients
-        clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(
-              JSON.stringify({
-                type: "arbitrageAlert",
-                data: opportunity,
-              }),
-            );
-          }
-        });
-      },
-    );
-
-    financialInstitutionBroker.on(
-      "institutionOrderSettled",
-      (settlement: any) => {
-        console.log(`💎 INSTITUTIONAL SETTLEMENT: ${settlement.order.orderId}`);
-        console.log(`🏦 Institution: ${settlement.institution}`);
-        console.log(
-          `🥇 Gold Volume: ${settlement.order.convertedGoldGrams.toFixed(2)} grams`,
-        );
-        console.log(
-          `💰 Value: ${settlement.order.totalValueVND.toLocaleString()} VND`,
-        );
-
-        // Broadcast settlement to clients
-        clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(
-              JSON.stringify({
-                type: "institutionalSettlement",
-                data: settlement,
-              }),
-            );
-          }
-        });
-      },
-    );
-
-    console.log("🏦 Financial institution monitoring activated");
-  }, 5000);
-
-  // Auth routes
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
-
-  // Initialize TwelveData WebSocket server
-  twelveDataWebSocketServer.initialize(httpServer);
-
   // Create WebSocket server for real-time price updates
-  const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
   // Store connected WebSocket clients
   const clients = new Set<WebSocket>();
 
-  wss.on("connection", (ws) => {
+  wss.on('connection', (ws) => {
     clients.add(ws);
-    console.log("Client connected to WebSocket");
+    console.log('Client connected to WebSocket');
 
-    ws.on("close", () => {
+    ws.on('close', () => {
       clients.delete(ws);
-      console.log("Client disconnected from WebSocket");
+      console.log('Client disconnected from WebSocket');
     });
   });
 
   // Broadcast price updates to all connected clients
   function broadcastPriceUpdate(priceData: any) {
-    const message = JSON.stringify({ type: "priceUpdate", data: priceData });
-    clients.forEach((client) => {
+    const message = JSON.stringify({ type: 'priceUpdate', data: priceData });
+    clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(message);
       }
@@ -393,21 +132,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     for (const symbol of symbols) {
       // Generate realistic price fluctuations
       const currentBid = parseFloat(symbol.bid);
-      const volatility =
-        symbol.symbol === "BTCUSD"
-          ? 100
-          : symbol.symbol === "XAUUSD"
-            ? 2
-            : 0.0005;
+      const volatility = symbol.symbol === 'BTCUSD' ? 100 : (symbol.symbol === 'XAUUSD' ? 2 : 0.0005);
       const change = (Math.random() - 0.5) * volatility * 0.1;
 
       const newBid = Math.max(0.00001, currentBid + change);
-      const spread =
-        symbol.symbol === "BTCUSD"
-          ? 25
-          : symbol.symbol === "XAUUSD"
-            ? 0.24
-            : 0.0002;
+      const spread = symbol.symbol === 'BTCUSD' ? 25 : (symbol.symbol === 'XAUUSD' ? 0.24 : 0.0002);
       const newAsk = newBid + spread;
 
       const priceChange = newBid - currentBid;
@@ -415,25 +144,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await storage.updateSymbolPrice(
         symbol.symbol,
-        newBid.toFixed(
-          symbol.symbol === "USDJPY" ? 2 : symbol.symbol === "BTCUSD" ? 2 : 5,
-        ),
-        newAsk.toFixed(
-          symbol.symbol === "USDJPY" ? 2 : symbol.symbol === "BTCUSD" ? 2 : 5,
-        ),
+        newBid.toFixed(symbol.symbol === 'USDJPY' ? 2 : (symbol.symbol === 'BTCUSD' ? 2 : 5)),
+        newAsk.toFixed(symbol.symbol === 'USDJPY' ? 2 : (symbol.symbol === 'BTCUSD' ? 2 : 5)),
         priceChange.toFixed(5),
-        changePercent.toFixed(2),
+        changePercent.toFixed(2)
       );
 
       priceUpdates[symbol.symbol] = {
-        bid: newBid.toFixed(
-          symbol.symbol === "USDJPY" ? 2 : symbol.symbol === "BTCUSD" ? 2 : 5,
-        ),
-        ask: newAsk.toFixed(
-          symbol.symbol === "USDJPY" ? 2 : symbol.symbol === "BTCUSD" ? 2 : 5,
-        ),
+        bid: newBid.toFixed(symbol.symbol === 'USDJPY' ? 2 : (symbol.symbol === 'BTCUSD' ? 2 : 5)),
+        ask: newAsk.toFixed(symbol.symbol === 'USDJPY' ? 2 : (symbol.symbol === 'BTCUSD' ? 2 : 5)),
         change: priceChange.toFixed(5),
-        changePercent: changePercent.toFixed(2),
+        changePercent: changePercent.toFixed(2)
       };
     }
 
@@ -450,20 +171,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/positions", isAuthenticated, async (req: any, res) => {
+  app.get("/api/positions", async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const positions = await storage.getPositions(userId);
+      // For demo purposes, using userId = 1
+      const positions = await storage.getPositions(1);
       res.json(positions);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch positions" });
     }
   });
 
-  app.get("/api/orders", isAuthenticated, async (req: any, res) => {
+  app.get("/api/orders", async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const orders = await storage.getOrders(userId);
+      // For demo purposes, using userId = 1
+      const orders = await storage.getOrders(1);
       res.json(orders);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch orders" });
@@ -477,9 +198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { bid, ask } = req.body;
 
       if (!bid || !ask) {
-        return res
-          .status(400)
-          .json({ error: "Bid and ask prices are required" });
+        return res.status(400).json({ error: "Bid and ask prices are required" });
       }
 
       const currentSymbol = await storage.getSymbol(symbol);
@@ -490,15 +209,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentBid = parseFloat(currentSymbol.bid);
       const newBid = parseFloat(bid);
       const priceChange = newBid - currentBid;
-      const changePercent =
-        currentBid > 0 ? (priceChange / currentBid) * 100 : 0;
+      const changePercent = currentBid > 0 ? (priceChange / currentBid) * 100 : 0;
 
       await storage.updateSymbolPrice(
         symbol,
         bid,
         ask,
         priceChange.toFixed(5),
-        changePercent.toFixed(2),
+        changePercent.toFixed(2)
       );
 
       // Broadcast the price update to all connected clients
@@ -507,8 +225,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           bid,
           ask,
           change: priceChange.toFixed(5),
-          changePercent: changePercent.toFixed(2),
-        },
+          changePercent: changePercent.toFixed(2)
+        }
       };
 
       broadcastPriceUpdate(priceUpdate);
@@ -519,24 +237,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/orders", isAuthenticated, async (req: any, res) => {
+  app.post("/api/orders", async (req, res) => {
     try {
       const orderData = insertOrderSchema.parse(req.body);
-      const userId = req.user.claims.sub;
-      const order = await storage.createOrder({ ...orderData, userId });
+      // For demo purposes, using userId = 1
+      const order = await storage.createOrder({ ...orderData, userId: 1 });
 
       // For market orders, immediately execute them
       if (orderData.orderType === "market") {
         const symbol = await storage.getSymbol(orderData.symbol);
         if (symbol) {
-          const executionPrice =
-            orderData.type === "buy"
-              ? parseFloat(symbol.ask)
-              : parseFloat(symbol.bid);
+          const executionPrice = orderData.type === "buy" ? parseFloat(symbol.ask) : parseFloat(symbol.bid);
 
           // Create position
           const position = await storage.createPosition({
-            userId,
+            userId: 1,
             symbol: orderData.symbol,
             type: orderData.type,
             volume: orderData.volume,
@@ -557,9 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res
-          .status(400)
-          .json({ error: "Invalid order data", details: error.errors });
+        res.status(400).json({ error: "Invalid order data", details: error.errors });
       } else {
         res.status(500).json({ error: "Failed to create order" });
       }
@@ -598,7 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pnl: totalPnL.toFixed(2),
         usedMargin: usedMargin.toFixed(2),
         freeMargin: freeMargin.toFixed(2),
-        marginLevel: marginLevel.toFixed(1),
+        marginLevel: marginLevel.toFixed(1)
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch account data" });
@@ -627,7 +340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/broker-accounts", async (req, res) => {
     try {
       const accounts = [];
-      const brokers = ["MetaTrader5", "Exness", "FTMO", "TradingView"];
+      const brokers = ['MetaTrader5', 'Exness', 'FTMO', 'TradingView'];
 
       for (const broker of brokers) {
         try {
@@ -647,10 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/broker-connect", async (req, res) => {
     try {
       const { broker, credentials } = req.body;
-      const connected = await brokerIntegration.connectToBroker(
-        broker,
-        credentials,
-      );
+      const connected = await brokerIntegration.connectToBroker(broker, credentials);
       res.json({ success: connected, broker });
     } catch (error) {
       res.status(500).json({ error: "Failed to connect to broker" });
@@ -662,9 +372,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const accounts = accountManager.getAllAccounts();
       // Remove sensitive data before sending
-      const safeAccounts = accounts.map((acc) => ({
+      const safeAccounts = accounts.map(acc => ({
         ...acc,
-        credentials: undefined,
+        credentials: undefined
       }));
       res.json(safeAccounts);
     } catch (error) {
@@ -677,11 +387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const { password, investorPassword } = req.body;
 
-      const connected = await accountManager.connectAccount(
-        id,
-        password,
-        investorPassword,
-      );
+      const connected = await accountManager.connectAccount(id, password, investorPassword);
       res.json({ success: connected });
     } catch (error) {
       res.status(500).json({ error: "Failed to connect trading account" });
@@ -696,7 +402,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (account) {
         res.json({
           ...account,
-          credentials: undefined, // Remove sensitive data
+          credentials: undefined // Remove sensitive data
         });
       } else {
         res.status(404).json({ error: "Account not found or inactive" });
@@ -719,71 +425,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Advanced SJC Pressure Attack endpoint
   app.post("/api/attack/sjc-pressure", async (req, res) => {
     try {
-      const {
-        intensity = "HIGH",
+      const { 
+        intensity = 'HIGH',
         duration = 300,
-        vector = "HF_SPREAD_PRESSURE",
+        vector = 'HF_SPREAD_PRESSURE',
         sourceIP,
-        targetPort,
+        targetPort
       } = req.body;
 
-      const { sjcPressureAttack } = await import("./sjc-pressure-attack.js");
+      const { sjcPressureAttack } = await import('./sjc-pressure-attack.js');
 
-      const attackId = await sjcPressureAttack.executeAttack(vector, {
+      const attackId = await sjcPressureAttack.executeAttack(vector, { 
         autoTriggered: false,
         sourceIP,
-        targetPort,
+        targetPort
       });
 
       res.json({
         success: true,
-        message: `SJC pressure attack initiated from ${sourceIP || "system"}:${targetPort || "auto"}`,
+        message: `SJC pressure attack initiated from ${sourceIP || 'system'}:${targetPort || 'auto'}`,
         attackId,
         vector,
         intensity,
         duration,
-        sourceIP: sourceIP || "system",
-        targetPort: targetPort || "auto",
+        sourceIP: sourceIP || 'system',
+        targetPort: targetPort || 'auto'
       });
     } catch (error) {
       res.status(500).json({
-        error: "SJC attack failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'SJC attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.post("/api/attack/multi-ip-coordinated", async (req, res) => {
     try {
-      const {
+      const { 
         targetIPs = [],
         ports = [],
-        intensity = "HIGH",
-        attackType = "COORDINATED",
+        intensity = 'HIGH',
+        attackType = 'COORDINATED'
       } = req.body;
 
       const attacks = [];
 
       for (const ip of targetIPs) {
         for (const port of ports) {
-          const { sjcPressureAttack } = await import(
-            "./sjc-pressure-attack.js"
-          );
+          const { sjcPressureAttack } = await import('./sjc-pressure-attack.js');
 
-          const attackId = await sjcPressureAttack.executeAttack(
-            "MULTI_SOURCE_COORD",
-            {
-              autoTriggered: false,
-              sourceIP: ip,
-              targetPort: port,
-            },
-          );
+          const attackId = await sjcPressureAttack.executeAttack('MULTI_SOURCE_COORD', { 
+            autoTriggered: false,
+            sourceIP: ip,
+            targetPort: port
+          });
 
           attacks.push({
             attackId,
             sourceIP: ip,
             targetPort: port,
-            intensity,
+            intensity
           });
         }
       }
@@ -792,107 +493,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         message: `Multi-IP coordinated attack launched from ${targetIPs.length} IPs`,
         attacks,
-        totalAttacks: attacks.length,
+        totalAttacks: attacks.length
       });
     } catch (error) {
       res.status(500).json({
-        error: "Multi-IP attack failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Multi-IP attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.post("/api/attack/quick-burst", async (req, res) => {
     try {
-      const {
+      const { 
         sourceIP,
         port,
-        intensity = "EXTREME",
+        intensity = 'EXTREME',
         duration = 120,
-        burst_mode = true,
+        burst_mode = true
       } = req.body;
 
-      const { quickAttackSystem } = await import("./quick-attack-system.js");
+      const { quickAttackSystem } = await import('./quick-attack-system.js');
 
       const result = await quickAttackSystem.executeBurstAttack({
         sourceIP,
         port,
         intensity,
         duration,
-        burstMode: burst_mode,
+        burstMode: burst_mode
       });
 
       res.json({
         success: true,
         message: `Quick burst attack executed from ${sourceIP}:${port}`,
-        result,
+        result
       });
     } catch (error) {
       res.status(500).json({
-        error: "Quick burst attack failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Quick burst attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.post("/api/attack/stealth", async (req, res) => {
     try {
-      const {
+      const { 
         sourceIP,
         port,
-        intensity = "LOW",
+        intensity = 'LOW',
         duration = 90,
         stealth_mode = true,
-        detection_avoidance = true,
+        detection_avoidance = true
       } = req.body;
 
-      const { sjcPressureAttack } = await import("./sjc-pressure-attack.js");
+      const { sjcPressureAttack } = await import('./sjc-pressure-attack.js');
 
-      const attackId = await sjcPressureAttack.executeAttack("STEALTH_MICRO", {
+      const attackId = await sjcPressureAttack.executeAttack('STEALTH_MICRO', { 
         autoTriggered: false,
         sourceIP,
         targetPort: port,
         stealthMode: stealth_mode,
-        detectionAvoidance: detection_avoidance,
+        detectionAvoidance: detection_avoidance
       });
 
       res.json({
         success: true,
         message: `Stealth attack executed from ${sourceIP}:${port}`,
         attackId,
-        stealth: true,
+        stealth: true
       });
     } catch (error) {
       res.status(500).json({
-        error: "Stealth attack failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Stealth attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.post("/api/attack/devastation", async (req, res) => {
     try {
-      const {
+      const { 
         sourceIP,
         port,
-        mode = "OVERLOAD",
-        intensity = "MAXIMUM",
+        mode = 'OVERLOAD',
+        intensity = 'MAXIMUM',
         duration = 300,
-        volume_multiplier = 10.0,
+        volume_multiplier = 10.0
       } = req.body;
 
-      const { sjcPressureAttack } = await import("./sjc-pressure-attack.js");
+      const { sjcPressureAttack } = await import('./sjc-pressure-attack.js');
 
-      const attackId = await sjcPressureAttack.executeAttack(
-        "MULTI_SOURCE_COORD",
-        {
-          autoTriggered: false,
-          sourceIP,
-          targetPort: port,
-          devastationMode: true,
-          volumeMultiplier: volume_multiplier,
-        },
-      );
+      const attackId = await sjcPressureAttack.executeAttack('MULTI_SOURCE_COORD', { 
+        autoTriggered: false,
+        sourceIP,
+        targetPort: port,
+        devastationMode: true,
+        volumeMultiplier: volume_multiplier
+      });
 
       res.json({
         success: true,
@@ -900,40 +598,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         attackId,
         mode,
         intensity,
-        volumeMultiplier: volume_multiplier,
+        volumeMultiplier: volume_multiplier
       });
     } catch (error) {
       res.status(500).json({
-        error: "Devastation attack failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Devastation attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.post("/api/attack/liquidity-drain", async (req, res) => {
     try {
-      const {
+      const { 
         sourceIP,
-        mode = "DRAIN_ALL",
-        intensity = "EXTREME",
-        targets = ["SJC", "PNJ", "DOJI", "MIHONG"],
-        duration = 600,
+        mode = 'DRAIN_ALL',
+        intensity = 'EXTREME',
+        targets = ['SJC', 'PNJ', 'DOJI', 'MIHONG'],
+        duration = 600
       } = req.body;
 
       const results = [];
 
       for (const target of targets) {
-        const { sjcPressureAttack } = await import("./sjc-pressure-attack.js");
+        const { sjcPressureAttack } = await import('./sjc-pressure-attack.js');
 
-        const attackId = await sjcPressureAttack.executeAttack(
-          "LIQUIDITY_DRAIN",
-          {
-            autoTriggered: false,
-            sourceIP,
-            target,
-            drainMode: mode,
-          },
-        );
+        const attackId = await sjcPressureAttack.executeAttack('LIQUIDITY_DRAIN', { 
+          autoTriggered: false,
+          sourceIP,
+          target,
+          drainMode: mode
+        });
 
         results.push({ target, attackId });
       }
@@ -943,42 +638,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: `Liquidity drain attack executed from ${sourceIP}`,
         targets,
         results,
-        mode,
+        mode
       });
     } catch (error) {
       res.status(500).json({
-        error: "Liquidity drain attack failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Liquidity drain attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.post("/api/attack/optimized", async (req, res) => {
     try {
-      const { sourceIP, port, intensity = "HIGH", optimized = true } = req.body;
+      const { 
+        sourceIP,
+        port,
+        intensity = 'HIGH',
+        optimized = true
+      } = req.body;
 
-      const { sjcPressureAttack } = await import("./sjc-pressure-attack.js");
+      const { sjcPressureAttack } = await import('./sjc-pressure-attack.js');
 
-      const attackId = await sjcPressureAttack.executeAttack(
-        "HF_SPREAD_PRESSURE",
-        {
-          autoTriggered: false,
-          sourceIP,
-          targetPort: port,
-          optimized,
-        },
-      );
+      const attackId = await sjcPressureAttack.executeAttack('HF_SPREAD_PRESSURE', { 
+        autoTriggered: false,
+        sourceIP,
+        targetPort: port,
+        optimized
+      });
 
       res.json({
         success: true,
         message: `Optimized attack executed from ${sourceIP}:${port}`,
         attackId,
-        optimized: true,
+        optimized: true
       });
     } catch (error) {
       res.status(500).json({
-        error: "Optimized attack failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Optimized attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -986,7 +683,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get available attack vectors
   app.get("/api/attack/vectors", async (req, res) => {
     try {
-            const { quickAttackSystem } = await import("./quick-attack-system.js");
+      const { quickAttackSystem } = await import('./quick-attack-system.js');
       const vectors = quickAttackSystem.getAvailableVectors();
       res.json({ vectors });
     } catch (error) {
@@ -997,7 +694,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get active attacks status
   app.get("/api/attack/status", async (req, res) => {
     try {
-      const { quickAttackSystem } = await import("./quick-attack-system.js");
+      const { quickAttackSystem } = await import('./quick-attack-system.js');
       const activeAttacks = quickAttackSystem.getActiveAttacks();
       res.json({ activeAttacks });
     } catch (error) {
@@ -1005,235 +702,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Federal Reserve Monetary Control System Routes
-  app.get("/api/fed-monetary/status", async (req, res) => {
-    try {
-      const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
-      const status = await fedMonetaryControlSystem.getSystemStatus();
-      res.json({ success: true, data: status });
-    } catch (error) {
-      console.error('Fed monetary status error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Failed to get system status",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  app.post("/api/fed-monetary/open-market", async (req, res) => {
-    try {
-      const { type, amount } = req.body;
-      const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
-      const result = await fedMonetaryControlSystem.executeOpenMarketOperation(type, amount);
-      res.json({ success: true, ...result });
-    } catch (error) {
-      console.error('Open market operation error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Failed to execute open market operation",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  app.post("/api/fed-monetary/qe", async (req, res) => {
-    try {
-      const { amount, duration } = req.body;
-      const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
-      const result = await fedMonetaryControlSystem.executeQuantitativeEasing(amount, duration);
-      res.json({ success: true, ...result });
-    } catch (error) {
-      console.error('QE operation error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Failed to execute QE operation",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  app.post("/api/fed-monetary/gold-manipulation", async (req, res) => {
-    try {
-      const { action } = req.body;
-      const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
-      const result = await fedMonetaryControlSystem.executeGoldManipulation(action);
-      res.json({ success: true, ...result });
-    } catch (error) {
-      console.error('Gold manipulation error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Failed to execute gold manipulation",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  app.post("/api/fed-monetary/currency-intervention", async (req, res) => {
-    try {
-      const { currency, action, amount } = req.body;
-      const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
-      const result = await fedMonetaryControlSystem.executeCurrencyIntervention(currency, action, amount);
-      res.json({ success: true, ...result });
-    } catch (error) {
-      console.error('Currency intervention error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Failed to execute currency intervention",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  app.post("/api/fed-monetary/target-inflation", async (req, res) => {
-    try {
-      const { target } = req.body;
-      const { fedMonetaryControlSystem } = await import("./fed-monetary-control-system.js");
-      const result = await fedMonetaryControlSystem.targetInflationRate(target);
-      res.json({ success: true, ...result });
-    } catch (error) {
-      console.error('Inflation targeting error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Failed to target inflation rate",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // Banking stress test
-  app.post("/api/fed-monetary/stress-test", async (req, res) => {
-    try {
-      const { scenario } = req.body;
-      const { fedSystem } = await import("./fed-monetary-control-system.js");
-      const result = await fedSystem.executeBankingStressTest(scenario);
-      res.json({ success: true, banking_health: result });
-    } catch (error) {
-      console.error('Stress test error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Failed to execute stress test",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // Emergency liquidity injection
-  app.post("/api/fed-monetary/emergency-liquidity", async (req, res) => {
-    try {
-      const { amount } = req.body;
-      const { fedSystem } = await import("./fed-monetary-control-system.js");
-      await fedSystem.executeEmergencyLiquidityInjection(amount);
-      res.json({ 
-        success: true, 
-        message: `Emergency liquidity injection of $${amount.toLocaleString()} executed`,
-        new_status: fedSystem.getSystemStatus()
-      });
-    } catch (error) {
-      console.error('Emergency liquidity error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Failed to execute emergency liquidity injection",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // Financial stability monitoring
-  app.get("/api/fed-monetary/stability", async (req, res) => {
-    try {
-      const { fedSystem } = await import("./fed-monetary-control-system.js");
-      const metrics = await fedSystem.monitorFinancialStability();
-      res.json({ success: true, stability_metrics: metrics });
-    } catch (error) {
-      console.error('Stability monitoring error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Failed to get stability metrics",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // Yield curve control
-  app.post("/api/fed-monetary/yield-curve-control", async (req, res) => {
-    try {
-      const { target_curve } = req.body;
-      const { fedSystem } = await import("./fed-monetary-control-system.js");
-      await fedSystem.executeYieldCurveControl(target_curve);
-      res.json({ 
-        success: true, 
-        message: "Yield curve control executed",
-        new_yields: fedSystem.getSystemStatus().market_control.bondYields
-      });
-    } catch (error) {
-      console.error('Yield curve control error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Failed to execute yield curve control",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // International coordination
-  app.post("/api/fed-monetary/international-coordination", async (req, res) => {
-    try {
-      const { action } = req.body;
-      const { fedSystem } = await import("./fed-monetary-control-system.js");
-      await fedSystem.executeInternationalCoordination(action);
-      res.json({ 
-        success: true, 
-        message: `International coordination ${action} executed`,
-        new_status: fedSystem.getSystemStatus()
-      });
-    } catch (error) {
-      console.error('International coordination error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Failed to execute international coordination",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // Market circuit breaker
-  app.post("/api/fed-monetary/circuit-breaker", async (req, res) => {
-    try {
-      const { reason } = req.body;
-      const { fedSystem } = await import("./fed-monetary-control-system.js");
-      await fedSystem.activateMarketCircuitBreaker(reason);
-      res.json({ 
-        success: true, 
-        message: `Market circuit breaker activated: ${reason}`,
-        new_status: fedSystem.getSystemStatus()
-      });
-    } catch (error) {
-      console.error('Circuit breaker error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Failed to activate circuit breaker",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
   // Quick liquidity scan test endpoint
   app.get("/api/attack/test-scan", async (req, res) => {
     try {
-      const { quickAttackSystem } = await import("./quick-attack-system.js");
+      const { quickAttackSystem } = await import('./quick-attack-system.js');
       const results = await quickAttackSystem.scanLiquidityTargets();
 
       // Analyze SJC vulnerability
-      const sjcData = results.find((r: any) => r.source === "SJC");
-      let vulnerability = "NONE";
+      const sjcData = results.find((r: any) => r.source === 'SJC');
+      let vulnerability = 'NONE';
 
       if (sjcData) {
         const spreadRatio = sjcData.spreadPercent;
-        if (spreadRatio > 1.5 && sjcData.liquidityLevel === "low") {
-          vulnerability = "HIGH";
-        } else if (spreadRatio > 1.0 || sjcData.liquidityLevel === "low") {
-          vulnerability = "MEDIUM";
+        if (spreadRatio > 1.5 && sjcData.liquidityLevel === 'low') {
+          vulnerability = 'HIGH';
+        } else if (spreadRatio > 1.0 || sjcData.liquidityLevel === 'low') {
+          vulnerability = 'MEDIUM';
         }
       }
 
@@ -1243,22 +727,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results,
         analysis: {
           sjcVulnerability: vulnerability,
-          recommendedAction:
-            vulnerability === "HIGH"
-              ? "IMMEDIATE_ATTACK"
-              : vulnerability === "MEDIUM"
-                ? "CAUTIOUS_ATTACK"
-                : "MONITOR_ONLY",
-          attackVector:
-            vulnerability === "HIGH"
-              ? "HIGH_FREQUENCY_PRESSURE"
-              : "STEALTH_MICRO_PRESSURE",
-        },
+          recommendedAction: vulnerability === 'HIGH' ? 'IMMEDIATE_ATTACK' : 
+                           vulnerability === 'MEDIUM' ? 'CAUTIOUS_ATTACK' : 'MONITOR_ONLY',
+          attackVector: vulnerability === 'HIGH' ? 'HIGH_FREQUENCY_PRESSURE' : 'STEALTH_MICRO_PRESSURE'
+        }
       });
     } catch (error) {
       res.status(500).json({
-        error: "Scan test failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Scan test failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -1266,18 +743,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // FRED-Gold Attack System endpoints
   app.get("/api/fred-gold/indicators", async (req, res) => {
     try {
-      const { fredGoldAttackSystem } = await import(
-        "./fred-gold-attack-system.js"
-      );
+      const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
 
       // Fetch current FRED data
-      const indicators = [
-        "FEDFUNDS",
-        "DGS10",
-        "CPIAUCSL",
-        "DTWEXBGS",
-        "UNRATE",
-      ];
+      const indicators = ['FEDFUNDS', 'DGS10', 'CPIAUCSL', 'DTWEXBGS', 'UNRATE'];
       const fredData = [];
 
       for (const indicator of indicators) {
@@ -1288,85 +757,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         success: true,
         indicators: fredData,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
       res.status(500).json({
-        error: "Failed to fetch FRED indicators",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to fetch FRED indicators',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.get("/api/fred-gold/market-analysis", async (req, res) => {
     try {
-      const { fredGoldAttackSystem } = await import(
-        "./fred-gold-attack-system.js"
-      );
+      const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
       const marketData = await fredGoldAttackSystem.analyzeMarketConditions();
 
       res.json({
         success: true,
         marketData,
         analysis: {
-          arbitrageOpportunity:
-            marketData.arbitrageGap > 1500000
-              ? "HIGH"
-              : marketData.arbitrageGap > 800000
-                ? "MEDIUM"
-                : "LOW",
-          volatilityLevel:
-            marketData.volatility > 3
-              ? "HIGH"
-              : marketData.volatility > 2
-                ? "MEDIUM"
-                : "LOW",
-          recommendedAction:
-            marketData.volatility > 3 && marketData.arbitrageGap > 1500000
-              ? "IMMEDIATE_ATTACK"
-              : "MONITOR",
+          arbitrageOpportunity: marketData.arbitrageGap > 1500000 ? 'HIGH' : 
+                              marketData.arbitrageGap > 800000 ? 'MEDIUM' : 'LOW',
+          volatilityLevel: marketData.volatility > 3 ? 'HIGH' : 
+                          marketData.volatility > 2 ? 'MEDIUM' : 'LOW',
+          recommendedAction: marketData.volatility > 3 && marketData.arbitrageGap > 1500000 ? 
+                           'IMMEDIATE_ATTACK' : 'MONITOR'
         },
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
       res.status(500).json({
-        error: "Failed to analyze market conditions",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to analyze market conditions',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.post("/api/fred-gold/attack", async (req, res) => {
     try {
-      const { strategy = "FED_RATE_IMPACT" } = req.body;
-      const { fredGoldAttackSystem } = await import(
-        "./fred-gold-attack-system.js"
-      );
+      const { strategy = 'FED_RATE_IMPACT' } = req.body;
+      const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
 
       console.log(`🚨 INITIATING FRED-GOLD ATTACK`);
       console.log(`⚔️ Strategy: ${strategy}`);
 
-      const attackResult =
-        await fredGoldAttackSystem.executeFredBasedAttack(strategy);
+      const attackResult = await fredGoldAttackSystem.executeFredBasedAttack(strategy);
 
       res.json({
         success: true,
-        message: "FRED-Gold attack completed successfully",
-        ...attackResult,
+        message: 'FRED-Gold attack completed successfully',
+        ...attackResult
       });
+
     } catch (error) {
       res.status(500).json({
-        error: "FRED-Gold attack failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'FRED-Gold attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.get("/api/fred-gold/strategies", async (req, res) => {
     try {
-      const { fredGoldAttackSystem } = await import(
-        "./fred-gold-attack-system.js"
-      );
+      const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
       const strategies = fredGoldAttackSystem.getAttackStrategies();
       res.json({ success: true, strategies });
     } catch (error) {
@@ -1377,26 +830,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/fred-gold/auto-monitor", async (req, res) => {
     try {
       const { action, intervalMinutes = 15 } = req.body;
-      const { fredGoldAttackSystem } = await import(
-        "./fred-gold-attack-system.js"
-      );
+      const { fredGoldAttackSystem } = await import('./fred-gold-attack-system.js');
 
-      if (action === "start") {
+      if (action === 'start') {
         fredGoldAttackSystem.startAutomaticFredMonitoring(intervalMinutes);
         res.json({
           success: true,
-          message: `Bắt đầu giám sát FRED tự động (${intervalMinutes} phút)`,
+          message: `Bắt đầu giám sát FRED tự động (${intervalMinutes} phút)`
         });
       } else {
         res.json({
           success: true,
-          message: "FRED monitoring control",
+          message: 'FRED monitoring control'
         });
       }
     } catch (error) {
       res.status(500).json({
-        error: "Failed to control FRED monitoring",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to control FRED monitoring',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -1404,7 +855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced liquidity scanning endpoint
   app.get("/api/liquidity/scan", async (req, res) => {
     try {
-      const { liquidityScanner } = await import("./liquidity-scanner.js");
+      const { liquidityScanner } = await import('./liquidity-scanner.js');
       const results = await liquidityScanner.scanAllTargets();
       res.json({
         success: true,
@@ -1412,200 +863,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results,
         summary: {
           totalTargets: results.length,
-          highLiquidity: results.filter((r: any) => r.liquidityLevel === "high")
-            .length,
-          mediumLiquidity: results.filter(
-            (r: any) => r.liquidityLevel === "medium",
-          ).length,
-          lowLiquidity: results.filter((r: any) => r.liquidityLevel === "low")
-            .length,
-          favorableSignals: results.filter(
-            (r: any) => r.botSignal === "favorable",
-          ).length,
-        },
+          highLiquidity: results.filter((r: any) => r.liquidityLevel === 'high').length,
+          mediumLiquidity: results.filter((r: any) => r.liquidityLevel === 'medium').length,
+          lowLiquidity: results.filter((r: any) => r.liquidityLevel === 'low').length,
+          favorableSignals: results.filter((r: any) => r.botSignal === 'favorable').length
+        }
       });
     } catch (error) {
       res.status(500).json({
-        error: "Liquidity scan failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Liquidity scan failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   // World Gold Price API endpoints
-  app.get("/api/doji-gold/price", async (req, res) => {
-    try {
-      const { dojiGoldAPI } = await import("./doji-gold-integration.js");
-      const dojiData = await dojiGoldAPI.getDojiGoldPrice();
-
-      if (dojiData) {
-        res.json({
-          success: true,
-          data: dojiData,
-          timestamp: new Date().toISOString(),
-        });
-      } else {
-        res.status(503).json({
-          error: "Unable to fetch Doji gold price",
-          message: "Không thể lấy giá vàng Doji",
-        });
-      }
-    } catch (error) {
-      res.status(500).json({
-        error: "Doji gold price fetch failed",
-        details: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
-
-  app.post("/api/doji-gold/pressure-attack", async (req, res) => {
-    try {
-      const { intensity = "MEDIUM" } = req.body;
-      const { dojiGoldAPI } = await import("./doji-gold-integration.js");
-      const attackResult =
-        await dojiGoldAPI.executeVietnamGoldPressure(intensity);
-
-      res.json({
-        success: true,
-        message: "Vietnam gold pressure attack completed",
-        data: attackResult,
-      });
-    } catch (error) {
-      res.status(500).json({
-        error: "Vietnam gold pressure attack failed",
-        details: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
-
-  app.get("/api/gold/test-all-sources", async (req, res) => {
-    try {
-      const { goldPriceAPI } = await import("./gold-price-api.js");
-      const testResults = await goldPriceAPI.testAllGoldAPISources();
-
-      res.json({
-        success: true,
-        message: "Tested all gold price API sources",
-        data: testResults,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      res.status(500).json({
-        error: "Failed to test gold price APIs",
-        details: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
-
   app.get("/api/world-gold/price", async (req, res) => {
     try {
-      const { goldPriceAPI } = await import("./gold-price-api.js");
-      const goldData = await goldPriceAPI.getGoldPrice();
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
+      const goldData = await worldGoldScanner.scanWorldGoldPrice();
 
       if (goldData) {
         res.json({
           success: true,
           data: goldData,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date().toISOString()
         });
       } else {
         res.status(503).json({
-          error: "Unable to fetch world gold price",
-          message: "Không thể lấy giá vàng thế giới",
+          error: 'Unable to fetch world gold price',
+          message: 'Không thể lấy giá vàng thế giới'
         });
       }
     } catch (error) {
       res.status(500).json({
-        error: "World gold price fetch failed",
-        details: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
-
-  app.get("/api/exchange-rate/usd-vnd", async (req, res) => {
-    try {
-      const { goldPriceAPI } = await import("./gold-price-api.js");
-      const exchangeData = await goldPriceAPI.getUSDVNDRate();
-
-      if (exchangeData) {
-        res.json({
-          success: true,
-          data: exchangeData,
-          timestamp: new Date().toISOString(),
-        });
-      } else {
-        res.status(503).json({
-          error: "Unable to fetch USD/VND exchange rate",
-          message: "Không thể lấy tỷ giá USD/VND",
-        });
-      }
-    } catch (error) {
-      res.status(500).json({
-        error: "Exchange rate fetch failed",
-        details: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
-
-  app.get("/api/gold/complete-data", async (req, res) => {
-    try {
-      const { goldPriceAPI } = await import("./gold-price-api.js");
-      const completeData = await goldPriceAPI.getCompleteGoldData();
-
-      res.json({
-        success: true,
-        data: completeData,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      res.status(500).json({
-        error: "Complete gold data fetch failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'World gold price fetch failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.get("/api/world-gold/barchart", async (req, res) => {
     try {
-      const { worldGoldScanner } = await import("./world-gold-scanner.js");
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
       const barchartData = await worldGoldScanner.scanBarchartData();
 
       res.json({
         success: true,
         data: barchartData,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
       res.status(500).json({
-        error: "Barchart data fetch failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Barchart data fetch failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.post("/api/world-gold/attack", async (req, res) => {
     try {
-      const { vector = "SPOT_PRESSURE" } = req.body;
-      const { worldGoldScanner } = await import("./world-gold-scanner.js");
-      const attackResult =
-        await worldGoldScanner.executeLiquidityAttack(vector);
+      const { vector = 'SPOT_PRESSURE' } = req.body;
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
+
+      const attackResult = await worldGoldScanner.executeLiquidityAttack(vector);
 
       res.json({
         success: true,
-        message: "Tấn công thanh khoản vàng thế giới hoàn thành",
-        data: attackResult,
+        message: 'Tấn công thanh khoản vàng thế giới hoàn thành',
+        data: attackResult
       });
     } catch (error) {
       res.status(500).json({
-        error: "World gold attack failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'World gold attack failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.get("/api/world-gold/analyze", async (req, res) => {
     try {
-      const { worldGoldScanner } = await import("./world-gold-scanner.js");
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
       const goldData = await worldGoldScanner.scanWorldGoldPrice();
 
       if (goldData) {
@@ -1614,71 +952,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
           success: true,
           goldData,
           analysis,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date().toISOString()
         });
       } else {
         res.status(503).json({
-          error: "Unable to analyze - no gold data available",
+          error: 'Unable to analyze - no gold data available'
         });
       }
     } catch (error) {
       res.status(500).json({
-        error: "Gold analysis failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Gold analysis failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.get("/api/world-gold/vectors", async (req, res) => {
     try {
-      const { worldGoldScanner } = await import("./world-gold-scanner.js");
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
       const vectors = worldGoldScanner.getAttackVectors();
       res.json({ success: true, vectors });
     } catch (error) {
-      res
-        .status(500)
-        .json({ error: "Failed to fetch world gold attack vectors" });
+      res.status(500).json({ error: "Failed to fetch world gold attack vectors" });
     }
   });
 
   app.get("/api/world-gold/attacks", async (req, res) => {
     try {
-      const { worldGoldScanner } = await import("./world-gold-scanner.js");
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
       const attacks = worldGoldScanner.getActiveAttacks();
       res.json({ success: true, attacks });
     } catch (error) {
-      res
-        .status(500)
-        .json({ error: "Failed to fetch active world gold attacks" });
+      res.status(500).json({ error: "Failed to fetch active world gold attacks" });
     }
   });
 
   app.post("/api/world-gold/monitor", async (req, res) => {
     try {
       const { action, intervalSeconds = 60 } = req.body;
-      const { worldGoldScanner } = await import("./world-gold-scanner.js");
+      const { worldGoldScanner } = await import('./world-gold-scanner.js');
 
-      if (action === "start") {
+      if (action === 'start') {
         worldGoldScanner.startContinuousScanning(intervalSeconds);
         res.json({
           success: true,
-          message: `Bắt đầu giám sát vàng thế giới (${intervalSeconds}s)`,
+          message: `Bắt đầu giám sát vàng thế giới (${intervalSeconds}s)`
         });
-      } else if (action === "stop") {
+      } else if (action === 'stop') {
         worldGoldScanner.stopScanning();
         res.json({
           success: true,
-          message: "Dừng giám sát vàng thế giới",
+          message: 'Dừng giám sát vàng thế giới'
         });
       } else {
         res.status(400).json({
-          error: 'Invalid action. Use "start" or "stop"',
+          error: 'Invalid action. Use "start" or "stop"'
         });
       }
     } catch (error) {
       res.status(500).json({
-        error: "Failed to control world gold monitoring",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to control world gold monitoring',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -1686,23 +1020,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Telegram Bot endpoints
   app.post("/api/telegram/send-gold-update", async (req, res) => {
     try {
-      const { telegramGoldBot } = await import("./telegram-gold-bot.js");
+      const { telegramGoldBot } = await import('./telegram-gold-bot.js');
       const success = await telegramGoldBot.sendGoldPriceUpdate();
 
       if (success) {
         res.json({
           success: true,
-          message: "Cập nhật giá vàng đã được gửi qua Telegram",
+          message: 'Cập nhật giá vàng đã được gửi qua Telegram'
         });
       } else {
         res.status(500).json({
-          error: "Failed to send Telegram update",
+          error: 'Failed to send Telegram update'
         });
       }
     } catch (error) {
       res.status(500).json({
-        error: "Telegram update failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Telegram update failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -1711,38 +1045,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { message } = req.body;
       if (message && message.text) {
-        const { telegramGoldBot } = await import("./telegram-gold-bot.js");
-        await telegramGoldBot.handleTelegramCommand(
-          message.text,
-          message.chat.id,
-        );
+        const { telegramGoldBot } = await import('./telegram-gold-bot.js');
+        await telegramGoldBot.handleTelegramCommand(message.text, message.chat.id);
       }
       res.json({ success: true });
     } catch (error) {
-      console.error("Telegram webhook error:", error);
-      res.status(500).json({ error: "Webhook processing failed" });
+      console.error('Telegram webhook error:', error);
+      res.status(500).json({ error: 'Webhook processing failed' });
     }
   });
 
   app.post("/api/telegram/configure", async (req, res) => {
     try {
       const { botToken, chatId, updateInterval } = req.body;
-      const { telegramGoldBot } = await import("./telegram-gold-bot.js");
+      const { telegramGoldBot } = await import('./telegram-gold-bot.js');
 
       telegramGoldBot.updateConfig({
         botToken,
         chatId,
-        updateInterval,
+        updateInterval
       });
 
       res.json({
         success: true,
-        message: "Cấu hình Telegram bot đã được cập nhật",
+        message: 'Cấu hình Telegram bot đã được cập nhật'
       });
     } catch (error) {
       res.status(500).json({
-        error: "Failed to configure Telegram bot",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to configure Telegram bot',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -1750,46 +1081,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/telegram/auto-updates", async (req, res) => {
     try {
       const { action } = req.body;
-      const { telegramGoldBot } = await import("./telegram-gold-bot.js");
+      const { telegramGoldBot } = await import('./telegram-gold-bot.js');
 
-      if (action === "start") {
+      if (action === 'start') {
         telegramGoldBot.startAutoUpdates();
         res.json({
           success: true,
-          message: "Đã bật cập nhật tự động Telegram",
+          message: 'Đã bật cập nhật tự động Telegram'
         });
-      } else if (action === "stop") {
+      } else if (action === 'stop') {
         telegramGoldBot.stopAutoUpdates();
         res.json({
           success: true,
-          message: "Đã tắt cập nhật tự động Telegram",
+          message: 'Đã tắt cập nhật tự động Telegram'
         });
       } else {
         res.status(400).json({
-          error: 'Invalid action. Use "start" or "stop"',
+          error: 'Invalid action. Use "start" or "stop"'
         });
       }
     } catch (error) {
-      console.error('Telegram auto-updates error:', error);
       res.status(500).json({
-        error: "Failed to control Telegram auto-updates",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to control Telegram auto-updates',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.get("/api/telegram/status", async (req, res) => {
     try {
-      const { telegramGoldBot } = await import("./telegram-gold-bot.js");
+      const { telegramGoldBot } = await import('./telegram-gold-bot.js');
       res.json({
         success: true,
         isAutoUpdating: telegramGoldBot.isAutoUpdating(),
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
       res.status(500).json({
-        error: "Failed to get Telegram status",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to get Telegram status',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -1798,29 +1128,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/liquidity/monitor", async (req, res) => {
     try {
       const { action, intervalSeconds = 30 } = req.body;
-      const { liquidityScanner } = await import("./liquidity-scanner.js");
+      const { liquidityScanner } = await import('./liquidity-scanner.js');
 
-      if (action === "start") {
+      if (action === 'start') {
         liquidityScanner.startMonitoring(intervalSeconds);
         res.json({
           success: true,
-          message: `Liquidity monitoring started with ${intervalSeconds}s interval`,
+          message: `Liquidity monitoring started with ${intervalSeconds}s interval`
         });
-      } else if (action === "stop") {
+      } else if (action === 'stop') {
         liquidityScanner.stopMonitoring();
         res.json({
           success: true,
-          message: "Liquidity monitoring stopped",
+          message: 'Liquidity monitoring stopped'
         });
       } else {
         res.status(400).json({
-          error: 'Invalid action. Use "start" or "stop"',
+          error: 'Invalid action. Use "start" or "stop"'
         });
       }
     } catch (error) {
       res.status(500).json({
-        error: "Failed to control liquidity monitoring",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to control liquidity monitoring',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -1844,18 +1174,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(
-    "/api/trading-accounts/:id/enable-signal-tracking",
-    async (req, res) => {
-      try {
-        const { id } = req.params;
-        const enabled = await accountManager.enableHighImpactSignalTracking(id);
-        res.json({ success: enabled });
-      } catch (error) {
-        res.status(500).json({ error: "Failed to enable signal tracking" });
-      }
-    },
-  );
+  app.post("/api/trading-accounts/:id/enable-signal-tracking", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const enabled = await accountManager.enableHighImpactSignalTracking(id);
+      res.json({ success: enabled });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to enable signal tracking" });
+    }
+  });
 
   // SecBot Bypass Status endpoint
   app.get("/api/secbot/bypass-status", async (req, res) => {
@@ -1864,345 +1191,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         success: true,
         ...status,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
-      res.status(500).json({
-        error: "Failed to fetch SecBot bypass status",
-        details: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
-
-  // XAUUSD Enhanced Liquidity Scanner API Routes
-
-  // Single liquidity scan
-  app.post("/api/liquidity/scan", async (req, res) => {
-    try {
-      const { side = "both" } = req.body;
-      const { liquidityScannerAPI } = await import("./liquidity-scanner-api");
-
-      const result = await liquidityScannerAPI.performSingleScan(side);
-
-      res.json({
-        success: true,
-        data: result,
-        message: `${side} liquidity scan completed`,
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: "Failed to perform liquidity scan",
-      });
-    }
-  });
-
-  // Start continuous monitoring
-  app.post("/api/liquidity/monitor/start", async (req, res) => {
-    try {
-      const { side = "both", interval = 15 }= req.body;
-      const { liquidityScannerAPI } = await import("./liquidity-scanner-api");
-
-      const monitorId = liquidityScannerAPI.startMonitoring(side, interval);
-
-      res.json({
-        success: true,
-        data: {
-          monitorId,
-          side,
-          interval,
-          status: "monitoring_started",
-        },
-        message: `Started ${side} liquidity monitoring`,
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: "Failed to start monitoring",
-      });
-    }
-  });
-
-  // Stop monitoring
-  app.post("/api/liquidity/monitor/stop", async (req, res) => {
-    try {
-      const { monitorId } = req.body;
-      const { liquidityScannerAPI } = await import("./liquidity-scanner-api");
-
-      if (monitorId === "all") {
-        const stopped = liquidityScannerAPI.stopAllMonitoring();
-        res.json({
-          success: true,
-          data: { stoppedCount: stopped },
-          message: `Stopped ${stopped} monitors`,
-        });
-      } else {
-        const stopped = liquidityScannerAPI.stopMonitoring(monitorId);
-        res.json({
-          success: stopped,
-          data: { monitorId, stopped },
-          message: stopped ? "Monitor stopped" : "Monitor not found",
-        });
-      }
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: "Failed to stop monitoring",
-      });
-    }
-  });
-
-  // Depth analysis
-  app.post("/api/liquidity/depth", async (req, res) => {
-    try {
-      const { side = "buy" } = req.body;
-      const { liquidityScannerAPI } = await import("./liquidity-scanner-api");
-
-      const analysis = await liquidityScannerAPI.performDepthAnalysis(side);
-
-      res.json({
-        success: true,
-        data: analysis,
-        message: `${side} depth analysis completed`,
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: "Failed to perform depth analysis",
-      });
-    }
-  });
-
-  // Get scanner statistics
-  app.get("/api/liquidity/enhanced-stats", async (req, res) => {
-    try {
-      const { liquidityScannerAPI } = await import("./liquidity-scanner-api");
-
-      const stats = liquidityScannerAPI.getStatistics();
-      const activeMonitors = liquidityScannerAPI.getActiveMonitors();
-
-      res.json({
-        success: true,
-        data: {
-          ...stats,
-          activeMonitorIds: activeMonitors,
-        },
-        message: "Enhanced scanner statistics retrieved",
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: "Failed to get scanner statistics",
-      });
-    }
-  });
-
-  // Execute shell scanner commands
-  app.post("/api/liquidity/shell-command", async (req, res) => {
-    try {
-      const { type = "enhanced", command = "single", side } = req.body;
-      const { liquidityScannerAPI } = await import("./liquidity-scanner-api");
-
-      const result = await liquidityScannerAPI.executeShellScanner(
-        type,
-        command,
-        side,
-      );
-
-      res.json({
-        success: result.success,
-        data: result,
-        message: result.success
-          ? "Shell scanner executed"
-          : "Shell scanner failed",
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: "Failed to execute shell scanner",
-      });
-    }
-  });
-
-  app.get("/api/auth/user", async (req, res) => {
-    res.json({ user: req.user || null });
-  });
-
-  // Federal Reserve System Status
-  app.get("/api/fed-monetary/status", async (req, res) => {
-    try {
-      // Mock response for now since the Fed system is not fully implemented
-      const mockStatus = {
-        monetary_policy: {
-          fedFundsRate: 5.5,
-          reserveRequirement: 10,
-          quantitativeEasing: 0,
-          m1Supply: 19400000000000,
-          m2Supply: 21500000000000,
-          velocityOfMoney: 1.424
-        },
-        market_control: {
-          goldPrice: 2050,
-          dollarIndex: 103.5,
-          bondYields: {
-            "2Y": 4.85,
-            "10Y": 4.25,
-            "30Y": 4.45
-          },
-          inflationExpectations: 2.5,
-          liquidityPremium: 0.25
-        },
-        gold_fair_value: 2000,
-        optimal_fed_funds_rate: 5.25,
-        system_health: "operational"
-      };
-      
-      res.json({ success: true, data: mockStatus });
-    } catch (error) {
-      console.error('Fed system status error:', error);
       res.status(500).json({ 
-        success: false, 
-        error: "Failed to get Fed system status",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // VND devaluation route
-  app.post("/api/fed-monetary/vnd-specific-pressure", async (req, res) => {
-    try {
-      const { direction, intensity, amount } = req.body;
-      
-      // Simulate VND pressure response
-      const mockResponse = {
-        success: true,
-        direction,
-        intensity,
-        amount,
-        vnd_rate: direction === "STRENGTHEN_USD" ? 25000 : 24000,
-        pressure_applied: true,
-        timestamp: new Date().toISOString()
-      };
-      
-      res.json(mockResponse);
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // Currency intervention route
-  app.post("/api/fed-monetary/currency-intervention", async (req, res) => {
-    try {
-      const { currency, action, amount } = req.body;
-      
-      // Simulate currency intervention
-      const mockResponse = {
-        success: true,
-        currency,
-        action,
-        amount,
-        new_dollar_index: action === "STRENGTHEN" ? 105.2 : 102.8,
-        intervention_executed: true,
-        timestamp: new Date().toISOString()
-      };
-      
-      res.json(mockResponse);
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // FRED Skill Deployment API
-  app.post("/api/fed-monetary/deploy-fred-skill", async (req, res) => {
-    try {
-      const { skill, mode, power_level, target_pair, target_bank } = req.body;
-      
-      const deploymentResponse = {
-        success: true,
-        skill,
-        mode,
-        power_level,
-        target_pair,
-        target_bank,
-        deployment_status: "ACTIVE",
-        infrastructure_deployed: true,
-        monitoring_enabled: true,
-        synthetic_demand_active: true,
-        timestamp: new Date().toISOString()
-      };
-      
-      res.json(deploymentResponse);
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // FRED Campaign Results API
-  app.get("/api/fed-monetary/fred-campaign-results", async (req, res) => {
-    try {
-      const fs = await import("fs");
-      const campaignDataPath = "/tmp/fred_listen_campaign.json";
-      
-      if (fs.existsSync(campaignDataPath)) {
-        const campaignData = JSON.parse(fs.readFileSync(campaignDataPath, "utf8"));
-        res.json({ success: true, data: campaignData });
-      } else {
-        res.json({ 
-          success: false, 
-          error: "No campaign data found. Run FRED skill deployment first." 
-        });
-      }
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
+        error: "Failed to fetch SecBot bypass status",
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   return httpServer;
 }
-import express from "express";
-import tradermadeRoutes from "./tradermade-api-routes";
-import twelveDataRoutes from "./twelvedata-routes";
-import forexRoutes from "./enhanced-forex-api-routes";
-import goldAttackRoutes from "./enhanced-gold-attack-routes";
-import sjcPressureRoutes from "./sjc-pressure-routes";
-import aiSJCRoutes from "./ai-sjc-routes";
-
-const router = express.Router();
-
-// API Routes
-router.use("/api/tradermade", tradermadeRoutes);
-router.use("/api/twelvedata", twelveDataRoutes);
-router.use("/api/forex", forexRoutes);
-router.use("/api/gold-attack", goldAttackRoutes);
-router.use("/api/sjc-pressure", sjcPressureRoutes);
-router.use("/api/ai-sjc", aiSJCRoutes);
-
-// Health check
-router.get("/health", (req, res) => {
-  res.json({
-    status: "healthy",
-    timestamp: new Date().toISOString(),
-    services: {
-      tradermade: "active",
-      twelvedata: "active",
-      forex: "active",
-      gold_attack: "active",
-      sjc_pressure: "active",
-      ai_sjc: "active",
-    },
-  });
-});
-
-export default router;

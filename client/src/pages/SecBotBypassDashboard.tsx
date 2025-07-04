@@ -1,30 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  CheckCircle,
-  Shield,
-  TrendingUp,
-  Wallet,
-  Server,
-  Lock,
-} from "lucide-react";
+import { CheckCircle, Shield, TrendingUp, Wallet, Server, Lock } from "lucide-react";
 
 export default function SecBotBypassDashboard() {
   const { data: bypassStatus, isLoading } = useQuery({
-    queryKey: ["/api/secbot/bypass-status"],
+    queryKey: ['/api/secbot/bypass-status'],
     refetchInterval: 5000, // Refresh every 5 seconds
   });
 
   const { data: accountData } = useQuery({
-    queryKey: ["/api/trading-accounts"],
+    queryKey: ['/api/trading-accounts'],
     refetchInterval: 10000,
   });
 
@@ -38,9 +25,7 @@ export default function SecBotBypassDashboard() {
     );
   }
 
-  const account405691964 = Array.isArray(accountData)
-    ? accountData.find((acc: any) => acc.accountNumber === "405691964")
-    : null;
+  const account405691964 = Array.isArray(accountData) ? accountData.find((acc: any) => acc.accountNumber === '405691964') : null;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -61,7 +46,7 @@ export default function SecBotBypassDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {bypassStatus?.secbot_bypassed ? "BYPASSED" : "ACTIVE"}
+              {bypassStatus?.secbot_bypassed ? 'BYPASSED' : 'ACTIVE'}
             </div>
             <p className="text-xs text-muted-foreground">
               Hệ thống bảo mật đã vô hiệu
@@ -71,31 +56,31 @@ export default function SecBotBypassDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              MT5 Connection
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">MT5 Connection</CardTitle>
             <Server className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              {bypassStatus?.connection_active ? "CONNECTED" : "OFFLINE"}
+              {bypassStatus?.connection_active ? 'CONNECTED' : 'OFFLINE'}
             </div>
-            <p className="text-xs text-muted-foreground">Exness-MT5Real8</p>
+            <p className="text-xs text-muted-foreground">
+              Exness-MT5Real8
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Account Balance
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Account Balance</CardTitle>
             <Wallet className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${account405691964?.balance?.toFixed(2) || "0.00"}
+              ${account405691964?.balance?.toFixed(2) || '0.00'}
             </div>
-            <p className="text-xs text-muted-foreground">USD</p>
+            <p className="text-xs text-muted-foreground">
+              USD
+            </p>
           </CardContent>
         </Card>
 
@@ -106,7 +91,7 @@ export default function SecBotBypassDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">
-              {bypassStatus?.encryption_status || "ACTIVE"}
+              {bypassStatus?.encryption_status || 'ACTIVE'}
             </div>
             <p className="text-xs text-muted-foreground">
               Multi-layer protection
@@ -139,51 +124,35 @@ export default function SecBotBypassDashboard() {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm font-medium">Balance:</span>
-                <span className="text-sm font-mono">
-                  ${bypassStatus?.balance?.toFixed(2)}
-                </span>
+                <span className="text-sm font-mono">${bypassStatus?.balance?.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm font-medium">Equity:</span>
-                <span className="text-sm font-mono">
-                  ${account405691964?.equity?.toFixed(2) || "0.00"}
-                </span>
+                <span className="text-sm font-mono">${account405691964?.equity?.toFixed(2) || '0.00'}</span>
               </div>
             </div>
-
+            
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-sm font-medium">SecBot Bypass:</span>
-                <Badge
-                  variant={
-                    bypassStatus?.secbot_bypassed ? "default" : "destructive"
-                  }
-                >
-                  {bypassStatus?.secbot_bypassed ? "SUCCESS" : "FAILED"}
+                <Badge variant={bypassStatus?.secbot_bypassed ? "default" : "destructive"}>
+                  {bypassStatus?.secbot_bypassed ? 'SUCCESS' : 'FAILED'}
                 </Badge>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm font-medium">Connection:</span>
-                <Badge
-                  variant={
-                    bypassStatus?.connection_active ? "default" : "secondary"
-                  }
-                >
-                  {bypassStatus?.connection_active ? "ACTIVE" : "INACTIVE"}
+                <Badge variant={bypassStatus?.connection_active ? "default" : "secondary"}>
+                  {bypassStatus?.connection_active ? 'ACTIVE' : 'INACTIVE'}
                 </Badge>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm font-medium">Free Margin:</span>
-                <span className="text-sm font-mono">
-                  ${account405691964?.freeMargin?.toFixed(2) || "0.00"}
-                </span>
+                <span className="text-sm font-mono">${account405691964?.freeMargin?.toFixed(2) || '0.00'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm font-medium">Last Sync:</span>
                 <span className="text-sm">
-                  {bypassStatus?.last_sync
-                    ? new Date(bypassStatus.last_sync).toLocaleString("vi-VN")
-                    : "N/A"}
+                  {bypassStatus?.last_sync ? new Date(bypassStatus.last_sync).toLocaleString('vi-VN') : 'N/A'}
                 </span>
               </div>
             </div>
@@ -231,21 +200,15 @@ export default function SecBotBypassDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div className="flex justify-between">
                 <span>Active Bypasses:</span>
-                <span className="font-mono">
-                  {bypassStatus.bypass_system.active_bypasses}
-                </span>
+                <span className="font-mono">{bypassStatus.bypass_system.active_bypasses}</span>
               </div>
               <div className="flex justify-between">
                 <span>Encryption Keys:</span>
-                <span className="font-mono">
-                  {bypassStatus.bypass_system.encryption_keys_active}
-                </span>
+                <span className="font-mono">{bypassStatus.bypass_system.encryption_keys_active}</span>
               </div>
               <div className="flex justify-between">
                 <span>System Status:</span>
-                <Badge variant="default">
-                  {bypassStatus.bypass_system.status}
-                </Badge>
+                <Badge variant="default">{bypassStatus.bypass_system.status}</Badge>
               </div>
             </div>
           </CardContent>
@@ -254,8 +217,7 @@ export default function SecBotBypassDashboard() {
 
       {/* Live Updates */}
       <div className="text-xs text-muted-foreground text-center">
-        Cập nhật tự động mỗi 5 giây • Lần cập nhật cuối:{" "}
-        {new Date().toLocaleString("vi-VN")}
+        Cập nhật tự động mỗi 5 giây • Lần cập nhật cuối: {new Date().toLocaleString('vi-VN')}
       </div>
     </div>
   );

@@ -1,14 +1,11 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { brokerIntegration } from "./broker-integration";
-import { forexNewsChecker } from "./forex-news-checker";
-import { tradingSignals } from "./trading-signals";
-import { signalProcessor } from "./signal-processor";
-import { liquidityScanner } from "./liquidity-scanner";
-import enhancedGoldAttackRoutes from "./enhanced-gold-attack-routes";
-import enhancedForexApiRoutes from "./enhanced-forex-api-routes";
-import marketComplianceRoutes from "./market-compliance-routes";
+import { brokerIntegration } from './broker-integration';
+import { forexNewsChecker } from './forex-news-checker';
+import { tradingSignals } from './trading-signals';
+import { signalProcessor } from './signal-processor';
+import { liquidityScanner } from './liquidity-scanner';
 
 const app = express();
 app.use(express.json());
@@ -64,43 +61,15 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  app.use("/api/enhanced-gold", enhancedGoldAttackRoutes);
-  app.use("/api/enhanced-forex", enhancedForexApiRoutes);
-  app.use("/api/market-compliance", marketComplianceRoutes);
-
-  const PORT = process.env.PORT || 5000;
-
-  // Function to kill existing process on port
-  async function killPortProcess(port: number) {
-    try {
-      const { exec } = require('child_process');
-      await new Promise((resolve) => {
-        exec(`lsof -ti:${port} | xargs kill -9`, (error: any) => {
-          resolve(null);
-        });
-      });
-      console.log(`✅ Cleared port ${port}`);
-    } catch (error) {
-      // Ignore errors, port might already be free
-    }
-  }
-
-  // Clear port before starting
-  killPortProcess(PORT).then(() => {
-    const server = app.listen(PORT, "0.0.0.0", () => {
-      console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
-      console.log(`🏛️ Federal Reserve Control System active`);
-    });
-
-    server.on('error', (err: any) => {
-      if (err.code === 'EADDRINUSE') {
-        console.log(`❌ Port ${PORT} still in use, retrying...`);
-        setTimeout(() => {
-          killPortProcess(PORT).then(() => {
-            server.listen(PORT, "0.0.0.0");
-          });
-        }, 2000);
-      }
-    });
+  // ALWAYS serve the app on port 5000
+  // this serves both the API and the client.
+  // It is the only port that is not firewalled.
+  const port = 5000;
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
   });
 })();

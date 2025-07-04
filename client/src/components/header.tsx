@@ -1,10 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import { Bell, User, TrendingUp } from "lucide-react";
-import { formatCurrency } from "@/lib/trading-utils";
+import { useQuery } from '@tanstack/react-query';
+import { Bell, User, TrendingUp } from 'lucide-react';
+import { formatCurrency } from '@/lib/trading-utils';
 
 export default function Header() {
   const { data: account } = useQuery({
-    queryKey: ["/api/account"],
+    queryKey: ['/api/account'],
   });
 
   return (
@@ -18,59 +18,40 @@ export default function Header() {
             <h1 className="text-xl font-bold text-white">VNForexX</h1>
           </div>
           <nav className="hidden md:flex space-x-6">
-            <a
-              href="/"
-              className="trading-text-success hover:text-white transition-colors"
-            >
+            <a href="/" className="trading-text-success hover:text-white transition-colors">
               Terminal
             </a>
-            <a
-              href="/attack-control"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
+            <a href="/attack-control" className="text-gray-400 hover:text-white transition-colors">
               Tấn công SJC
             </a>
-            <a
-              href="/world-gold"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
+            <a href="/world-gold" className="text-gray-400 hover:text-white transition-colors">
               Vàng Thế giới
             </a>
-            <a
-              href="/twelvedata"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              TwelveData
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              Telegram Bot
             </a>
           </nav>
         </div>
-
+        
         <div className="flex items-center space-x-6">
           <div className="text-right">
             <div className="text-sm text-gray-400">Account Balance</div>
             <div className="text-lg font-semibold trading-text-success">
-              {account ? formatCurrency(account.balance) : "$10,247.83"}
+              {account ? formatCurrency(account.balance) : '$10,247.83'}
             </div>
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-400">Equity</div>
             <div className="text-lg font-semibold text-white">
-              {account ? formatCurrency(account.equity) : "$10,359.21"}
+              {account ? formatCurrency(account.equity) : '$10,359.21'}
             </div>
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-400">P&L</div>
-            <div
-              className={`text-lg font-semibold ${
-                account && parseFloat(account.pnl) >= 0
-                  ? "trading-text-success"
-                  : "trading-text-danger"
-              }`}
-            >
-              {account
-                ? (parseFloat(account.pnl) >= 0 ? "+" : "") +
-                  formatCurrency(account.pnl)
-                : "+$111.38"}
+            <div className={`text-lg font-semibold ${
+              account && parseFloat(account.pnl) >= 0 ? 'trading-text-success' : 'trading-text-danger'
+            }`}>
+              {account ? (parseFloat(account.pnl) >= 0 ? '+' : '') + formatCurrency(account.pnl) : '+$111.38'}
             </div>
           </div>
           <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
