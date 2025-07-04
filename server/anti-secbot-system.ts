@@ -103,7 +103,7 @@ export class AntiSecBotSystem extends EventEmitter {
     if (!this.config.enableProtection) return false;
 
     const responseText = typeof response === 'string' ? response : JSON.stringify(response);
-    
+
     const brokers = Array.from(this.detectedPatterns.keys());
     for (const broker of brokers) {
       const pattern = this.detectedPatterns.get(broker)!;
@@ -153,7 +153,7 @@ export class AntiSecBotSystem extends EventEmitter {
 
     // Header spoofing
     const spoofedHeaders = this.generateSpoofedHeaders();
-    
+
     // Timing randomization
     const delay = Math.random() * 2000 + 1000;
     await this.sleep(delay);
@@ -166,13 +166,13 @@ export class AntiSecBotSystem extends EventEmitter {
 
   private async executeThrottleStrategy(broker: string, endpoint: string): Promise<void> {
     console.log(`🐌 Executing throttle strategy for ${broker}`);
-    
+
     const history = this.requestHistory.get(endpoint) || [];
     const now = Date.now();
-    
+
     // Remove old requests (older than 1 minute)
     const recentRequests = history.filter(time => now - time < 60000);
-    
+
     if (recentRequests.length >= 10) {
       const waitTime = this.config.cooldownPeriod * (recentRequests.length - 9);
       console.log(`⏱️ Throttling ${broker} requests for ${waitTime}ms`);
@@ -185,10 +185,10 @@ export class AntiSecBotSystem extends EventEmitter {
 
   private async executeRedirectStrategy(broker: string, endpoint: string): Promise<void> {
     console.log(`🔄 Executing redirect strategy for ${broker}`);
-    
+
     // Try alternative endpoints
     const alternativeEndpoints = this.getAlternativeEndpoints(broker);
-    
+
     for (const altEndpoint of alternativeEndpoints) {
       console.log(`🎯 Trying alternative endpoint: ${altEndpoint}`);
       // This would be implemented with actual endpoint switching logic
@@ -198,7 +198,7 @@ export class AntiSecBotSystem extends EventEmitter {
 
   private generateSpoofedHeaders(): Record<string, string> {
     const randomUA = this.userAgents[Math.floor(Math.random() * this.userAgents.length)];
-    
+
     return {
       'User-Agent': randomUA,
       'Accept': 'application/json, text/plain, */*',
@@ -257,7 +257,7 @@ export class AntiSecBotSystem extends EventEmitter {
     await this.sleep(Math.random() * 1000);
 
     const ws = new WebSocket(url, protectedOptions);
-    
+
     ws.on('message', (data) => {
       this.detectSecBotInterference(url, data.toString());
     });
@@ -274,10 +274,10 @@ export class AntiSecBotSystem extends EventEmitter {
   private analyzeTrafficPatterns(): void {
     // Analyze request patterns and adjust protection accordingly
     const now = Date.now();
-    
+
     this.requestHistory.forEach((history, endpoint) => {
       const recentRequests = history.filter((time: number) => now - time < 300000); // Last 5 minutes
-      
+
       if (recentRequests.length > 50) {
         console.log(`⚠️ High traffic detected on ${endpoint}: ${recentRequests.length} requests in 5 minutes`);
         this.emit('high_traffic', { endpoint, count: recentRequests.length });

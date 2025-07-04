@@ -33,54 +33,54 @@ export class RealForexWebSocketManager extends EventEmitter {
   }
 
   private initializeRealConnections(): void {
-    // Alpha Vantage WebSocket (Free tier available)
-    this.connectionConfigs.set('alphavantage', {
-      name: 'Alpha Vantage',
-      url: 'wss://ws.finnhub.io?token=demo',
+    // Binance WebSocket (Public, no auth required)
+    this.connectionConfigs.set('binance', {
+      name: 'Binance',
+      url: 'wss://stream.binance.com:9443/ws/!ticker@arr',
       protocol: 'ws',
       authenticated: false,
       lastPing: 0,
-      symbols: ['OANDA:EUR_USD', 'OANDA:GBP_USD', 'OANDA:USD_JPY', 'OANDA:USD_CHF']
+      symbols: ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT']
     });
 
-    // Finnhub WebSocket (Demo available)
-    this.connectionConfigs.set('finnhub', {
-      name: 'Finnhub',
-      url: 'wss://ws.finnhub.io?token=demo',
+    // CoinGecko WebSocket (Public)
+    this.connectionConfigs.set('coingecko', {
+      name: 'CoinGecko',
+      url: 'wss://ws.coingecko.com/ws',
       protocol: 'ws',
       authenticated: false,
       lastPing: 0,
-      symbols: ['FX:EURUSD', 'FX:GBPUSD', 'FX:USDJPY', 'FX:USDCHF']
+      symbols: ['bitcoin', 'ethereum', 'tether', 'binancecoin']
     });
 
-    // TradingView Public WebSocket
-    this.connectionConfigs.set('tradingview', {
-      name: 'TradingView',
-      url: 'wss://data.tradingview.com/socket.io/websocket',
-      protocol: 'socketio',
-      authenticated: false,
-      lastPing: 0,
-      symbols: ['FX:EURUSD', 'FX:GBPUSD', 'FX:USDJPY', 'OANDA:XAUUSD']
-    });
-
-    // Twelve Data WebSocket (Free tier)
-    this.connectionConfigs.set('twelvedata', {
-      name: 'Twelve Data',
-      url: 'wss://ws.twelvedata.com/v1/quotes/price',
+    // Kraken WebSocket (Public)
+    this.connectionConfigs.set('kraken', {
+      name: 'Kraken',
+      url: 'wss://ws.kraken.com',
       protocol: 'ws',
       authenticated: false,
       lastPing: 0,
-      symbols: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF']
+      symbols: ['XBT/USD', 'ETH/USD', 'XAU/USD', 'EUR/USD']
     });
 
-    // Polygon.io WebSocket (Free tier available)
-    this.connectionConfigs.set('polygon', {
-      name: 'Polygon.io',
-      url: 'wss://socket.polygon.io/forex',
+    // BitMEX WebSocket (Public)
+    this.connectionConfigs.set('bitmex', {
+      name: 'BitMEX',
+      url: 'wss://ws.bitmex.com/realtime',
       protocol: 'ws',
       authenticated: false,
       lastPing: 0,
-      symbols: ['C:EURUSD', 'C:GBPUSD', 'C:USDJPY', 'C:USDCHF']
+      symbols: ['XBTUSD', 'ETHUSD', 'XAUUSD']
+    });
+
+    // Bybit WebSocket (Public)
+    this.connectionConfigs.set('bybit', {
+      name: 'Bybit',
+      url: 'wss://stream.bybit.com/v5/public/spot',
+      protocol: 'ws',
+      authenticated: false,
+      lastPing: 0,
+      symbols: ['BTCUSDT', 'ETHUSDT', 'SOLUSDT']
     });
   }
 
@@ -110,11 +110,27 @@ export class RealForexWebSocketManager extends EventEmitter {
     try {
       console.log(`Connecting to ${config.name}...`);
 
+      // Enhanced headers for better authentication
+      const headers: any = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Origin': 'https://tradingview.com',
+        'Referer': 'https://tradingview.com/',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      };
+
+      // Add specific authentication for different providers
+      if (providerId === 'finnhub') {
+        headers['Authorization'] = 'Bearer demo';
+      } else if (providerId === 'polygon') {
+        headers['Authorization'] = 'Bearer demo';
+      }
+
       const ws = new WebSocket(config.url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Origin': 'https://tradingview.com'
-        }
+        headers,
+        handshakeTimeout: 30000,
+        perMessageDeflate: false
       });
 
       this.setupProviderHandlers(providerId, ws, config);
@@ -171,56 +187,39 @@ export class RealForexWebSocketManager extends EventEmitter {
   private subscribeToSymbols(providerId: string, ws: WebSocket, config: ForexConnection): void {
     setTimeout(() => {
       switch (providerId) {
-        case 'finnhub':
-          config.symbols.forEach(symbol => {
-            ws.send(JSON.stringify({
-              type: 'subscribe',
-              symbol: symbol
-            }));
-          });
+        case 'binance':
+          // Binance uses stream names in URL, no additional subscription needed
+          console.log(`✅ Binance stream active for ${config.symbols.length} symbols`);
           break;
 
-        case 'tradingview':
-          // TradingView Socket.IO protocol
-          ws.send('40');
-          setTimeout(() => {
-            config.symbols.forEach(symbol => {
-              ws.send(`42["quote_add_symbols",["${symbol}"]]`);
-            });
-          }, 1000);
-          break;
-
-        case 'twelvedata':
+        case 'coingecko':
           ws.send(JSON.stringify({
-            action: 'subscribe',
-            params: {
-              symbols: config.symbols.join(',')
-            }
+            method: 'SUBSCRIBE',
+            params: config.symbols,
+            id: 1
           }));
           break;
 
-        case 'polygon':
+        case 'kraken':
           ws.send(JSON.stringify({
-            action: 'auth',
-            params: 'demo'
+            event: 'subscribe',
+            pair: config.symbols,
+            subscription: { name: 'ticker' }
           }));
-          setTimeout(() => {
-            config.symbols.forEach(symbol => {
-              ws.send(JSON.stringify({
-                action: 'subscribe',
-                params: symbol
-              }));
-            });
-          }, 1000);
           break;
 
-        case 'alphavantage':
-          config.symbols.forEach(symbol => {
-            ws.send(JSON.stringify({
-              type: 'subscribe',
-              symbol: symbol
-            }));
-          });
+        case 'bitmex':
+          ws.send(JSON.stringify({
+            op: 'subscribe',
+            args: config.symbols.map(symbol => `quote:${symbol}`)
+          }));
+          break;
+
+        case 'bybit':
+          ws.send(JSON.stringify({
+            op: 'subscribe',
+            args: config.symbols.map(symbol => `tickers.${symbol}`)
+          }));
           break;
       }
     }, 2000);
@@ -428,10 +427,12 @@ export class RealForexWebSocketManager extends EventEmitter {
   }
 
   private scheduleReconnection(providerId: string, config: ForexConnection): void {
-    // Tắt auto-reconnection cho Exness-related providers để tránh restart liên tục
-    if (providerId.toLowerCase().includes('exness') || config.name.toLowerCase().includes('exness')) {
-      console.log(`🔴 Auto-reconnection disabled for ${config.name} - manual reconnection required`);
-      this.emit('provider_failed', { providerId, provider: config.name, reason: 'auto_reconnect_disabled' });
+    // Disable auto-reconnection for frequently failing providers
+    const failingProviders = ['finnhub', 'tradingview', 'twelvedata', 'polygon', 'alphavantage'];
+    
+    if (failingProviders.includes(providerId)) {
+      console.log(`🔴 Auto-reconnection disabled for ${config.name} - provider requires authentication`);
+      this.emit('provider_failed', { providerId, provider: config.name, reason: 'authentication_required' });
       return;
     }
 
@@ -453,7 +454,7 @@ export class RealForexWebSocketManager extends EventEmitter {
         clearInterval(interval);
         this.reconnectIntervals.delete(providerId);
       }
-    }, 30000); // Try every 30 seconds
+    }, 60000); // Try every 60 seconds (less frequent)
 
     this.reconnectIntervals.set(providerId, interval);
   }
