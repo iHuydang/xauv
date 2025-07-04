@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 
 export interface TelegramBotConfig {
   botToken: string;
@@ -38,27 +38,27 @@ export class TelegramGoldBot extends EventEmitter {
 
   async sendGoldPriceUpdate(): Promise<boolean> {
     try {
-      console.log('📱 Chuẩn bị gửi cập nhật giá vàng qua Telegram...');
+      console.log("📱 Chuẩn bị gửi cập nhật giá vàng qua Telegram...");
 
       // Get Vietnam gold prices
-      const { quickAttackSystem } = await import('./quick-attack-system.js');
+      const { quickAttackSystem } = await import("./quick-attack-system.js");
       const vietnamGold = await quickAttackSystem.scanLiquidityTargets();
 
       // Get world gold price
-      const { worldGoldScanner } = await import('./world-gold-scanner.js');
+      const { worldGoldScanner } = await import("./world-gold-scanner.js");
       const worldGold = await worldGoldScanner.scanWorldGoldPrice();
 
       if (!worldGold) {
-        console.error('❌ Không thể lấy giá vàng thế giới');
+        console.error("❌ Không thể lấy giá vàng thế giới");
         return false;
       }
 
       // Find SJC and PNJ data
-      const sjcData = vietnamGold.find((item: any) => item.source === 'SJC');
-      const pnjData = vietnamGold.find((item: any) => item.source === 'PNJ');
+      const sjcData = vietnamGold.find((item: any) => item.source === "SJC");
+      const pnjData = vietnamGold.find((item: any) => item.source === "PNJ");
 
       if (!sjcData || !pnjData) {
-        console.error('❌ Không thể lấy giá vàng SJC/PNJ');
+        console.error("❌ Không thể lấy giá vàng SJC/PNJ");
         return false;
       }
 
@@ -73,27 +73,36 @@ export class TelegramGoldBot extends EventEmitter {
           sjc: {
             buy: sjcData.buyPrice,
             sell: sjcData.sellPrice,
-            spread: sjcData.spread
+            spread: sjcData.spread,
           },
           pnj: {
             buy: pnjData.buyPrice,
             sell: pnjData.sellPrice,
-            spread: pnjData.spread
-          }
+            spread: pnjData.spread,
+          },
         },
         worldGold: {
           price: worldGold.price,
           change24h: worldGold.change24h,
           changePercent: worldGold.changePercent24h,
           bid: worldGold.bid,
-          ask: worldGold.ask
+          ask: worldGold.ask,
         },
         analysis: {
           arbitrageOpportunity,
-          recommendation: this.generateRecommendation(arbitrageOpportunity, sjcData, worldGold),
-          riskLevel: arbitrageOpportunity > 500000 ? 'CAO' : arbitrageOpportunity > 200000 ? 'TRUNG BÌNH' : 'THẤP'
+          recommendation: this.generateRecommendation(
+            arbitrageOpportunity,
+            sjcData,
+            worldGold,
+          ),
+          riskLevel:
+            arbitrageOpportunity > 500000
+              ? "CAO"
+              : arbitrageOpportunity > 200000
+                ? "TRUNG BÌNH"
+                : "THẤP",
         },
-        timestamp: new Date().toLocaleString('vi-VN')
+        timestamp: new Date().toLocaleString("vi-VN"),
       };
 
       // Format and send message
@@ -101,14 +110,13 @@ export class TelegramGoldBot extends EventEmitter {
       const success = await this.sendTelegramMessage(formattedMessage);
 
       if (success) {
-        console.log('✅ Đã gửi cập nhật giá vàng qua Telegram');
-        this.emit('messageSent', message);
+        console.log("✅ Đã gửi cập nhật giá vàng qua Telegram");
+        this.emit("messageSent", message);
       }
 
       return success;
-
     } catch (error) {
-      console.error('❌ Lỗi khi gửi cập nhật Telegram:', error);
+      console.error("❌ Lỗi khi gửi cập nhật Telegram:", error);
       return false;
     }
   }
@@ -132,7 +140,7 @@ export class TelegramGoldBot extends EventEmitter {
 
 **🌍 VÀNG THẾ GIỚI:**
 ┌ Giá hiện tại: $${worldGold.price}/oz
-├ Thay đổi 24h: ${worldGold.change24h > 0 ? '+' : ''}${worldGold.change24h} (${worldGold.changePercent}%)
+├ Thay đổi 24h: ${worldGold.change24h > 0 ? "+" : ""}${worldGold.change24h} (${worldGold.changePercent}%)
 ├ Bid/Ask: $${worldGold.bid.toFixed(2)}/$${worldGold.ask.toFixed(2)}
 └ Thanh khoản: ${this.getLiquidityStatus(worldGold)}
 
@@ -151,25 +159,29 @@ export class TelegramGoldBot extends EventEmitter {
 *Được tạo bởi Hệ thống Tấn công Thanh khoản ODANA*`;
   }
 
-  private generateRecommendation(arbitrage: number, sjcData: any, worldGold: any): string {
+  private generateRecommendation(
+    arbitrage: number,
+    sjcData: any,
+    worldGold: any,
+  ): string {
     if (arbitrage > 500000) {
-      return '🚨 CƠ HỘI ARBITRAGE CAO - TẤN CÔNG NGAY';
+      return "🚨 CƠ HỘI ARBITRAGE CAO - TẤN CÔNG NGAY";
     } else if (arbitrage > 200000) {
-      return '⚠️ Cơ hội vừa phải - Theo dõi thêm';
-    } else if (sjcData.liquidityLevel === 'low') {
-      return '🎯 SJC thanh khoản thấp - Tấn công áp lực';
+      return "⚠️ Cơ hội vừa phải - Theo dõi thêm";
+    } else if (sjcData.liquidityLevel === "low") {
+      return "🎯 SJC thanh khoản thấp - Tấn công áp lực";
     } else if (Math.abs(worldGold.changePercent24h) > 2) {
-      return '📊 Biến động cao - Cẩn trọng giao dịch';
+      return "📊 Biến động cao - Cẩn trọng giao dịch";
     } else {
-      return '😌 Thị trường ổn định - Chờ cơ hội';
+      return "😌 Thị trường ổn định - Chờ cơ hội";
     }
   }
 
   private getLiquidityStatus(worldGold: any): string {
     const spread = ((worldGold.ask - worldGold.bid) / worldGold.price) * 100;
-    if (spread < 0.1) return 'CAO 🟢';
-    if (spread < 0.3) return 'TRUNG BÌNH 🟡';
-    return 'THẤP 🔴';
+    if (spread < 0.1) return "CAO 🟢";
+    if (spread < 0.3) return "TRUNG BÌNH 🟡";
+    return "THẤP 🔴";
   }
 
   private async sendTelegramMessage(message: string): Promise<boolean> {
@@ -178,85 +190,85 @@ export class TelegramGoldBot extends EventEmitter {
       const payload = {
         chat_id: this.config.chatId,
         text: message,
-        parse_mode: 'Markdown',
-        disable_web_page_preview: true
+        parse_mode: "Markdown",
+        disable_web_page_preview: true,
       };
 
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
-        console.log('✅ Tin nhắn Telegram đã được gửi thành công');
+        console.log("✅ Tin nhắn Telegram đã được gửi thành công");
         return true;
       } else {
         const errorData = await response.json();
-        console.error('❌ Lỗi gửi Telegram:', errorData);
+        console.error("❌ Lỗi gửi Telegram:", errorData);
         return false;
       }
-
     } catch (error) {
-      console.error('❌ Lỗi kết nối Telegram API:', error);
+      console.error("❌ Lỗi kết nối Telegram API:", error);
       return false;
     }
   }
 
   async handleTelegramCommand(command: string, chatId: string): Promise<void> {
     try {
-      let response = '';
+      let response = "";
 
       switch (command.toLowerCase()) {
-        case '/gold':
-        case '/start':
+        case "/gold":
+        case "/start":
           await this.sendGoldPriceUpdate();
           return;
 
-        case '/analyze':
+        case "/analyze":
           response = await this.getDetailedAnalysis();
           break;
 
-        case '/attack':
+        case "/attack":
           response = await this.executeSJCAttack();
           break;
 
-        case '/world':
+        case "/world":
           response = await this.executeWorldGoldAttack();
           break;
 
-        case '/monitor':
+        case "/monitor":
           response = this.toggleMonitoring();
           break;
 
-        case '/help':
+        case "/help":
           response = this.getHelpMessage();
           break;
 
         default:
-          response = '❓ Lệnh không hợp lệ. Gửi /help để xem danh sách lệnh.';
+          response = "❓ Lệnh không hợp lệ. Gửi /help để xem danh sách lệnh.";
       }
 
       if (response) {
         await this.sendTelegramMessage(response);
       }
-
     } catch (error) {
-      console.error('❌ Lỗi xử lý lệnh Telegram:', error);
-      await this.sendTelegramMessage('❌ Có lỗi xảy ra khi xử lý lệnh của bạn.');
+      console.error("❌ Lỗi xử lý lệnh Telegram:", error);
+      await this.sendTelegramMessage(
+        "❌ Có lỗi xảy ra khi xử lý lệnh của bạn.",
+      );
     }
   }
 
   private async getDetailedAnalysis(): Promise<string> {
     try {
-      const { worldGoldScanner } = await import('./world-gold-scanner.js');
+      const { worldGoldScanner } = await import("./world-gold-scanner.js");
       const goldData = await worldGoldScanner.scanWorldGoldPrice();
-      
+
       if (goldData) {
         const analysis = worldGoldScanner.analyzeLiquidityOpportunity(goldData);
-        
+
         return `📊 **PHÂN TÍCH CHI TIẾT**
 
 **Điểm cơ hội:** ${analysis.opportunityScore}/100
@@ -265,20 +277,20 @@ export class TelegramGoldBot extends EventEmitter {
 **Lợi nhuận ước tính:** $${analysis.estimatedProfit}
 **Độ tin cậy:** ${analysis.confidence.toFixed(1)}%
 
-${analysis.opportunityScore > 60 ? '🚨 **KHUYẾN NGHỊ THỰC HIỆN TẤN CÔNG!**' : '⏳ Chờ cơ hội tốt hơn'}`;
+${analysis.opportunityScore > 60 ? "🚨 **KHUYẾN NGHỊ THỰC HIỆN TẤN CÔNG!**" : "⏳ Chờ cơ hội tốt hơn"}`;
       }
-      
-      return '❌ Không thể lấy dữ liệu phân tích';
+
+      return "❌ Không thể lấy dữ liệu phân tích";
     } catch (error) {
-      return '❌ Lỗi khi phân tích dữ liệu';
+      return "❌ Lỗi khi phân tích dữ liệu";
     }
   }
 
   private async executeSJCAttack(): Promise<string> {
     try {
-      const { quickAttackSystem } = await import('./quick-attack-system.js');
-      const result = await quickAttackSystem.executeSJCPressureAttack('HIGH');
-      
+      const { quickAttackSystem } = await import("./quick-attack-system.js");
+      const result = await quickAttackSystem.executeSJCPressureAttack("HIGH");
+
       return `⚔️ **TẤN CÔNG SJC HOÀN THÀNH**
 
 **ID Tấn công:** ${result.attackId}
@@ -291,17 +303,17 @@ ${analysis.opportunityScore > 60 ? '🚨 **KHUYẾN NGHỊ THỰC HIỆN TẤN C
 
 **Kết quả:** ${result.status}
 **Khuyến nghị:** ${result.recommendation}`;
-
     } catch (error) {
-      return '❌ Không thể thực hiện tấn công SJC';
+      return "❌ Không thể thực hiện tấn công SJC";
     }
   }
 
   private async executeWorldGoldAttack(): Promise<string> {
     try {
-      const { worldGoldScanner } = await import('./world-gold-scanner.js');
-      const result = await worldGoldScanner.executeLiquidityAttack('SPOT_PRESSURE');
-      
+      const { worldGoldScanner } = await import("./world-gold-scanner.js");
+      const result =
+        await worldGoldScanner.executeLiquidityAttack("SPOT_PRESSURE");
+
       return `🌍 **TẤN CÔNG VÀNG THẾ GIỚI HOÀN THÀNH**
 
 **ID Tấn công:** ${result.attackId}
@@ -313,16 +325,15 @@ ${analysis.opportunityScore > 60 ? '🚨 **KHUYẾN NGHỊ THỰC HIỆN TẤN C
 **Tác động thị trường:** ${result.marketImpact.toFixed(2)}%
 
 **Trạng thái:** ${result.status}`;
-
     } catch (error) {
-      return '❌ Không thể thực hiện tấn công vàng thế giới';
+      return "❌ Không thể thực hiện tấn công vàng thế giới";
     }
   }
 
   private toggleMonitoring(): string {
     if (this.isRunning) {
       this.stopAutoUpdates();
-      return '⏹️ **ĐÃ DỪNG GIÁM SÁT TỰ ĐỘNG**\n\nSử dụng /monitor để bật lại.';
+      return "⏹️ **ĐÃ DỪNG GIÁM SÁT TỰ ĐỘNG**\n\nSử dụng /monitor để bật lại.";
     } else {
       this.startAutoUpdates();
       return `🔄 **ĐÃ BẬT GIÁM SÁT TỰ ĐỘNG**\n\nCập nhật mỗi ${this.config.updateInterval} phút.\nSử dụng /monitor để tắt.`;
@@ -350,22 +361,27 @@ ${analysis.opportunityScore > 60 ? '🚨 **KHUYẾN NGHỊ THỰC HIỆN TẤN C
 
   startAutoUpdates(): void {
     if (this.isRunning) {
-      console.log('⚠️ Auto-updates đã đang chạy');
+      console.log("⚠️ Auto-updates đã đang chạy");
       return;
     }
 
-    console.log(`🔄 Bắt đầu cập nhật tự động mỗi ${this.config.updateInterval} phút`);
+    console.log(
+      `🔄 Bắt đầu cập nhật tự động mỗi ${this.config.updateInterval} phút`,
+    );
     this.isRunning = true;
 
     // Send initial update
     this.sendGoldPriceUpdate();
 
     // Set up recurring updates
-    this.updateTimer = setInterval(() => {
-      this.sendGoldPriceUpdate();
-    }, this.config.updateInterval * 60 * 1000);
+    this.updateTimer = setInterval(
+      () => {
+        this.sendGoldPriceUpdate();
+      },
+      this.config.updateInterval * 60 * 1000,
+    );
 
-    this.emit('autoUpdatesStarted');
+    this.emit("autoUpdatesStarted");
   }
 
   stopAutoUpdates(): void {
@@ -374,8 +390,8 @@ ${analysis.opportunityScore > 60 ? '🚨 **KHUYẾN NGHỊ THỰC HIỆN TẤN C
       this.updateTimer = null;
     }
     this.isRunning = false;
-    console.log('⏹️ Đã dừng cập nhật tự động');
-    this.emit('autoUpdatesStopped');
+    console.log("⏹️ Đã dừng cập nhật tự động");
+    this.emit("autoUpdatesStopped");
   }
 
   isAutoUpdating(): boolean {
@@ -384,7 +400,7 @@ ${analysis.opportunityScore > 60 ? '🚨 **KHUYẾN NGHỊ THỰC HIỆN TẤN C
 
   updateConfig(newConfig: Partial<TelegramBotConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     if (this.isRunning) {
       this.stopAutoUpdates();
       this.startAutoUpdates();
@@ -394,7 +410,7 @@ ${analysis.opportunityScore > 60 ? '🚨 **KHUYẾN NGHỊ THỰC HIỆN TẤN C
 
 // Export singleton instance
 export const telegramGoldBot = new TelegramGoldBot({
-  botToken: process.env.TELEGRAM_BOT_TOKEN || '',
-  chatId: process.env.TELEGRAM_CHAT_ID || '',
-  updateInterval: 30 // 30 minutes
+  botToken: process.env.TELEGRAM_BOT_TOKEN || "",
+  chatId: process.env.TELEGRAM_CHAT_ID || "",
+  updateInterval: 30, // 30 minutes
 });

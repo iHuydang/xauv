@@ -1,6 +1,6 @@
-import WebSocket from 'ws';
-import { EventEmitter } from 'events';
-import { exnessStabilityManager } from './exness-stability-manager';
+import WebSocket from "ws";
+import { EventEmitter } from "events";
+import { exnessStabilityManager } from "./exness-stability-manager";
 
 export interface ExnessMT5Account {
   accountId: string;
@@ -16,12 +16,12 @@ export interface MT5Trade {
   accountId: string;
   symbol: string;
   volume: number;
-  orderType: 'buy' | 'sell';
+  orderType: "buy" | "sell";
   openPrice: number;
   currentPrice: number;
   profit: number;
   openTime: Date;
-  status: 'open' | 'closed';
+  status: "open" | "closed";
 }
 
 export class ExnessMT5Connection extends EventEmitter {
@@ -37,17 +37,17 @@ export class ExnessMT5Connection extends EventEmitter {
   constructor() {
     super();
     this.account = {
-      accountId: '205307242',
-      password: 'Dmcs@1959',
-      server: 'Exness-MT5Trial7',
-      wsUrl: 'wss://rtapi-sg.excalls.mobi/rtapi/mt5/trial7',
+      accountId: "205307242",
+      password: "Dmcs@1959",
+      server: "Exness-MT5Trial7",
+      wsUrl: "wss://rtapi-sg.excalls.mobi/rtapi/mt5/trial7",
       isConnected: false,
-      lastHeartbeat: new Date()
+      lastHeartbeat: new Date(),
     };
-    
+
     // Đăng ký với stability manager
     exnessStabilityManager.registerAccount(this.account.accountId);
-    
+
     // Chỉ khởi tạo một lần, không reset
     if (!this.isInitialized) {
       this.connectToExistingWebSockets();
@@ -56,96 +56,98 @@ export class ExnessMT5Connection extends EventEmitter {
   }
 
   private async connectToExistingWebSockets(): Promise<void> {
-    console.log('Kết nối WebSocket Exness có sẵn...');
+    console.log("Kết nối WebSocket Exness có sẵn...");
     console.log(`Account: ${this.account.accountId} - Đã xác thực`);
-    
+
     // Kết nối RT API có sẵn
     this.connectToRtApi();
-    
+
     // Thêm Terminal WebSocket như yêu cầu
     this.connectToTerminal();
-    
+
     // Đánh dấu là đã kết nối
     this.account.isConnected = true;
     this.startHeartbeat();
-    
+
     // Emit authenticated event
-    this.emit('authenticated', {
+    this.emit("authenticated", {
       accountId: this.account.accountId,
       balance: 10000,
       equity: 10247.83,
-      server: this.account.server
+      server: this.account.server,
     });
-    
-    console.log('Account authenticated and ready for trading');
+
+    console.log("Account authenticated and ready for trading");
   }
 
   private connectToRtApi(): void {
     if (this.rtApiWs && this.rtApiWs.readyState === WebSocket.OPEN) {
-      console.log('RT API WebSocket đã kết nối sẵn');
+      console.log("RT API WebSocket đã kết nối sẵn");
       return;
     }
 
-    console.log('Kết nối RT API:', this.account.wsUrl);
-    
+    console.log("Kết nối RT API:", this.account.wsUrl);
+
     this.rtApiWs = new WebSocket(this.account.wsUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Origin': 'https://trade.exness.com'
-      }
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        Origin: "https://trade.exness.com",
+      },
     });
 
-    this.rtApiWs.on('open', () => {
-      console.log('RT API WebSocket connected');
+    this.rtApiWs.on("open", () => {
+      console.log("RT API WebSocket connected");
     });
 
-    this.rtApiWs.on('message', (data: Buffer) => {
+    this.rtApiWs.on("message", (data: Buffer) => {
       this.handleRtApiMessage(data);
     });
 
-    this.rtApiWs.on('error', (error) => {
-      console.log('RT API working in simulation mode');
+    this.rtApiWs.on("error", (error) => {
+      console.log("RT API working in simulation mode");
       // Không auto-reconnect để tránh restart liên tục
     });
 
-    this.rtApiWs.on('close', (code, reason) => {
+    this.rtApiWs.on("close", (code, reason) => {
       console.log(`RT API WebSocket closed: ${code} ${reason}`);
       if (this.autoReconnectEnabled) {
-        console.log('Auto-reconnect disabled - manual reconnection required');
+        console.log("Auto-reconnect disabled - manual reconnection required");
       }
     });
   }
 
   private connectToTerminal(): void {
-    const terminalUrl = 'wss://terminal.exness.com';
-    
-    console.log('Kết nối Terminal WebSocket:', terminalUrl);
-    
+    const terminalUrl = "wss://terminal.exness.com";
+
+    console.log("Kết nối Terminal WebSocket:", terminalUrl);
+
     this.terminalWs = new WebSocket(terminalUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Origin': 'https://terminal.exness.com'
-      }
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        Origin: "https://terminal.exness.com",
+      },
     });
 
-    this.terminalWs.on('open', () => {
-      console.log('Terminal WebSocket connected');
+    this.terminalWs.on("open", () => {
+      console.log("Terminal WebSocket connected");
       this.sendTerminalAuth();
     });
 
-    this.terminalWs.on('message', (data: Buffer) => {
+    this.terminalWs.on("message", (data: Buffer) => {
       this.handleTerminalMessage(data);
     });
 
-    this.terminalWs.on('error', (error) => {
-      console.log('Terminal working in simulation mode');
+    this.terminalWs.on("error", (error) => {
+      console.log("Terminal working in simulation mode");
       // Không auto-reconnect để tránh restart liên tục
     });
 
-    this.terminalWs.on('close', (code, reason) => {
+    this.terminalWs.on("close", (code, reason) => {
       console.log(`Terminal WebSocket closed: ${code} ${reason}`);
       if (this.autoReconnectEnabled) {
-        console.log('Auto-reconnect disabled - manual reconnection required');
+        console.log("Auto-reconnect disabled - manual reconnection required");
       }
     });
   }
@@ -153,9 +155,9 @@ export class ExnessMT5Connection extends EventEmitter {
   private handleRtApiMessage(data: Buffer): void {
     try {
       const message = JSON.parse(data.toString());
-      if (message.type === 'trade_update') {
+      if (message.type === "trade_update") {
         this.updateTrade(message);
-      } else if (message.type === 'account_info') {
+      } else if (message.type === "account_info") {
         this.updateAccountInfo(message);
       }
     } catch (error) {
@@ -166,7 +168,7 @@ export class ExnessMT5Connection extends EventEmitter {
   private handleTerminalMessage(data: Buffer): void {
     try {
       const message = JSON.parse(data.toString());
-      if (message.type === 'order_result') {
+      if (message.type === "order_result") {
         this.handleOrderResult(message);
       }
     } catch (error) {
@@ -177,10 +179,10 @@ export class ExnessMT5Connection extends EventEmitter {
   private sendTerminalAuth(): void {
     if (this.terminalWs && this.terminalWs.readyState === WebSocket.OPEN) {
       const authMessage = {
-        type: 'auth',
+        type: "auth",
         account: this.account.accountId,
         server: this.account.server,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       this.terminalWs.send(JSON.stringify(authMessage));
     }
@@ -190,32 +192,32 @@ export class ExnessMT5Connection extends EventEmitter {
     const trade: MT5Trade = {
       tradeId: message.ticket || `TRADE_${Date.now()}`,
       accountId: this.account.accountId,
-      symbol: message.symbol || 'XAUUSD',
+      symbol: message.symbol || "XAUUSD",
       volume: message.volume || 0.1,
-      orderType: message.type === 0 ? 'buy' : 'sell',
-      openPrice: message.openPrice || 2650.00,
-      currentPrice: message.currentPrice || 2650.50,
+      orderType: message.type === 0 ? "buy" : "sell",
+      openPrice: message.openPrice || 2650.0,
+      currentPrice: message.currentPrice || 2650.5,
       profit: message.profit || 0,
       openTime: new Date(message.openTime || Date.now()),
-      status: 'open'
+      status: "open",
     };
 
     this.activeTrades.set(trade.tradeId, trade);
-    this.emit('tradeUpdate', trade);
+    this.emit("tradeUpdate", trade);
   }
 
   private updateAccountInfo(message: any): void {
-    this.emit('balanceUpdate', {
+    this.emit("balanceUpdate", {
       accountId: this.account.accountId,
       balance: message.balance || 10000,
       equity: message.equity || 10247.83,
       margin: message.margin || 0,
-      freeMargin: message.freeMargin || 10000
+      freeMargin: message.freeMargin || 10000,
     });
   }
 
   private handleOrderResult(message: any): void {
-    console.log('Order result processed:', message.orderId || 'unknown');
+    console.log("Order result processed:", message.orderId || "unknown");
   }
 
   private startHeartbeat(): void {
@@ -225,30 +227,34 @@ export class ExnessMT5Connection extends EventEmitter {
 
     this.heartbeatInterval = setInterval(() => {
       this.account.lastHeartbeat = new Date();
-      
+
       if (this.rtApiWs && this.rtApiWs.readyState === WebSocket.OPEN) {
-        this.rtApiWs.send(JSON.stringify({ type: 'ping' }));
+        this.rtApiWs.send(JSON.stringify({ type: "ping" }));
       }
-      
+
       if (this.terminalWs && this.terminalWs.readyState === WebSocket.OPEN) {
-        this.terminalWs.send(JSON.stringify({ type: 'heartbeat' }));
+        this.terminalWs.send(JSON.stringify({ type: "heartbeat" }));
       }
     }, 30000);
   }
 
-  public async placeGoldOrder(symbol: string, volume: number, orderType: 'buy' | 'sell'): Promise<string> {
+  public async placeGoldOrder(
+    symbol: string,
+    volume: number,
+    orderType: "buy" | "sell",
+  ): Promise<string> {
     const orderId = `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
-    
+
     // Send to RT API
     if (this.rtApiWs && this.rtApiWs.readyState === WebSocket.OPEN) {
       const orderMessage = {
-        type: 'place_order',
+        type: "place_order",
         account: this.account.accountId,
         symbol: symbol,
         volume: volume,
-        orderType: orderType === 'buy' ? 0 : 1,
+        orderType: orderType === "buy" ? 0 : 1,
         orderId: orderId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       this.rtApiWs.send(JSON.stringify(orderMessage));
     }
@@ -256,15 +262,15 @@ export class ExnessMT5Connection extends EventEmitter {
     // Send to Terminal
     if (this.terminalWs && this.terminalWs.readyState === WebSocket.OPEN) {
       const terminalOrder = {
-        type: 'order',
+        type: "order",
         action: orderType,
         symbol: symbol,
         volume: volume,
-        orderId: orderId
+        orderId: orderId,
       };
       this.terminalWs.send(JSON.stringify(terminalOrder));
     }
-    
+
     console.log(`Placed ${orderType} order: ${symbol} ${volume} lots`);
     console.log(`Order ID: ${orderId}`);
 
@@ -283,7 +289,7 @@ export class ExnessMT5Connection extends EventEmitter {
       lastHeartbeat: this.account.lastHeartbeat,
       activeTrades: this.activeTrades.size,
       rtApiConnected: this.rtApiWs?.readyState === WebSocket.OPEN,
-      terminalConnected: this.terminalWs?.readyState === WebSocket.OPEN
+      terminalConnected: this.terminalWs?.readyState === WebSocket.OPEN,
     };
   }
 
@@ -303,7 +309,9 @@ export class ExnessMT5Connection extends EventEmitter {
   // Phương thức để bật/tắt auto-reconnect
   public setAutoReconnect(enabled: boolean): void {
     this.autoReconnectEnabled = enabled;
-    console.log(`Auto-reconnect ${enabled ? 'enabled' : 'disabled'} for Exness MT5`);
+    console.log(
+      `Auto-reconnect ${enabled ? "enabled" : "disabled"} for Exness MT5`,
+    );
   }
 
   // Phương thức kiểm tra trạng thái connection
@@ -313,7 +321,7 @@ export class ExnessMT5Connection extends EventEmitter {
 
   // Manual reconnect chỉ khi cần thiết
   public manualReconnect(): void {
-    console.log('Manual reconnection requested...');
+    console.log("Manual reconnection requested...");
     this.disconnect();
     setTimeout(() => {
       this.connectToExistingWebSockets();

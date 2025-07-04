@@ -1,4 +1,4 @@
-import { TwelveDataControl } from '@/components/TwelveDataControl';
+import { TwelveDataControl } from "@/components/TwelveDataControl";
 
 export default function TwelveDataDashboard() {
   return (
@@ -10,7 +10,7 @@ export default function TwelveDataDashboard() {
             Advanced financial market data integration and real-time analytics
           </p>
         </div>
-        
+
         <TwelveDataControl />
       </div>
     </div>

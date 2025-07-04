@@ -1,16 +1,35 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { apiRequest } from '@/lib/queryClient';
-import { TrendingUp, TrendingDown, Activity, Database, Wifi, WifiOff } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { apiRequest } from "@/lib/queryClient";
+import {
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Database,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
 
 interface MarketDataPoint {
   symbol: string;
@@ -19,7 +38,7 @@ interface MarketDataPoint {
   volume?: number;
   change?: number;
   changePercent?: number;
-  source: 'twelvedata';
+  source: "twelvedata";
 }
 
 interface ConnectionStatus {
@@ -35,89 +54,99 @@ interface ConnectionStatus {
 }
 
 export function TwelveDataControl() {
-  const [selectedSymbol, setSelectedSymbol] = useState('EURUSD');
-  const [subscribeSymbols, setSubscribeSymbols] = useState('');
-  const [realTimeData, setRealTimeData] = useState<Map<string, MarketDataPoint>>(new Map());
+  const [selectedSymbol, setSelectedSymbol] = useState("EURUSD");
+  const [subscribeSymbols, setSubscribeSymbols] = useState("");
+  const [realTimeData, setRealTimeData] = useState<
+    Map<string, MarketDataPoint>
+  >(new Map());
   const [wsConnected, setWsConnected] = useState(false);
   const queryClient = useQueryClient();
 
   // Queries
   const { data: connectionStatus } = useQuery({
-    queryKey: ['/api/twelvedata/status'],
-    refetchInterval: 5000
+    queryKey: ["/api/twelvedata/status"],
+    refetchInterval: 5000,
   });
 
   const { data: forexPairs } = useQuery({
-    queryKey: ['/api/twelvedata/forex-pairs']
+    queryKey: ["/api/twelvedata/forex-pairs"],
   });
 
   const { data: exchanges } = useQuery({
-    queryKey: ['/api/twelvedata/exchanges']
+    queryKey: ["/api/twelvedata/exchanges"],
   });
 
   const { data: marketData } = useQuery({
-    queryKey: ['/api/twelvedata/market-data'],
-    refetchInterval: 2000
+    queryKey: ["/api/twelvedata/market-data"],
+    refetchInterval: 2000,
   });
 
   const { data: subscriptions } = useQuery({
-    queryKey: ['/api/twelvedata/subscriptions'],
-    refetchInterval: 3000
+    queryKey: ["/api/twelvedata/subscriptions"],
+    refetchInterval: 3000,
   });
 
   // Mutations
   const subscribeMutation = useMutation({
-    mutationFn: (symbols: string[]) => 
-      apiRequest('/api/twelvedata/subscribe', 'POST', { symbols }),
+    mutationFn: (symbols: string[]) =>
+      apiRequest("/api/twelvedata/subscribe", "POST", { symbols }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/twelvedata/subscriptions'] });
-      setSubscribeSymbols('');
-    }
+      queryClient.invalidateQueries({
+        queryKey: ["/api/twelvedata/subscriptions"],
+      });
+      setSubscribeSymbols("");
+    },
   });
 
   const unsubscribeMutation = useMutation({
-    mutationFn: (symbols: string[]) => 
-      apiRequest('/api/twelvedata/unsubscribe', 'POST', { symbols }),
+    mutationFn: (symbols: string[]) =>
+      apiRequest("/api/twelvedata/unsubscribe", "POST", { symbols }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/twelvedata/subscriptions'] });
-    }
+      queryClient.invalidateQueries({
+        queryKey: ["/api/twelvedata/subscriptions"],
+      });
+    },
   });
 
   const integrateMutation = useMutation({
-    mutationFn: (system: 'gold' | 'forex') => 
-      apiRequest(`/api/twelvedata/integrate/${system}-system`, 'POST'),
+    mutationFn: (system: "gold" | "forex") =>
+      apiRequest(`/api/twelvedata/integrate/${system}-system`, "POST"),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/twelvedata/subscriptions'] });
-    }
+      queryClient.invalidateQueries({
+        queryKey: ["/api/twelvedata/subscriptions"],
+      });
+    },
   });
 
   // WebSocket connection
   useEffect(() => {
-    const ws = new WebSocket(`${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/ws/twelvedata`);
-    
+    const ws = new WebSocket(
+      `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/ws/twelvedata`,
+    );
+
     ws.onopen = () => {
       setWsConnected(true);
-      console.log('TwelveData WebSocket connected');
+      console.log("TwelveData WebSocket connected");
     };
 
     ws.onclose = () => {
       setWsConnected(false);
-      console.log('TwelveData WebSocket disconnected');
+      console.log("TwelveData WebSocket disconnected");
     };
 
     ws.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
-        
-        if (message.type === 'price_update' && message.data) {
-          setRealTimeData(prev => {
+
+        if (message.type === "price_update" && message.data) {
+          setRealTimeData((prev) => {
             const newData = new Map(prev);
             newData.set(message.symbol, message.data);
             return newData;
           });
         }
       } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
+        console.error("Error parsing WebSocket message:", error);
       }
     };
 
@@ -128,7 +157,9 @@ export function TwelveDataControl() {
 
   const handleSubscribe = () => {
     if (subscribeSymbols.trim()) {
-      const symbols = subscribeSymbols.split(',').map(s => s.trim().toUpperCase());
+      const symbols = subscribeSymbols
+        .split(",")
+        .map((s) => s.trim().toUpperCase());
       subscribeMutation.mutate(symbols);
     }
   };
@@ -142,7 +173,7 @@ export function TwelveDataControl() {
   };
 
   const formatChange = (change: number | undefined) => {
-    if (!change) return '0.00';
+    if (!change) return "0.00";
     return change > 0 ? `+${change.toFixed(5)}` : change.toFixed(5);
   };
 
@@ -173,7 +204,7 @@ export function TwelveDataControl() {
                     <WifiOff className="h-4 w-4 text-red-500" />
                   )}
                   <span className="text-sm font-medium">
-                    WebSocket: {wsConnected ? 'Connected' : 'Disconnected'}
+                    WebSocket: {wsConnected ? "Connected" : "Disconnected"}
                   </span>
                 </div>
               </CardContent>
@@ -184,7 +215,8 @@ export function TwelveDataControl() {
                 <div className="flex items-center gap-2">
                   <Activity className="h-4 w-4 text-blue-500" />
                   <span className="text-sm font-medium">
-                    Subscriptions: {connectionStatus?.data?.subscribed_symbols || 0}
+                    Subscriptions:{" "}
+                    {connectionStatus?.data?.subscribed_symbols || 0}
                   </span>
                 </div>
               </CardContent>
@@ -195,7 +227,8 @@ export function TwelveDataControl() {
                 <div className="flex items-center gap-2">
                   <Database className="h-4 w-4 text-purple-500" />
                   <span className="text-sm font-medium">
-                    Cached Data: {connectionStatus?.data?.market_data_cached || 0}
+                    Cached Data:{" "}
+                    {connectionStatus?.data?.market_data_cached || 0}
                   </span>
                 </div>
               </CardContent>
@@ -211,14 +244,24 @@ export function TwelveDataControl() {
                     <div className="flex justify-between text-xs mb-1">
                       <span>Requests per minute</span>
                       <span>
-                        {connectionStatus.data.rate_limit_status.requests_per_minute} / {connectionStatus.data.rate_limit_status.limit_per_minute}
+                        {
+                          connectionStatus.data.rate_limit_status
+                            .requests_per_minute
+                        }{" "}
+                        /{" "}
+                        {
+                          connectionStatus.data.rate_limit_status
+                            .limit_per_minute
+                        }
                       </span>
                     </div>
-                    <Progress 
+                    <Progress
                       value={getRateLimitPercentage(
-                        connectionStatus.data.rate_limit_status.requests_per_minute,
-                        connectionStatus.data.rate_limit_status.limit_per_minute
-                      )} 
+                        connectionStatus.data.rate_limit_status
+                          .requests_per_minute,
+                        connectionStatus.data.rate_limit_status
+                          .limit_per_minute,
+                      )}
                       className="h-2"
                     />
                   </div>
@@ -226,14 +269,20 @@ export function TwelveDataControl() {
                     <div className="flex justify-between text-xs mb-1">
                       <span>Requests per day</span>
                       <span>
-                        {connectionStatus.data.rate_limit_status.requests_per_day} / {connectionStatus.data.rate_limit_status.limit_per_day}
+                        {
+                          connectionStatus.data.rate_limit_status
+                            .requests_per_day
+                        }{" "}
+                        /{" "}
+                        {connectionStatus.data.rate_limit_status.limit_per_day}
                       </span>
                     </div>
-                    <Progress 
+                    <Progress
                       value={getRateLimitPercentage(
-                        connectionStatus.data.rate_limit_status.requests_per_day,
-                        connectionStatus.data.rate_limit_status.limit_per_day
-                      )} 
+                        connectionStatus.data.rate_limit_status
+                          .requests_per_day,
+                        connectionStatus.data.rate_limit_status.limit_per_day,
+                      )}
                       className="h-2"
                     />
                   </div>
@@ -258,34 +307,46 @@ export function TwelveDataControl() {
                 <CardContent>
                   <ScrollArea className="h-80">
                     <div className="space-y-2">
-                      {Array.from(realTimeData.entries()).map(([symbol, data]) => (
-                        <div key={symbol} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <Badge variant="outline">{symbol}</Badge>
-                            <span className="font-mono text-lg">
-                              {formatPrice(data.price)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {data.change && (
-                              <div className={`flex items-center gap-1 ${data.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {data.change >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                                <span className="text-sm font-mono">
-                                  {formatChange(data.change)}
-                                </span>
-                                {data.changePercent && (
-                                  <span className="text-xs">
-                                    ({data.changePercent.toFixed(2)}%)
+                      {Array.from(realTimeData.entries()).map(
+                        ([symbol, data]) => (
+                          <div
+                            key={symbol}
+                            className="flex items-center justify-between p-3 border rounded-lg"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Badge variant="outline">{symbol}</Badge>
+                              <span className="font-mono text-lg">
+                                {formatPrice(data.price)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {data.change && (
+                                <div
+                                  className={`flex items-center gap-1 ${data.change >= 0 ? "text-green-600" : "text-red-600"}`}
+                                >
+                                  {data.change >= 0 ? (
+                                    <TrendingUp className="h-4 w-4" />
+                                  ) : (
+                                    <TrendingDown className="h-4 w-4" />
+                                  )}
+                                  <span className="text-sm font-mono">
+                                    {formatChange(data.change)}
                                   </span>
-                                )}
-                              </div>
-                            )}
+                                  {data.changePercent && (
+                                    <span className="text-xs">
+                                      ({data.changePercent.toFixed(2)}%)
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ),
+                      )}
                       {realTimeData.size === 0 && (
                         <div className="text-center text-muted-foreground py-8">
-                          No real-time data available. Subscribe to symbols to see live updates.
+                          No real-time data available. Subscribe to symbols to
+                          see live updates.
                         </div>
                       )}
                     </div>
@@ -297,7 +358,9 @@ export function TwelveDataControl() {
             <TabsContent value="subscriptions" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Symbol Subscriptions</CardTitle>
+                  <CardTitle className="text-lg">
+                    Symbol Subscriptions
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -307,9 +370,12 @@ export function TwelveDataControl() {
                         value={subscribeSymbols}
                         onChange={(e) => setSubscribeSymbols(e.target.value)}
                       />
-                      <Button 
+                      <Button
                         onClick={handleSubscribe}
-                        disabled={subscribeMutation.isPending || !subscribeSymbols.trim()}
+                        disabled={
+                          subscribeMutation.isPending ||
+                          !subscribeSymbols.trim()
+                        }
                       >
                         Subscribe
                       </Button>
@@ -319,20 +385,27 @@ export function TwelveDataControl() {
 
                     <ScrollArea className="h-60">
                       <div className="space-y-2">
-                        {subscriptions?.data?.subscribed_symbols?.map((symbol: string) => (
-                          <div key={symbol} className="flex items-center justify-between p-2 border rounded">
-                            <Badge variant="secondary">{symbol}</Badge>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleUnsubscribe(symbol)}
-                              disabled={unsubscribeMutation.isPending}
+                        {subscriptions?.data?.subscribed_symbols?.map(
+                          (symbol: string) => (
+                            <div
+                              key={symbol}
+                              className="flex items-center justify-between p-2 border rounded"
                             >
-                              Unsubscribe
-                            </Button>
-                          </div>
-                        ))}
-                        {(!subscriptions?.data?.subscribed_symbols || subscriptions.data.subscribed_symbols.length === 0) && (
+                              <Badge variant="secondary">{symbol}</Badge>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleUnsubscribe(symbol)}
+                                disabled={unsubscribeMutation.isPending}
+                              >
+                                Unsubscribe
+                              </Button>
+                            </div>
+                          ),
+                        )}
+                        {(!subscriptions?.data?.subscribed_symbols ||
+                          subscriptions.data.subscribed_symbols.length ===
+                            0) && (
                           <div className="text-center text-muted-foreground py-4">
                             No active subscriptions
                           </div>
@@ -356,14 +429,19 @@ export function TwelveDataControl() {
                   <CardContent>
                     <ScrollArea className="h-60">
                       <div className="space-y-1">
-                        {forexPairs?.data?.forex_pairs?.slice(0, 20).map((pair: any) => (
-                          <div key={pair.symbol} className="text-sm p-2 border rounded">
-                            <div className="font-mono">{pair.symbol}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {pair.currency_base}/{pair.currency_quote}
+                        {forexPairs?.data?.forex_pairs
+                          ?.slice(0, 20)
+                          .map((pair: any) => (
+                            <div
+                              key={pair.symbol}
+                              className="text-sm p-2 border rounded"
+                            >
+                              <div className="font-mono">{pair.symbol}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {pair.currency_base}/{pair.currency_quote}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     </ScrollArea>
                   </CardContent>
@@ -379,14 +457,19 @@ export function TwelveDataControl() {
                   <CardContent>
                     <ScrollArea className="h-60">
                       <div className="space-y-1">
-                        {exchanges?.data?.exchanges?.slice(0, 20).map((exchange: any) => (
-                          <div key={exchange.code} className="text-sm p-2 border rounded">
-                            <div className="font-medium">{exchange.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {exchange.country} • {exchange.code}
+                        {exchanges?.data?.exchanges
+                          ?.slice(0, 20)
+                          .map((exchange: any) => (
+                            <div
+                              key={exchange.code}
+                              className="text-sm p-2 border rounded"
+                            >
+                              <div className="font-medium">{exchange.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {exchange.country} • {exchange.code}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     </ScrollArea>
                   </CardContent>
@@ -406,7 +489,7 @@ export function TwelveDataControl() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <Button
-                        onClick={() => integrateMutation.mutate('gold')}
+                        onClick={() => integrateMutation.mutate("gold")}
                         disabled={integrateMutation.isPending}
                         className="h-20 flex flex-col gap-2"
                       >
@@ -417,7 +500,7 @@ export function TwelveDataControl() {
                       </Button>
 
                       <Button
-                        onClick={() => integrateMutation.mutate('forex')}
+                        onClick={() => integrateMutation.mutate("forex")}
                         disabled={integrateMutation.isPending}
                         variant="outline"
                         className="h-20 flex flex-col gap-2"

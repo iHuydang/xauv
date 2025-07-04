@@ -1,7 +1,7 @@
-import WebSocket from 'ws';
-import { EventEmitter } from 'events';
-import { createHash, randomBytes } from 'crypto';
-import axios from 'axios';
+import WebSocket from "ws";
+import { EventEmitter } from "events";
+import { createHash, randomBytes } from "crypto";
+import axios from "axios";
 
 export interface CoinrankingAsset {
   uuid: string;
@@ -21,12 +21,12 @@ export interface MarketMakerOrder {
   orderId: string;
   assetUuid: string;
   symbol: string;
-  side: 'buy' | 'sell';
+  side: "buy" | "sell";
   quantity: number;
   price: number;
   timestamp: number;
-  status: 'pending' | 'filled' | 'cancelled';
-  type: 'market_making' | 'arbitrage' | 'liquidity_provision';
+  status: "pending" | "filled" | "cancelled";
+  type: "market_making" | "arbitrage" | "liquidity_provision";
 }
 
 export interface GoldMarketData {
@@ -34,7 +34,7 @@ export interface GoldMarketData {
   goldPrice: number;
   goldBtcRatio: number;
   arbitrageOpportunity: number;
-  marketSentiment: 'bullish' | 'bearish' | 'neutral';
+  marketSentiment: "bullish" | "bearish" | "neutral";
   liquidityScore: number;
   volatility: number;
 }
@@ -50,16 +50,17 @@ export interface MarketMakerConfig {
 
 export class CoinrankingMarketMaker extends EventEmitter {
   private ws: WebSocket | null = null;
-  private apiKey: string = 'coinranking46318b67be4b6ae6bd776b982d0e9b852bc0776d6cee1174';
-  private wsUrl: string = 'wss://api.coinranking.com/v2/real-time/rates';
+  private apiKey: string =
+    "coinranking46318b67be4b6ae6bd776b982d0e9b852bc0776d6cee1174";
+  private wsUrl: string = "wss://api.coinranking.com/v2/real-time/rates";
 
   // Gold-related asset UUIDs from Coinranking
   private goldAssets = {
-    bitcoin: 'Qwsogvtv82FCd', // BTC (gold digital equivalent)
-    ethereum: 'razxDUgYGNAdQ', // ETH
-    goldToken: 'Vuy-IUC7', // Gold-backed token
-    tether: 'HIVsRcGKkPFtW', // USDT (stable reference)
-    goldCoin: 'YRTkUcMi' // Another gold asset
+    bitcoin: "Qwsogvtv82FCd", // BTC (gold digital equivalent)
+    ethereum: "razxDUgYGNAdQ", // ETH
+    goldToken: "Vuy-IUC7", // Gold-backed token
+    tether: "HIVsRcGKkPFtW", // USDT (stable reference)
+    goldCoin: "YRTkUcMi", // Another gold asset
   };
 
   private subscribedAssets: string[] = [];
@@ -73,7 +74,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
     maxExposure: 50000, // $50k max exposure
     rebalanceThreshold: 0.05, // 5% price movement
     riskLimit: 0.02, // 2% risk per trade
-    goldFocused: true
+    goldFocused: true,
   };
 
   private isConnected: boolean = false;
@@ -82,7 +83,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private marketMakingActive: boolean = false;
   private pollingInterval: NodeJS.Timeout | null = null;
-  private restApiUrl: string = 'https://api.coinranking.com/v2';
+  private restApiUrl: string = "https://api.coinranking.com/v2";
 
   constructor() {
     super();
@@ -91,14 +92,14 @@ export class CoinrankingMarketMaker extends EventEmitter {
     // Auto-start monitoring gold assets
     setTimeout(() => {
       this.startMarketMaking();
-      console.log('🥇 Auto-started gold market monitoring');
+      console.log("🥇 Auto-started gold market monitoring");
     }, 5000);
   }
 
   private async initializeMarketMaker(): Promise<void> {
-    console.log('🏦 Khởi tạo Coinranking Market Maker System');
-    console.log('🔑 API Key:', this.apiKey.substring(0, 20) + '...');
-    console.log('🥇 Chế độ: Điều hành thị trường vàng');
+    console.log("🏦 Khởi tạo Coinranking Market Maker System");
+    console.log("🔑 API Key:", this.apiKey.substring(0, 20) + "...");
+    console.log("🥇 Chế độ: Điều hành thị trường vàng");
 
     // Setup gold-focused asset monitoring
     this.subscribedAssets = Object.values(this.goldAssets);
@@ -109,12 +110,12 @@ export class CoinrankingMarketMaker extends EventEmitter {
     // Start monitoring systems
     this.startMarketMonitoring();
 
-    console.log('✅ Market Maker khởi động thành công');
+    console.log("✅ Market Maker khởi động thành công");
   }
 
   private async connectToWebSocket(): Promise<void> {
     try {
-      console.log('🔗 Thử kết nối Coinranking WebSocket...');
+      console.log("🔗 Thử kết nối Coinranking WebSocket...");
 
       // Use the corrected WebSocket URL format
       const wsUrlWithAuth = `wss://api.coinranking.com/v2/real-time/rates?x-access-token=${this.apiKey}`;
@@ -125,13 +126,14 @@ export class CoinrankingMarketMaker extends EventEmitter {
       // Fallback to REST API polling after 10 seconds if WebSocket fails
       setTimeout(() => {
         if (!this.isConnected) {
-          console.log('⚠️ WebSocket không khả dụng, chuyển sang REST API polling');
+          console.log(
+            "⚠️ WebSocket không khả dụng, chuyển sang REST API polling",
+          );
           this.startRestApiPolling();
         }
       }, 10000);
-
     } catch (error) {
-      console.error('❌ Lỗi kết nối WebSocket:', error);
+      console.error("❌ Lỗi kết nối WebSocket:", error);
       this.startRestApiPolling();
     }
   }
@@ -140,7 +142,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
     if (!this.ws) return;
 
     this.ws.onopen = () => {
-      console.log('✅ Coinranking WebSocket kết nối thành công');
+      console.log("✅ Coinranking WebSocket kết nối thành công");
       this.isConnected = true;
       this.reconnectAttempts = 0;
 
@@ -150,17 +152,20 @@ export class CoinrankingMarketMaker extends EventEmitter {
       // Start heartbeat
       this.startHeartbeat();
 
-      this.emit('connected');
+      this.emit("connected");
     };
 
     this.ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data.toString());
-        console.log('📊 Coinranking data received:', JSON.stringify(data, null, 2));
+        console.log(
+          "📊 Coinranking data received:",
+          JSON.stringify(data, null, 2),
+        );
         this.processMarketData(data);
       } catch (error) {
-        console.error('❌ Lỗi xử lý dữ liệu:', error);
-        console.log('📨 Raw message:', event.data);
+        console.error("❌ Lỗi xử lý dữ liệu:", error);
+        console.log("📨 Raw message:", event.data);
       }
     };
 
@@ -171,7 +176,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
     };
 
     this.ws.onerror = (error) => {
-      console.error('❌ WebSocket lỗi:', error);
+      console.error("❌ WebSocket lỗi:", error);
       this.isConnected = false;
     };
   }
@@ -181,30 +186,30 @@ export class CoinrankingMarketMaker extends EventEmitter {
 
     // Subscribe with simplified format as recommended
     const subscriptionMessage = {
-      throttle: '1s',
-      uuids: ['Vuy-IUC7', 'YRTkUcMi'] // Focus on gold assets
+      throttle: "1s",
+      uuids: ["Vuy-IUC7", "YRTkUcMi"], // Focus on gold assets
     };
 
-    console.log('📡 Đăng ký theo dõi tài sản vàng:', subscriptionMessage.uuids);
+    console.log("📡 Đăng ký theo dõi tài sản vàng:", subscriptionMessage.uuids);
     this.ws.send(JSON.stringify(subscriptionMessage));
   }
 
   private encryptMarketMakerIdentity(): string {
     const identity = {
-      role: 'market_maker',
-      focus: 'gold_markets',
-      region: 'vietnam',
-      authorization: 'central_bank_approved',
-      timestamp: Date.now()
+      role: "market_maker",
+      focus: "gold_markets",
+      region: "vietnam",
+      authorization: "central_bank_approved",
+      timestamp: Date.now(),
     };
 
-    const hash = createHash('sha256');
+    const hash = createHash("sha256");
     hash.update(JSON.stringify(identity) + this.apiKey);
-    return hash.digest('hex');
+    return hash.digest("hex");
   }
 
   private processMarketData(data: any): void {
-    console.log('🔍 Processing data:', data);
+    console.log("🔍 Processing data:", data);
 
     // Handle different message formats from Coinranking
     if (data && data.rates) {
@@ -212,16 +217,16 @@ export class CoinrankingMarketMaker extends EventEmitter {
       data.rates.forEach((rate: any) => {
         const asset: CoinrankingAsset = {
           uuid: rate.uuid,
-          symbol: rate.symbol || 'UNKNOWN',
-          name: rate.name || 'Unknown Asset',
+          symbol: rate.symbol || "UNKNOWN",
+          name: rate.name || "Unknown Asset",
           price: parseFloat(rate.price || 0),
           volume: parseFloat(rate.volume24h || rate.volume || 0),
           marketCap: parseFloat(rate.marketCap || 0),
           change: parseFloat(rate.change || 0),
           rank: parseInt(rate.rank || 0),
           tier: parseInt(rate.tier || 1),
-          iconUrl: rate.iconUrl || '',
-          color: rate.color || '#000000'
+          iconUrl: rate.iconUrl || "",
+          color: rate.color || "#000000",
         };
 
         console.log(`💰 Gold asset update: ${asset.symbol} @ $${asset.price}`);
@@ -233,17 +238,19 @@ export class CoinrankingMarketMaker extends EventEmitter {
         }
 
         // Emit price update
-        this.emit('priceUpdate', asset);
+        this.emit("priceUpdate", asset);
       });
 
       // Analyze gold market opportunities
       this.analyzeGoldMarketOpportunities();
     } else if (data && data.data) {
       // Handle alternative format
-      console.log('📊 Alternative data format detected');
-      this.processMarketData({ rates: Array.isArray(data.data) ? data.data : [data.data] });
+      console.log("📊 Alternative data format detected");
+      this.processMarketData({
+        rates: Array.isArray(data.data) ? data.data : [data.data],
+      });
     } else {
-      console.log('⚠️ Unknown data format:', data);
+      console.log("⚠️ Unknown data format:", data);
     }
   }
 
@@ -281,18 +288,20 @@ export class CoinrankingMarketMaker extends EventEmitter {
       orderId,
       assetUuid: asset.uuid,
       symbol: asset.symbol,
-      side: 'buy',
+      side: "buy",
       quantity,
       price,
       timestamp: Date.now(),
-      status: 'pending',
-      type: 'market_making'
+      status: "pending",
+      type: "market_making",
     };
 
     this.activeOrders.set(orderId, order);
 
-    console.log(`📈 Lệnh mua MM: ${asset.symbol} @ ${price.toFixed(4)} (${quantity.toFixed(4)})`);
-    this.emit('orderPlaced', order);
+    console.log(
+      `📈 Lệnh mua MM: ${asset.symbol} @ ${price.toFixed(4)} (${quantity.toFixed(4)})`,
+    );
+    this.emit("orderPlaced", order);
   }
 
   private placeSellOrder(asset: CoinrankingAsset, price: number): void {
@@ -306,18 +315,20 @@ export class CoinrankingMarketMaker extends EventEmitter {
       orderId,
       assetUuid: asset.uuid,
       symbol: asset.symbol,
-      side: 'sell',
+      side: "sell",
       quantity,
       price,
       timestamp: Date.now(),
-      status: 'pending',
-      type: 'market_making'
+      status: "pending",
+      type: "market_making",
     };
 
     this.activeOrders.set(orderId, order);
 
-    console.log(`📉 Lệnh bán MM: ${asset.symbol} @ ${price.toFixed(4)} (${quantity.toFixed(4)})`);
-    this.emit('orderPlaced', order);
+    console.log(
+      `📉 Lệnh bán MM: ${asset.symbol} @ ${price.toFixed(4)} (${quantity.toFixed(4)})`,
+    );
+    this.emit("orderPlaced", order);
   }
 
   private manageRisk(asset: CoinrankingAsset): void {
@@ -327,7 +338,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
 
     // Close position if risk is too high
     if (Math.abs(positionValue) > maxRisk) {
-      this.closePosition(asset, 'risk_management');
+      this.closePosition(asset, "risk_management");
     }
 
     // Rebalance if price movement exceeds threshold
@@ -342,7 +353,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
     if (position === 0) return;
 
     const orderId = this.generateOrderId();
-    const side = position > 0 ? 'sell' : 'buy';
+    const side = position > 0 ? "sell" : "buy";
     const quantity = Math.abs(position);
 
     const order: MarketMakerOrder = {
@@ -353,14 +364,16 @@ export class CoinrankingMarketMaker extends EventEmitter {
       quantity,
       price: asset.price,
       timestamp: Date.now(),
-      status: 'pending',
-      type: 'market_making'
+      status: "pending",
+      type: "market_making",
     };
 
     this.activeOrders.set(orderId, order);
 
-    console.log(`⚠️ Đóng vị thế ${asset.symbol}: ${reason} (${quantity.toFixed(4)})`);
-    this.emit('positionClosed', { asset, reason, order });
+    console.log(
+      `⚠️ Đóng vị thế ${asset.symbol}: ${reason} (${quantity.toFixed(4)})`,
+    );
+    this.emit("positionClosed", { asset, reason, order });
   }
 
   private rebalancePosition(asset: CoinrankingAsset): void {
@@ -370,9 +383,12 @@ export class CoinrankingMarketMaker extends EventEmitter {
     const position = this.positions.get(asset.uuid) || 0;
     const targetPosition = this.calculateTargetPosition(asset);
 
-    if (Math.abs(position - targetPosition) > this.config.orderSize / asset.price) {
+    if (
+      Math.abs(position - targetPosition) >
+      this.config.orderSize / asset.price
+    ) {
       const adjustmentSize = targetPosition - position;
-      const side = adjustmentSize > 0 ? 'buy' : 'sell';
+      const side = adjustmentSize > 0 ? "buy" : "sell";
 
       const order: MarketMakerOrder = {
         orderId: this.generateOrderId(),
@@ -382,12 +398,12 @@ export class CoinrankingMarketMaker extends EventEmitter {
         quantity: Math.abs(adjustmentSize),
         price: asset.price,
         timestamp: Date.now(),
-        status: 'pending',
-        type: 'market_making'
+        status: "pending",
+        type: "market_making",
       };
 
       this.activeOrders.set(order.orderId, order);
-      this.emit('rebalanceOrder', order);
+      this.emit("rebalanceOrder", order);
     }
   }
 
@@ -419,11 +435,11 @@ export class CoinrankingMarketMaker extends EventEmitter {
       arbitrageOpportunity: this.calculateArbitrageOpportunity(btc, goldToken),
       marketSentiment: this.calculateMarketSentiment(),
       liquidityScore: this.calculateLiquidityScore(),
-      volatility: this.calculateVolatility()
+      volatility: this.calculateVolatility(),
     };
 
     // Emit gold market analysis
-    this.emit('goldMarketAnalysis', goldMarketData);
+    this.emit("goldMarketAnalysis", goldMarketData);
 
     // Execute gold-specific strategies
     if (goldMarketData.arbitrageOpportunity > 0.01) {
@@ -431,7 +447,10 @@ export class CoinrankingMarketMaker extends EventEmitter {
     }
   }
 
-  private calculateArbitrageOpportunity(btc: CoinrankingAsset, goldToken: CoinrankingAsset): number {
+  private calculateArbitrageOpportunity(
+    btc: CoinrankingAsset,
+    goldToken: CoinrankingAsset,
+  ): number {
     // Calculate arbitrage between BTC and gold-backed tokens
     const btcVolatility = Math.abs(btc.change) / 100;
     const goldVolatility = Math.abs(goldToken.change) / 100;
@@ -439,32 +458,37 @@ export class CoinrankingMarketMaker extends EventEmitter {
     return Math.abs(btcVolatility - goldVolatility);
   }
 
-  private calculateMarketSentiment(): 'bullish' | 'bearish' | 'neutral' {
+  private calculateMarketSentiment(): "bullish" | "bearish" | "neutral" {
     const prices = Array.from(this.priceCache.values());
-    const positiveChanges = prices.filter(p => p.change > 0).length;
+    const positiveChanges = prices.filter((p) => p.change > 0).length;
     const totalAssets = prices.length;
 
     const positiveRatio = positiveChanges / totalAssets;
 
-    if (positiveRatio > 0.6) return 'bullish';
-    if (positiveRatio < 0.4) return 'bearish';
-    return 'neutral';
+    if (positiveRatio > 0.6) return "bullish";
+    if (positiveRatio < 0.4) return "bearish";
+    return "neutral";
   }
 
   private calculateLiquidityScore(): number {
-    const volumes = Array.from(this.priceCache.values()).map(p => p.volume);
+    const volumes = Array.from(this.priceCache.values()).map((p) => p.volume);
     const avgVolume = volumes.reduce((a, b) => a + b, 0) / volumes.length;
 
     return Math.min(1, avgVolume / 1000000); // Normalize to 0-1
   }
 
   private calculateVolatility(): number {
-    const changes = Array.from(this.priceCache.values()).map(p => Math.abs(p.change));
+    const changes = Array.from(this.priceCache.values()).map((p) =>
+      Math.abs(p.change),
+    );
     return changes.reduce((a, b) => a + b, 0) / changes.length;
   }
 
-  private executeGoldArbitrageStrategy(btc: CoinrankingAsset, goldToken: CoinrankingAsset): void {
-    console.log('🎯 Thực hiện chiến lược arbitrage vàng');
+  private executeGoldArbitrageStrategy(
+    btc: CoinrankingAsset,
+    goldToken: CoinrankingAsset,
+  ): void {
+    console.log("🎯 Thực hiện chiến lược arbitrage vàng");
 
     // Determine which asset to buy/sell based on relative performance
     const btcMomentum = btc.change;
@@ -482,7 +506,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
   }
 
   private generateOrderId(): string {
-    return 'MM_' + randomBytes(8).toString('hex').toUpperCase();
+    return "MM_" + randomBytes(8).toString("hex").toUpperCase();
   }
 
   private startHeartbeat(): void {
@@ -495,14 +519,16 @@ export class CoinrankingMarketMaker extends EventEmitter {
 
   private handleReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('❌ Đã vượt quá số lần kết nối lại tối đa');
+      console.error("❌ Đã vượt quá số lần kết nối lại tối đa");
       return;
     }
 
     this.reconnectAttempts++;
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
 
-    console.log(`🔄 Kết nối lại sau ${delay}ms (lần ${this.reconnectAttempts})`);
+    console.log(
+      `🔄 Kết nối lại sau ${delay}ms (lần ${this.reconnectAttempts})`,
+    );
 
     setTimeout(() => {
       this.connectToWebSocket();
@@ -533,8 +559,11 @@ export class CoinrankingMarketMaker extends EventEmitter {
     const staleThreshold = 60000; // 1 minute
 
     Array.from(this.activeOrders.entries()).forEach(([orderId, order]) => {
-      if (now - order.timestamp > staleThreshold && order.status === 'pending') {
-        order.status = 'cancelled';
+      if (
+        now - order.timestamp > staleThreshold &&
+        order.status === "pending"
+      ) {
+        order.status = "cancelled";
         this.activeOrders.delete(orderId);
         console.log(`🗑️ Hủy lệnh cũ: ${order.symbol} ${orderId}`);
       }
@@ -552,7 +581,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
     });
 
     if (totalExposure > this.config.maxExposure) {
-      console.log('⚠️ Vượt quá giới hạn exposure, giảm vị thế');
+      console.log("⚠️ Vượt quá giới hạn exposure, giảm vị thế");
       this.reducePositions();
     }
   }
@@ -565,7 +594,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
         return {
           uuid,
           position,
-          value: asset ? Math.abs(position * asset.price) : 0
+          value: asset ? Math.abs(position * asset.price) : 0,
         };
       })
       .sort((a, b) => b.value - a.value);
@@ -576,7 +605,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
       const asset = this.priceCache.get(largest.uuid);
       if (asset) {
         const reduceAmount = largest.position * 0.2;
-        this.closePosition(asset, 'exposure_limit');
+        this.closePosition(asset, "exposure_limit");
       }
     }
   }
@@ -595,14 +624,14 @@ export class CoinrankingMarketMaker extends EventEmitter {
   // Public API methods
   public startMarketMaking(): void {
     this.marketMakingActive = true;
-    console.log('🚀 Bắt đầu hoạt động Market Making');
-    this.emit('marketMakingStarted');
+    console.log("🚀 Bắt đầu hoạt động Market Making");
+    this.emit("marketMakingStarted");
   }
 
   public stopMarketMaking(): void {
     this.marketMakingActive = false;
-    console.log('⏹️ Dừng hoạt động Market Making');
-    this.emit('marketMakingStopped');
+    console.log("⏹️ Dừng hoạt động Market Making");
+    this.emit("marketMakingStopped");
   }
 
   public getMarketStatus(): any {
@@ -613,7 +642,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
       activeOrders: this.activeOrders.size,
       positions: this.positions.size,
       totalExposure: this.calculateTotalExposure(),
-      config: this.config
+      config: this.config,
     };
   }
 
@@ -642,14 +671,14 @@ export class CoinrankingMarketMaker extends EventEmitter {
 
   public updateConfig(newConfig: Partial<MarketMakerConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    console.log('⚙️ Cập nhật cấu hình Market Maker:', newConfig);
-    this.emit('configUpdated', this.config);
+    console.log("⚙️ Cập nhật cấu hình Market Maker:", newConfig);
+    this.emit("configUpdated", this.config);
   }
 
   private async startRestApiPolling(): Promise<void> {
-    console.log('📡 Bắt đầu REST API polling mode');
+    console.log("📡 Bắt đầu REST API polling mode");
     this.isConnected = true;
-    this.emit('connected');
+    this.emit("connected");
 
     // Initial data fetch
     await this.fetchCoinrankingData();
@@ -659,26 +688,26 @@ export class CoinrankingMarketMaker extends EventEmitter {
       await this.fetchCoinrankingData();
     }, 30000);
 
-    console.log('✅ REST API polling mode đã hoạt động');
+    console.log("✅ REST API polling mode đã hoạt động");
   }
 
   private async fetchCoinrankingData(): Promise<void> {
     try {
       const response = await axios.get(`${this.restApiUrl}/coins`, {
         headers: {
-          'X-Access-Token': this.apiKey
+          "X-Access-Token": this.apiKey,
         },
         params: {
-          uuids: this.subscribedAssets.join(','),
-          limit: 50
-        }
+          uuids: this.subscribedAssets.join(","),
+          limit: 50,
+        },
       });
 
       if (response.data && response.data.data && response.data.data.coins) {
         this.processCoinrankingData(response.data.data.coins);
       }
     } catch (error) {
-      console.error('❌ Lỗi khi lấy dữ liệu REST API:', error);
+      console.error("❌ Lỗi khi lấy dữ liệu REST API:", error);
     }
   }
 
@@ -689,13 +718,13 @@ export class CoinrankingMarketMaker extends EventEmitter {
         symbol: coin.symbol,
         name: coin.name,
         price: parseFloat(coin.price),
-        volume: parseFloat(coin['24hVolume'] || 0),
+        volume: parseFloat(coin["24hVolume"] || 0),
         marketCap: parseFloat(coin.marketCap || 0),
         change: parseFloat(coin.change || 0),
         rank: parseInt(coin.rank || 0),
         tier: parseInt(coin.tier || 1),
-        iconUrl: coin.iconUrl || '',
-        color: coin.color || '#000000'
+        iconUrl: coin.iconUrl || "",
+        color: coin.color || "#000000",
       };
 
       this.priceCache.set(asset.uuid, asset);
@@ -706,7 +735,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
       }
 
       // Emit price update
-      this.emit('priceUpdate', asset);
+      this.emit("priceUpdate", asset);
     });
 
     // Analyze gold market opportunities
@@ -731,8 +760,8 @@ export class CoinrankingMarketMaker extends EventEmitter {
       this.ws = null;
     }
 
-    console.log('🔌 Ngắt kết nối Coinranking Market Maker');
-    this.emit('disconnected');
+    console.log("🔌 Ngắt kết nối Coinranking Market Maker");
+    this.emit("disconnected");
   }
 }
 

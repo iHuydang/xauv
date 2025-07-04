@@ -1,32 +1,32 @@
-const express = require('express');
-const path = require('path');
-const { createServer } = require('http');
+const express = require("express");
+const path = require("path");
+const { createServer } = require("http");
 
 const app = express();
 const server = createServer(app);
 
 // Serve static files from client/dist if it exists, otherwise serve a simple interface
-app.use(express.static('client/dist'));
+app.use(express.static("client/dist"));
 app.use(express.json());
 
 // API endpoint to check system status
-app.get('/api/status', (req, res) => {
+app.get("/api/status", (req, res) => {
   res.json({
-    status: 'running',
-    message: 'Gold Trading System Active',
+    status: "running",
+    message: "Gold Trading System Active",
     timestamp: new Date().toISOString(),
-    accounts: 'Exness accounts connected',
+    accounts: "Exness accounts connected",
     systems: {
-      worldGoldScanner: 'active',
-      vietnamGoldScanner: 'active', 
-      telegramBot: 'active',
-      attackSystems: 'ready'
-    }
+      worldGoldScanner: "active",
+      vietnamGoldScanner: "active",
+      telegramBot: "active",
+      attackSystems: "ready",
+    },
   });
 });
 
 // Simple HTML interface if no built client exists
-app.get('*', (req, res) => {
+app.get("*", (req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html lang="vi">
@@ -207,24 +207,26 @@ let currentPortIndex = 0;
 
 function tryNextPort() {
   if (currentPortIndex >= PORTS.length) {
-    console.log('❌ Không thể khởi động server trên bất kỳ cổng nào');
+    console.log("❌ Không thể khởi động server trên bất kỳ cổng nào");
     return;
   }
 
   const port = PORTS[currentPortIndex];
-  const serverInstance = server.listen(port, '0.0.0.0', () => {
-    console.log(`🚀 Gold Trading System UI đang chạy trên http://0.0.0.0:${port}`);
+  const serverInstance = server.listen(port, "0.0.0.0", () => {
+    console.log(
+      `🚀 Gold Trading System UI đang chạy trên http://0.0.0.0:${port}`,
+    );
     console.log(`📱 Truy cập từ browser: http://localhost:${port}`);
     console.log(`🌐 Hoặc: http://[your-replit-url]:${port}`);
   });
 
-  serverInstance.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
+  serverInstance.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
       console.log(`⚠️ Cổng ${port} đã được sử dụng, thử cổng tiếp theo...`);
       currentPortIndex++;
       tryNextPort();
     } else {
-      console.error('Lỗi server:', err);
+      console.error("Lỗi server:", err);
     }
   });
 }

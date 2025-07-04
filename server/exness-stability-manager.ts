@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 
 export interface ConnectionStatus {
   accountId: string;
@@ -6,7 +6,7 @@ export interface ConnectionStatus {
   lastStableTime: Date;
   reconnectAttempts: number;
   autoReconnectEnabled: boolean;
-  connectionHealth: 'excellent' | 'good' | 'poor' | 'disconnected';
+  connectionHealth: "excellent" | "good" | "poor" | "disconnected";
 }
 
 export class ExnessStabilityManager extends EventEmitter {
@@ -23,7 +23,9 @@ export class ExnessStabilityManager extends EventEmitter {
   // Đăng ký account để monitor
   public registerAccount(accountId: string): void {
     if (this.connectionStatus.has(accountId)) {
-      console.log(`Account ${accountId} already registered for stability monitoring`);
+      console.log(
+        `Account ${accountId} already registered for stability monitoring`,
+      );
       return;
     }
 
@@ -33,7 +35,7 @@ export class ExnessStabilityManager extends EventEmitter {
       lastStableTime: new Date(),
       reconnectAttempts: 0,
       autoReconnectEnabled: false, // Mặc định tắt auto-reconnect
-      connectionHealth: 'disconnected'
+      connectionHealth: "disconnected",
     };
 
     this.connectionStatus.set(accountId, status);
@@ -44,13 +46,18 @@ export class ExnessStabilityManager extends EventEmitter {
   public updateConnectionStatus(accountId: string, isConnected: boolean): void {
     const status = this.connectionStatus.get(accountId);
     if (!status) {
-      console.warn(`Account ${accountId} not registered for stability monitoring`);
+      console.warn(
+        `Account ${accountId} not registered for stability monitoring`,
+      );
       return;
     }
 
     status.isStable = isConnected;
-    status.connectionHealth = this.calculateConnectionHealth(accountId, isConnected);
-    
+    status.connectionHealth = this.calculateConnectionHealth(
+      accountId,
+      isConnected,
+    );
+
     if (isConnected) {
       status.lastStableTime = new Date();
       status.reconnectAttempts = 0; // Reset sau khi connect thành công
@@ -60,7 +67,7 @@ export class ExnessStabilityManager extends EventEmitter {
     }
 
     this.connectionStatus.set(accountId, status);
-    this.emit('status_updated', { accountId, status });
+    this.emit("status_updated", { accountId, status });
   }
 
   // Bật/tắt auto-reconnect cho account cụ thể
@@ -73,8 +80,10 @@ export class ExnessStabilityManager extends EventEmitter {
 
     status.autoReconnectEnabled = enabled;
     this.connectionStatus.set(accountId, status);
-    
-    console.log(`Account ${accountId}: Auto-reconnect ${enabled ? 'ENABLED' : 'DISABLED'}`);
+
+    console.log(
+      `Account ${accountId}: Auto-reconnect ${enabled ? "ENABLED" : "DISABLED"}`,
+    );
     return true;
   }
 
@@ -112,40 +121,50 @@ export class ExnessStabilityManager extends EventEmitter {
 
     status.reconnectAttempts++;
     this.connectionStatus.set(accountId, status);
-    
-    console.log(`🔄 Reconnect attempt ${status.reconnectAttempts}/${this.MAX_RECONNECT_ATTEMPTS} for account ${accountId}`);
+
+    console.log(
+      `🔄 Reconnect attempt ${status.reconnectAttempts}/${this.MAX_RECONNECT_ATTEMPTS} for account ${accountId}`,
+    );
   }
 
   // Lấy thông tin status
-  public getConnectionStatus(accountId?: string): ConnectionStatus | Map<string, ConnectionStatus> {
+  public getConnectionStatus(
+    accountId?: string,
+  ): ConnectionStatus | Map<string, ConnectionStatus> {
     if (accountId) {
-      return this.connectionStatus.get(accountId) || {
-        accountId,
-        isStable: false,
-        lastStableTime: new Date(),
-        reconnectAttempts: 0,
-        autoReconnectEnabled: false,
-        connectionHealth: 'disconnected'
-      };
+      return (
+        this.connectionStatus.get(accountId) || {
+          accountId,
+          isStable: false,
+          lastStableTime: new Date(),
+          reconnectAttempts: 0,
+          autoReconnectEnabled: false,
+          connectionHealth: "disconnected",
+        }
+      );
     }
     return this.connectionStatus;
   }
 
   // Tính toán connection health
-  private calculateConnectionHealth(accountId: string, isConnected: boolean): 'excellent' | 'good' | 'poor' | 'disconnected' {
-    if (!isConnected) return 'disconnected';
+  private calculateConnectionHealth(
+    accountId: string,
+    isConnected: boolean,
+  ): "excellent" | "good" | "poor" | "disconnected" {
+    if (!isConnected) return "disconnected";
 
     const status = this.connectionStatus.get(accountId);
-    if (!status) return 'disconnected';
+    if (!status) return "disconnected";
 
     const timeSinceLastStable = Date.now() - status.lastStableTime.getTime();
     const hoursSinceStable = timeSinceLastStable / (1000 * 60 * 60);
 
-    if (hoursSinceStable < 1 && status.reconnectAttempts === 0) return 'excellent';
-    if (hoursSinceStable < 6 && status.reconnectAttempts <= 1) return 'good';
-    if (status.reconnectAttempts <= 2) return 'poor';
-    
-    return 'disconnected';
+    if (hoursSinceStable < 1 && status.reconnectAttempts === 0)
+      return "excellent";
+    if (hoursSinceStable < 6 && status.reconnectAttempts <= 1) return "good";
+    if (status.reconnectAttempts <= 2) return "poor";
+
+    return "disconnected";
   }
 
   // Khởi tạo check định kỳ
@@ -154,7 +173,7 @@ export class ExnessStabilityManager extends EventEmitter {
       this.performStabilityCheck();
     }, this.STABILITY_CHECK_INTERVAL);
 
-    console.log('🛡️ Exness Stability Manager initialized');
+    console.log("🛡️ Exness Stability Manager initialized");
   }
 
   // Thực hiện check định kỳ
@@ -165,8 +184,13 @@ export class ExnessStabilityManager extends EventEmitter {
 
       // Cảnh báo nếu mất kết nối quá 5 phút
       if (!status.isStable && minutesSinceStable > 5) {
-        console.warn(`⚠️ Account ${accountId} has been disconnected for ${Math.round(minutesSinceStable)} minutes`);
-        this.emit('long_disconnection', { accountId, minutesDisconnected: minutesSinceStable });
+        console.warn(
+          `⚠️ Account ${accountId} has been disconnected for ${Math.round(minutesSinceStable)} minutes`,
+        );
+        this.emit("long_disconnection", {
+          accountId,
+          minutesDisconnected: minutesSinceStable,
+        });
       }
 
       // Reset reconnect attempts sau 1 giờ
@@ -184,32 +208,39 @@ export class ExnessStabilityManager extends EventEmitter {
       clearInterval(this.stabilityCheckInterval);
       this.stabilityCheckInterval = null;
     }
-    console.log('🛡️ Exness Stability Manager shutdown completed');
+    console.log("🛡️ Exness Stability Manager shutdown completed");
   }
 
   // Manual reconnect với kiểm tra stability
-  public requestManualReconnect(accountId: string): { allowed: boolean; reason: string } {
+  public requestManualReconnect(accountId: string): {
+    allowed: boolean;
+    reason: string;
+  } {
     const status = this.connectionStatus.get(accountId);
     if (!status) {
-      return { allowed: false, reason: 'Account not registered' };
+      return { allowed: false, reason: "Account not registered" };
     }
 
     if (status.isStable) {
-      return { allowed: false, reason: 'Connection is already stable' };
+      return { allowed: false, reason: "Connection is already stable" };
     }
 
     if (status.reconnectAttempts >= this.MAX_RECONNECT_ATTEMPTS) {
-      return { allowed: false, reason: 'Maximum reconnect attempts reached' };
+      return { allowed: false, reason: "Maximum reconnect attempts reached" };
     }
 
     // Thêm delay giữa các manual reconnect
     const timeSinceLastStable = Date.now() - status.lastStableTime.getTime();
-    if (timeSinceLastStable < 30000) { // 30 seconds minimum
-      return { allowed: false, reason: 'Please wait 30 seconds between reconnect attempts' };
+    if (timeSinceLastStable < 30000) {
+      // 30 seconds minimum
+      return {
+        allowed: false,
+        reason: "Please wait 30 seconds between reconnect attempts",
+      };
     }
 
     this.recordReconnectAttempt(accountId);
-    return { allowed: true, reason: 'Manual reconnect approved' };
+    return { allowed: true, reason: "Manual reconnect approved" };
   }
 }
 

@@ -1,14 +1,14 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { brokerIntegration } from './broker-integration';
-import { forexNewsChecker } from './forex-news-checker';
-import { tradingSignals } from './trading-signals';
-import { signalProcessor } from './signal-processor';
-import { liquidityScanner } from './liquidity-scanner';
-import enhancedGoldAttackRoutes from './enhanced-gold-attack-routes';
-import enhancedForexApiRoutes from './enhanced-forex-api-routes';
-import marketComplianceRoutes from './market-compliance-routes';
+import { brokerIntegration } from "./broker-integration";
+import { forexNewsChecker } from "./forex-news-checker";
+import { tradingSignals } from "./trading-signals";
+import { signalProcessor } from "./signal-processor";
+import { liquidityScanner } from "./liquidity-scanner";
+import enhancedGoldAttackRoutes from "./enhanced-gold-attack-routes";
+import enhancedForexApiRoutes from "./enhanced-forex-api-routes";
+import marketComplianceRoutes from "./market-compliance-routes";
 
 const app = express();
 app.use(express.json());
@@ -64,24 +64,26 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  app.use('/api/enhanced-gold', enhancedGoldAttackRoutes);
-  app.use('/api/enhanced-forex', enhancedForexApiRoutes);
-  app.use('/api/market-compliance', marketComplianceRoutes);
+  app.use("/api/enhanced-gold", enhancedGoldAttackRoutes);
+  app.use("/api/enhanced-forex", enhancedForexApiRoutes);
+  app.use("/api/market-compliance", marketComplianceRoutes);
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = process.env.PORT || 5000;
-  
-  server.on('error', (error: any) => {
-    if (error.code === 'EADDRINUSE') {
-      log(`Port ${port} is already in use. Please stop other processes or wait a moment.`);
+
+  server.on("error", (error: any) => {
+    if (error.code === "EADDRINUSE") {
+      log(
+        `Port ${port} is already in use. Please stop other processes or wait a moment.`,
+      );
       process.exit(1);
     } else {
       throw error;
     }
   });
-  
+
   server.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
     log(`Server accessible at http://0.0.0.0:${port}`);

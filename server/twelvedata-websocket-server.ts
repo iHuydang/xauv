@@ -1,9 +1,9 @@
-import { WebSocketServer, WebSocket } from 'ws';
-import { Server } from 'http';
-import { twelveDataIntegration } from './twelvedata-integration';
+import { WebSocketServer, WebSocket } from "ws";
+import { Server } from "http";
+import { twelveDataIntegration } from "./twelvedata-integration";
 
 export interface TwelveDataWebSocketMessage {
-  type: 'subscribe' | 'unsubscribe' | 'price_update' | 'status' | 'error';
+  type: "subscribe" | "unsubscribe" | "price_update" | "status" | "error";
   symbol?: string;
   symbols?: string[];
   data?: any;
@@ -21,116 +21,116 @@ export class TwelveDataWebSocketServer {
   }
 
   public initialize(server: Server): void {
-    this.wss = new WebSocketServer({ 
-      server: server, 
-      path: '/ws/twelvedata' 
+    this.wss = new WebSocketServer({
+      server: server,
+      path: "/ws/twelvedata",
     });
 
-    this.wss.on('connection', (ws: WebSocket) => {
-      console.log('📡 New TwelveData WebSocket client connected');
+    this.wss.on("connection", (ws: WebSocket) => {
+      console.log("📡 New TwelveData WebSocket client connected");
       this.clients.add(ws);
 
       // Send welcome message with current status
       this.sendToClient(ws, {
-        type: 'status',
+        type: "status",
         data: {
           connected: true,
           available_endpoints: this.getAvailableEndpoints(),
-          connection_status: twelveDataIntegration.getConnectionStatus()
+          connection_status: twelveDataIntegration.getConnectionStatus(),
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
-      ws.on('message', (data: Buffer) => {
+      ws.on("message", (data: Buffer) => {
         try {
           const message = JSON.parse(data.toString());
           this.handleClientMessage(ws, message);
         } catch (error) {
-          this.sendError(ws, 'Invalid JSON message format');
+          this.sendError(ws, "Invalid JSON message format");
         }
       });
 
-      ws.on('close', () => {
-        console.log('📡 TwelveData WebSocket client disconnected');
+      ws.on("close", () => {
+        console.log("📡 TwelveData WebSocket client disconnected");
         this.clients.delete(ws);
         this.removeClientFromAllSubscriptions(ws);
       });
 
-      ws.on('error', (error: Error) => {
-        console.error('❌ TwelveData WebSocket client error:', error);
+      ws.on("error", (error: Error) => {
+        console.error("❌ TwelveData WebSocket client error:", error);
         this.clients.delete(ws);
         this.removeClientFromAllSubscriptions(ws);
       });
     });
 
-    console.log('🚀 TwelveData WebSocket server initialized on /ws/twelvedata');
+    console.log("🚀 TwelveData WebSocket server initialized on /ws/twelvedata");
   }
 
   private setupTwelveDataEventListeners(): void {
     // Listen for price updates from TwelveData integration
-    twelveDataIntegration.on('price_update', (data) => {
+    twelveDataIntegration.on("price_update", (data) => {
       this.broadcastPriceUpdate(data.symbol, data);
     });
 
     // Listen for gold price updates
-    twelveDataIntegration.on('gold_price_update', (data) => {
+    twelveDataIntegration.on("gold_price_update", (data) => {
       this.broadcastToAllClients({
-        type: 'price_update',
+        type: "price_update",
         symbol: data.symbol,
         data: {
           ...data,
-          category: 'gold',
-          integration_source: 'twelvedata'
+          category: "gold",
+          integration_source: "twelvedata",
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     });
 
     // Listen for forex price updates
-    twelveDataIntegration.on('forex_price_update', (data) => {
+    twelveDataIntegration.on("forex_price_update", (data) => {
       this.broadcastToAllClients({
-        type: 'price_update',
+        type: "price_update",
         symbol: data.symbol,
         data: {
           ...data,
-          category: 'forex',
-          integration_source: 'twelvedata'
+          category: "forex",
+          integration_source: "twelvedata",
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     });
 
     // Listen for connection events
-    twelveDataIntegration.on('websocket_connected', () => {
+    twelveDataIntegration.on("websocket_connected", () => {
       this.broadcastToAllClients({
-        type: 'status',
+        type: "status",
         data: {
-          twelvedata_websocket: 'connected',
-          message: 'TwelveData WebSocket connection established'
+          twelvedata_websocket: "connected",
+          message: "TwelveData WebSocket connection established",
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     });
 
-    twelveDataIntegration.on('websocket_disconnected', () => {
+    twelveDataIntegration.on("websocket_disconnected", () => {
       this.broadcastToAllClients({
-        type: 'status',
+        type: "status",
         data: {
-          twelvedata_websocket: 'disconnected',
-          message: 'TwelveData WebSocket connection lost'
+          twelvedata_websocket: "disconnected",
+          message: "TwelveData WebSocket connection lost",
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     });
 
-    twelveDataIntegration.on('error', (error) => {
+    twelveDataIntegration.on("error", (error) => {
       this.broadcastToAllClients({
-        type: 'error',
+        type: "error",
         data: {
-          error: error.message || 'Unknown TwelveData error',
-          source: 'twelvedata_integration'
+          error: error.message || "Unknown TwelveData error",
+          source: "twelvedata_integration",
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     });
   }
@@ -138,46 +138,46 @@ export class TwelveDataWebSocketServer {
   private handleClientMessage(ws: WebSocket, message: any): void {
     try {
       switch (message.type) {
-        case 'subscribe':
+        case "subscribe":
           this.handleSubscribe(ws, message);
           break;
-        
-        case 'unsubscribe':
+
+        case "unsubscribe":
           this.handleUnsubscribe(ws, message);
           break;
-        
-        case 'get_status':
+
+        case "get_status":
           this.sendToClient(ws, {
-            type: 'status',
+            type: "status",
             data: twelveDataIntegration.getConnectionStatus(),
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
           break;
-        
-        case 'get_exchanges':
+
+        case "get_exchanges":
           this.handleGetExchanges(ws, message);
           break;
-        
-        case 'get_forex_pairs':
+
+        case "get_forex_pairs":
           this.sendToClient(ws, {
-            type: 'forex_pairs',
+            type: "forex_pairs",
             data: twelveDataIntegration.getForexPairs(),
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
           break;
-        
-        case 'get_crypto_pairs':
+
+        case "get_crypto_pairs":
           this.sendToClient(ws, {
-            type: 'crypto_pairs',
+            type: "crypto_pairs",
             data: twelveDataIntegration.getCryptoPairs(),
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
           break;
-        
-        case 'get_price':
+
+        case "get_price":
           this.handleGetPrice(ws, message);
           break;
-        
+
         default:
           this.sendError(ws, `Unknown message type: ${message.type}`);
       }
@@ -187,14 +187,16 @@ export class TwelveDataWebSocketServer {
   }
 
   private handleSubscribe(ws: WebSocket, message: any): void {
-    const symbols = Array.isArray(message.symbols) ? message.symbols : [message.symbol];
+    const symbols = Array.isArray(message.symbols)
+      ? message.symbols
+      : [message.symbol];
     const results: any[] = [];
 
     symbols.forEach((symbol: string) => {
       if (!symbol) return;
 
       const upperSymbol = symbol.toUpperCase();
-      
+
       // Add client to symbol subscription
       if (!this.subscribedSymbols.has(upperSymbol)) {
         this.subscribedSymbols.set(upperSymbol, new Set());
@@ -203,37 +205,39 @@ export class TwelveDataWebSocketServer {
 
       // Subscribe to TwelveData if not already subscribed
       const success = twelveDataIntegration.subscribeToSymbol(upperSymbol);
-      
+
       results.push({
         symbol: upperSymbol,
         subscribed: success,
-        clients_count: this.subscribedSymbols.get(upperSymbol)!.size
+        clients_count: this.subscribedSymbols.get(upperSymbol)!.size,
       });
     });
 
     this.sendToClient(ws, {
-      type: 'subscribe',
+      type: "subscribe",
       data: {
         results,
         total_symbols: results.length,
-        success_count: results.filter(r => r.subscribed).length
+        success_count: results.filter((r) => r.subscribed).length,
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   private handleUnsubscribe(ws: WebSocket, message: any): void {
-    const symbols = Array.isArray(message.symbols) ? message.symbols : [message.symbol];
+    const symbols = Array.isArray(message.symbols)
+      ? message.symbols
+      : [message.symbol];
     const results: any[] = [];
 
     symbols.forEach((symbol: string) => {
       if (!symbol) return;
 
       const upperSymbol = symbol.toUpperCase();
-      
+
       if (this.subscribedSymbols.has(upperSymbol)) {
         this.subscribedSymbols.get(upperSymbol)!.delete(ws);
-        
+
         // If no clients left for this symbol, unsubscribe from TwelveData
         if (this.subscribedSymbols.get(upperSymbol)!.size === 0) {
           this.subscribedSymbols.delete(upperSymbol);
@@ -244,51 +248,53 @@ export class TwelveDataWebSocketServer {
       results.push({
         symbol: upperSymbol,
         unsubscribed: true,
-        remaining_clients: this.subscribedSymbols.get(upperSymbol)?.size || 0
+        remaining_clients: this.subscribedSymbols.get(upperSymbol)?.size || 0,
       });
     });
 
     this.sendToClient(ws, {
-      type: 'unsubscribe',
+      type: "unsubscribe",
       data: {
         results,
-        total_symbols: results.length
+        total_symbols: results.length,
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   private handleGetExchanges(ws: WebSocket, message: any): void {
-    const type = message.exchange_type as 'stock' | 'crypto' | undefined;
+    const type = message.exchange_type as "stock" | "crypto" | undefined;
     const exchanges = twelveDataIntegration.getExchanges(type);
-    
+
     this.sendToClient(ws, {
-      type: 'exchanges',
+      type: "exchanges",
       data: {
         exchanges,
         total_count: exchanges.length,
-        type: type || 'all'
+        type: type || "all",
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   private async handleGetPrice(ws: WebSocket, message: any): Promise<void> {
     const symbol = message.symbol;
-    
+
     if (!symbol) {
-      this.sendError(ws, 'Symbol is required for price request');
+      this.sendError(ws, "Symbol is required for price request");
       return;
     }
 
     try {
-      const priceData = await twelveDataIntegration.getRealTimePrice(symbol.toUpperCase());
-      
+      const priceData = await twelveDataIntegration.getRealTimePrice(
+        symbol.toUpperCase(),
+      );
+
       this.sendToClient(ws, {
-        type: 'price_update',
+        type: "price_update",
         symbol: symbol.toUpperCase(),
         data: priceData,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     } catch (error) {
       this.sendError(ws, `Failed to get price for ${symbol}: ${error}`);
@@ -299,13 +305,13 @@ export class TwelveDataWebSocketServer {
     if (this.subscribedSymbols.has(symbol)) {
       const clients = this.subscribedSymbols.get(symbol)!;
       const message: TwelveDataWebSocketMessage = {
-        type: 'price_update',
+        type: "price_update",
         symbol: symbol,
         data: data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
-      clients.forEach(client => {
+      clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           this.sendToClient(client, message);
         }
@@ -314,14 +320,17 @@ export class TwelveDataWebSocketServer {
   }
 
   private broadcastToAllClients(message: TwelveDataWebSocketMessage): void {
-    this.clients.forEach(client => {
+    this.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         this.sendToClient(client, message);
       }
     });
   }
 
-  private sendToClient(ws: WebSocket, message: TwelveDataWebSocketMessage): void {
+  private sendToClient(
+    ws: WebSocket,
+    message: TwelveDataWebSocketMessage,
+  ): void {
     if (ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(message));
     }
@@ -329,9 +338,9 @@ export class TwelveDataWebSocketServer {
 
   private sendError(ws: WebSocket, errorMessage: string): void {
     this.sendToClient(ws, {
-      type: 'error',
+      type: "error",
       message: errorMessage,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -347,13 +356,13 @@ export class TwelveDataWebSocketServer {
 
   private getAvailableEndpoints(): string[] {
     return [
-      'subscribe',
-      'unsubscribe', 
-      'get_status',
-      'get_exchanges',
-      'get_forex_pairs',
-      'get_crypto_pairs',
-      'get_price'
+      "subscribe",
+      "unsubscribe",
+      "get_status",
+      "get_exchanges",
+      "get_forex_pairs",
+      "get_crypto_pairs",
+      "get_price",
     ];
   }
 
@@ -362,21 +371,20 @@ export class TwelveDataWebSocketServer {
       total_clients: this.clients.size,
       subscribed_symbols: Array.from(this.subscribedSymbols.keys()),
       symbol_subscriptions: Object.fromEntries(
-        Array.from(this.subscribedSymbols.entries()).map(([symbol, clients]) => [
-          symbol,
-          clients.size
-        ])
-      )
+        Array.from(this.subscribedSymbols.entries()).map(
+          ([symbol, clients]) => [symbol, clients.size],
+        ),
+      ),
     };
   }
 
   public disconnect(): void {
     if (this.wss) {
-      this.clients.forEach(client => client.close());
+      this.clients.forEach((client) => client.close());
       this.wss.close();
       this.clients.clear();
       this.subscribedSymbols.clear();
-      console.log('🔌 TwelveData WebSocket server disconnected');
+      console.log("🔌 TwelveData WebSocket server disconnected");
     }
   }
 }

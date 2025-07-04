@@ -1,10 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
-import { useWebSocket } from '@/hooks/use-websocket';
-import { formatPrice, getPriceChangeClass, getPriceChangeIcon, formatPercentage } from '@/lib/trading-utils';
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Edit3, Save, X } from 'lucide-react';
+import { useQuery } from "@tanstack/react-query";
+import { useWebSocket } from "@/hooks/use-websocket";
+import {
+  formatPrice,
+  getPriceChangeClass,
+  getPriceChangeIcon,
+  formatPercentage,
+} from "@/lib/trading-utils";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Edit3, Save, X } from "lucide-react";
 
 interface MarketWatchProps {
   onSymbolSelect: (symbol: string) => void;
@@ -17,17 +22,22 @@ interface EditingPrice {
   ask: string;
 }
 
-export default function MarketWatch({ onSymbolSelect, selectedSymbol }: MarketWatchProps) {
+export default function MarketWatch({
+  onSymbolSelect,
+  selectedSymbol,
+}: MarketWatchProps) {
   const { data: symbols } = useQuery({
-    queryKey: ['/api/symbols'],
+    queryKey: ["/api/symbols"],
   });
 
   const { prices } = useWebSocket();
   const [editingPrice, setEditingPrice] = useState<EditingPrice | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   const getPrice = (symbol: string) => {
-    return prices[symbol] || { bid: '0', ask: '0', change: '0', changePercent: '0' };
+    return (
+      prices[symbol] || { bid: "0", ask: "0", change: "0", changePercent: "0" }
+    );
   };
 
   const handleEditPrice = (symbol: any) => {
@@ -41,24 +51,27 @@ export default function MarketWatch({ onSymbolSelect, selectedSymbol }: MarketWa
 
   const handleSavePrice = async () => {
     if (!editingPrice) return;
-    
+
     try {
-      const response = await fetch(`/api/symbols/${editingPrice.symbol}/price`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `/api/symbols/${editingPrice.symbol}/price`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            bid: editingPrice.bid,
+            ask: editingPrice.ask,
+          }),
         },
-        body: JSON.stringify({
-          bid: editingPrice.bid,
-          ask: editingPrice.ask,
-        }),
-      });
-      
+      );
+
       if (response.ok) {
         setEditingPrice(null);
       }
     } catch (error) {
-      console.error('Failed to update price:', error);
+      console.error("Failed to update price:", error);
     }
   };
 
@@ -66,30 +79,52 @@ export default function MarketWatch({ onSymbolSelect, selectedSymbol }: MarketWa
     setEditingPrice(null);
   };
 
-  const filteredSymbols = symbols?.filter(symbol => 
-    symbol.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    symbol.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSymbols = symbols?.filter(
+    (symbol) =>
+      symbol.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      symbol.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const groupedSymbols = filteredSymbols?.reduce((acc, symbol) => {
-    let category = 'Other';
-    
-    if (symbol.symbol.includes('USD') || symbol.symbol.includes('EUR') || symbol.symbol.includes('GBP') || symbol.symbol.includes('JPY')) {
-      category = 'Forex';
-    } else if (symbol.symbol.startsWith('XAU') || symbol.symbol.startsWith('XAG') || symbol.symbol.startsWith('XPT') || symbol.symbol.startsWith('XPD')) {
-      category = 'Metals';
-    } else if (symbol.symbol.includes('OIL')) {
-      category = 'Energy';
-    } else if (symbol.symbol.match(/US30|US500|NAS100|GER40|UK100|JPN225/)) {
-      category = 'Indices';
-    } else if (symbol.symbol.includes('BTC') || symbol.symbol.includes('ETH') || symbol.symbol.includes('ADA') || symbol.symbol.includes('SOL')) {
-      category = 'Crypto';
-    }
-    
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(symbol);
-    return acc;
-  }, {} as Record<string, any[]>) || {};
+  const groupedSymbols =
+    filteredSymbols?.reduce(
+      (acc, symbol) => {
+        let category = "Other";
+
+        if (
+          symbol.symbol.includes("USD") ||
+          symbol.symbol.includes("EUR") ||
+          symbol.symbol.includes("GBP") ||
+          symbol.symbol.includes("JPY")
+        ) {
+          category = "Forex";
+        } else if (
+          symbol.symbol.startsWith("XAU") ||
+          symbol.symbol.startsWith("XAG") ||
+          symbol.symbol.startsWith("XPT") ||
+          symbol.symbol.startsWith("XPD")
+        ) {
+          category = "Metals";
+        } else if (symbol.symbol.includes("OIL")) {
+          category = "Energy";
+        } else if (
+          symbol.symbol.match(/US30|US500|NAS100|GER40|UK100|JPN225/)
+        ) {
+          category = "Indices";
+        } else if (
+          symbol.symbol.includes("BTC") ||
+          symbol.symbol.includes("ETH") ||
+          symbol.symbol.includes("ADA") ||
+          symbol.symbol.includes("SOL")
+        ) {
+          category = "Crypto";
+        }
+
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(symbol);
+        return acc;
+      },
+      {} as Record<string, any[]>,
+    ) || {};
 
   return (
     <div className="w-96 trading-bg-secondary trading-border border-r overflow-hidden flex flex-col">
@@ -102,49 +137,67 @@ export default function MarketWatch({ onSymbolSelect, selectedSymbol }: MarketWa
           className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
         />
       </div>
-      
+
       <div className="flex-1 overflow-y-auto">
         {Object.entries(groupedSymbols).map(([category, categorySymbols]) => (
           <div key={category}>
             <div className="px-4 py-2 bg-gray-800 trading-border border-b">
               <h3 className="text-sm font-medium text-gray-300">{category}</h3>
             </div>
-            
+
             {categorySymbols.map((symbol) => {
               const priceData = getPrice(symbol.symbol);
-              const changeClass = getPriceChangeClass(priceData.changePercent || symbol.changePercent);
-              const changeIcon = getPriceChangeIcon(priceData.changePercent || symbol.changePercent);
+              const changeClass = getPriceChangeClass(
+                priceData.changePercent || symbol.changePercent,
+              );
+              const changeIcon = getPriceChangeIcon(
+                priceData.changePercent || symbol.changePercent,
+              );
               const isEditing = editingPrice?.symbol === symbol.symbol;
-              
+
               return (
                 <div
                   key={symbol.symbol}
                   className={`px-4 py-3 trading-border border-b hover:bg-gray-800 transition-colors ${
-                    selectedSymbol === symbol.symbol ? 'bg-gray-800' : ''
+                    selectedSymbol === symbol.symbol ? "bg-gray-800" : ""
                   }`}
                 >
                   <div className="flex justify-between items-center">
-                    <div 
+                    <div
                       className="flex-1 cursor-pointer"
                       onClick={() => onSymbolSelect(symbol.symbol)}
                     >
-                      <div className="font-medium text-white text-sm">{symbol.symbol}</div>
-                      <div className="text-xs text-gray-400 truncate">{symbol.name}</div>
+                      <div className="font-medium text-white text-sm">
+                        {symbol.symbol}
+                      </div>
+                      <div className="text-xs text-gray-400 truncate">
+                        {symbol.name}
+                      </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       {isEditing ? (
                         <div className="flex flex-col gap-1">
                           <div className="flex gap-1">
                             <Input
                               value={editingPrice.bid}
-                              onChange={(e) => setEditingPrice({...editingPrice, bid: e.target.value})}
+                              onChange={(e) =>
+                                setEditingPrice({
+                                  ...editingPrice,
+                                  bid: e.target.value,
+                                })
+                              }
                               className="w-20 h-6 text-xs bg-gray-700 border-gray-600"
                               placeholder="Bid"
                             />
                             <Input
                               value={editingPrice.ask}
-                              onChange={(e) => setEditingPrice({...editingPrice, ask: e.target.value})}
+                              onChange={(e) =>
+                                setEditingPrice({
+                                  ...editingPrice,
+                                  ask: e.target.value,
+                                })
+                              }
                               className="w-20 h-6 text-xs bg-gray-700 border-gray-600"
                               placeholder="Ask"
                             />
@@ -172,10 +225,16 @@ export default function MarketWatch({ onSymbolSelect, selectedSymbol }: MarketWa
                           <div className="flex items-center gap-2">
                             <div className="text-xs">
                               <div className="text-red-400 font-mono">
-                                {formatPrice(priceData.bid || symbol.bid, symbol.symbol)}
+                                {formatPrice(
+                                  priceData.bid || symbol.bid,
+                                  symbol.symbol,
+                                )}
                               </div>
                               <div className="text-blue-400 font-mono">
-                                {formatPrice(priceData.ask || symbol.ask, symbol.symbol)}
+                                {formatPrice(
+                                  priceData.ask || symbol.ask,
+                                  symbol.symbol,
+                                )}
                               </div>
                             </div>
                             <Button
@@ -189,7 +248,10 @@ export default function MarketWatch({ onSymbolSelect, selectedSymbol }: MarketWa
                           </div>
                           <div className="text-xs">
                             <span className={changeClass}>
-                              {changeIcon} {formatPercentage(priceData.changePercent || symbol.changePercent)}
+                              {changeIcon}{" "}
+                              {formatPercentage(
+                                priceData.changePercent || symbol.changePercent,
+                              )}
                             </span>
                           </div>
                         </div>

@@ -1,17 +1,28 @@
-
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Badge } from './ui/badge';
-import { Alert, AlertDescription } from './ui/alert';
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Badge } from "./ui/badge";
+import { Alert, AlertDescription } from "./ui/alert";
 
 interface MarketControlOrder {
   orderId: string;
   accountId: string;
   symbol: string;
-  side: 'buy' | 'sell';
+  side: "buy" | "sell";
   volume: number;
   expectedPriceMove: number;
   controlIntensity: string;
@@ -28,81 +39,87 @@ interface SlippageStats {
 }
 
 export default function MarketCompliancePanel() {
-  const [activeControls, setActiveControls] = useState<MarketControlOrder[]>([]);
-  const [slippageStats, setSlippageStats] = useState<SlippageStats | null>(null);
+  const [activeControls, setActiveControls] = useState<MarketControlOrder[]>(
+    [],
+  );
+  const [slippageStats, setSlippageStats] = useState<SlippageStats | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  
+  const [message, setMessage] = useState("");
+
   // Form state
-  const [accountId, setAccountId] = useState('exness-405691964');
-  const [symbol, setSymbol] = useState('EURUSD');
-  const [side, setSide] = useState<'buy' | 'sell'>('buy');
-  const [volume, setVolume] = useState('0.01');
-  const [pips, setPips] = useState('5');
-  const [direction, setDirection] = useState<'up' | 'down'>('up');
+  const [accountId, setAccountId] = useState("exness-405691964");
+  const [symbol, setSymbol] = useState("EURUSD");
+  const [side, setSide] = useState<"buy" | "sell">("buy");
+  const [volume, setVolume] = useState("0.01");
+  const [pips, setPips] = useState("5");
+  const [direction, setDirection] = useState<"up" | "down">("up");
 
   // Load data on component mount
   useEffect(() => {
     loadActiveControls();
     loadSlippageStats();
-    
+
     // Refresh every 5 seconds
     const interval = setInterval(() => {
       loadActiveControls();
       loadSlippageStats();
     }, 5000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
   const loadActiveControls = async () => {
     try {
-      const response = await fetch('/api/market-compliance/active-controls');
+      const response = await fetch("/api/market-compliance/active-controls");
       const data = await response.json();
-      
+
       if (data.success) {
         setActiveControls(data.data.activeControls);
       }
     } catch (error) {
-      console.error('Failed to load active controls:', error);
+      console.error("Failed to load active controls:", error);
     }
   };
 
   const loadSlippageStats = async () => {
     try {
-      const response = await fetch('/api/market-compliance/slippage-stats');
+      const response = await fetch("/api/market-compliance/slippage-stats");
       const data = await response.json();
-      
+
       if (data.success) {
         setSlippageStats(data.data);
       }
     } catch (error) {
-      console.error('Failed to load slippage stats:', error);
+      console.error("Failed to load slippage stats:", error);
     }
   };
 
   const forceCompliance = async () => {
     setIsLoading(true);
-    setMessage('');
-    
+    setMessage("");
+
     try {
-      const response = await fetch('/api/market-compliance/force-compliance', {
-        method: 'POST',
+      const response = await fetch("/api/market-compliance/force-compliance", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           accountId,
           symbol,
           side,
-          volume: parseFloat(volume)
+          volume: parseFloat(volume),
         }),
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
-        setMessage(`✅ Market compliance forced: ${symbol} ${side.toUpperCase()}`);
+        setMessage(
+          `✅ Market compliance forced: ${symbol} ${side.toUpperCase()}`,
+        );
         loadActiveControls();
       } else {
         setMessage(`❌ Failed: ${data.error}`);
@@ -116,25 +133,27 @@ export default function MarketCompliancePanel() {
 
   const forcePriceMove = async () => {
     setIsLoading(true);
-    setMessage('');
-    
+    setMessage("");
+
     try {
-      const response = await fetch('/api/market-compliance/force-price-move', {
-        method: 'POST',
+      const response = await fetch("/api/market-compliance/force-price-move", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           symbol,
           direction,
-          pips: parseInt(pips)
+          pips: parseInt(pips),
         }),
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
-        setMessage(`⚡ Price movement forced: ${symbol} ${direction.toUpperCase()} ${pips} pips`);
+        setMessage(
+          `⚡ Price movement forced: ${symbol} ${direction.toUpperCase()} ${pips} pips`,
+        );
       } else {
         setMessage(`❌ Failed: ${data.error}`);
       }
@@ -147,17 +166,20 @@ export default function MarketCompliancePanel() {
 
   const emergencyStop = async () => {
     setIsLoading(true);
-    setMessage('');
-    
+    setMessage("");
+
     try {
-      const response = await fetch('/api/market-compliance/emergency-stop-slippage', {
-        method: 'POST',
-      });
-      
+      const response = await fetch(
+        "/api/market-compliance/emergency-stop-slippage",
+        {
+          method: "POST",
+        },
+      );
+
       const data = await response.json();
-      
+
       if (data.success) {
-        setMessage('🚨 Emergency stop activated - All slippage corrected');
+        setMessage("🚨 Emergency stop activated - All slippage corrected");
         loadActiveControls();
         loadSlippageStats();
       } else {
@@ -172,26 +194,28 @@ export default function MarketCompliancePanel() {
 
   const trackOrder = async () => {
     setIsLoading(true);
-    setMessage('');
-    
+    setMessage("");
+
     try {
-      const response = await fetch('/api/market-compliance/track-order', {
-        method: 'POST',
+      const response = await fetch("/api/market-compliance/track-order", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           accountId,
           symbol,
           side,
-          volume: parseFloat(volume)
+          volume: parseFloat(volume),
         }),
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
-        setMessage(`📊 Order tracked: ${symbol} ${side.toUpperCase()} - Compliance enforced`);
+        setMessage(
+          `📊 Order tracked: ${symbol} ${side.toUpperCase()} - Compliance enforced`,
+        );
       } else {
         setMessage(`❌ Failed: ${data.error}`);
       }
@@ -221,11 +245,21 @@ export default function MarketCompliancePanel() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="exness-405691964">Exness 405691964</SelectItem>
-                <SelectItem value="exness-205251387">Exness 205251387</SelectItem>
-                <SelectItem value="exness-405311421">Exness 405311421</SelectItem>
-                <SelectItem value="anonymous-demo-001">Anonymous Demo 001</SelectItem>
-                <SelectItem value="anonymous-demo-002">Anonymous Demo 002</SelectItem>
+                <SelectItem value="exness-405691964">
+                  Exness 405691964
+                </SelectItem>
+                <SelectItem value="exness-205251387">
+                  Exness 205251387
+                </SelectItem>
+                <SelectItem value="exness-405311421">
+                  Exness 405311421
+                </SelectItem>
+                <SelectItem value="anonymous-demo-001">
+                  Anonymous Demo 001
+                </SelectItem>
+                <SelectItem value="anonymous-demo-002">
+                  Anonymous Demo 002
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -250,13 +284,18 @@ export default function MarketCompliancePanel() {
           {/* Side */}
           <div>
             <label className="text-sm font-medium">Order Side</label>
-            <Select value={side} onValueChange={(value: 'buy' | 'sell') => setSide(value)}>
+            <Select
+              value={side}
+              onValueChange={(value: "buy" | "sell") => setSide(value)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="buy">🟢 BUY (Price must go UP)</SelectItem>
-                <SelectItem value="sell">🔴 SELL (Price must go DOWN)</SelectItem>
+                <SelectItem value="sell">
+                  🔴 SELL (Price must go DOWN)
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -276,18 +315,14 @@ export default function MarketCompliancePanel() {
 
           {/* Control Buttons */}
           <div className="grid grid-cols-2 gap-2">
-            <Button 
-              onClick={forceCompliance} 
+            <Button
+              onClick={forceCompliance}
               disabled={isLoading}
               className="bg-green-600 hover:bg-green-700"
             >
               🚀 Force Compliance
             </Button>
-            <Button 
-              onClick={trackOrder} 
-              disabled={isLoading}
-              variant="outline"
-            >
+            <Button onClick={trackOrder} disabled={isLoading} variant="outline">
               📊 Track Order
             </Button>
           </div>
@@ -298,7 +333,10 @@ export default function MarketCompliancePanel() {
             <div className="grid grid-cols-2 gap-2 mb-2">
               <div>
                 <label className="text-sm">Direction</label>
-                <Select value={direction} onValueChange={(value: 'up' | 'down') => setDirection(value)}>
+                <Select
+                  value={direction}
+                  onValueChange={(value: "up" | "down") => setDirection(value)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -318,8 +356,8 @@ export default function MarketCompliancePanel() {
                 />
               </div>
             </div>
-            <Button 
-              onClick={forcePriceMove} 
+            <Button
+              onClick={forcePriceMove}
               disabled={isLoading}
               className="w-full bg-blue-600 hover:bg-blue-700"
             >
@@ -329,8 +367,8 @@ export default function MarketCompliancePanel() {
 
           {/* Emergency Controls */}
           <div className="border-t pt-4">
-            <Button 
-              onClick={emergencyStop} 
+            <Button
+              onClick={emergencyStop}
               disabled={isLoading}
               variant="destructive"
               className="w-full"
@@ -360,11 +398,15 @@ export default function MarketCompliancePanel() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <div className="font-medium">Total Events</div>
-                  <div className="text-lg">{slippageStats.totalSlippageEvents}</div>
+                  <div className="text-lg">
+                    {slippageStats.totalSlippageEvents}
+                  </div>
                 </div>
                 <div>
                   <div className="font-medium">Corrected</div>
-                  <div className="text-lg text-green-600">{slippageStats.correctedEvents}</div>
+                  <div className="text-lg text-green-600">
+                    {slippageStats.correctedEvents}
+                  </div>
                 </div>
                 <div>
                   <div className="font-medium">Success Rate</div>
@@ -372,7 +414,9 @@ export default function MarketCompliancePanel() {
                 </div>
                 <div>
                   <div className="font-medium">Avg Slippage</div>
-                  <div className="text-lg">{slippageStats.averageSlippagePips} pips</div>
+                  <div className="text-lg">
+                    {slippageStats.averageSlippagePips} pips
+                  </div>
                 </div>
                 <div>
                   <div className="font-medium">Active Orders</div>
@@ -380,7 +424,9 @@ export default function MarketCompliancePanel() {
                 </div>
                 <div>
                   <div className="font-medium">Protected Accounts</div>
-                  <div className="text-lg">{slippageStats.protectedAccounts}</div>
+                  <div className="text-lg">
+                    {slippageStats.protectedAccounts}
+                  </div>
                 </div>
               </div>
             ) : (
@@ -417,11 +463,11 @@ export default function MarketCompliancePanel() {
                       <div className="text-right">
                         <Badge
                           variant={
-                            control.status === 'completed'
-                              ? 'default'
-                              : control.status === 'controlling'
-                              ? 'secondary'
-                              : 'outline'
+                            control.status === "completed"
+                              ? "default"
+                              : control.status === "controlling"
+                                ? "secondary"
+                                : "outline"
                           }
                         >
                           {control.status}

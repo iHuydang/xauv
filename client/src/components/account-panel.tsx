@@ -1,21 +1,33 @@
-
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 interface TradingAccount {
   id: string;
   accountNumber: string;
   server: string;
   broker: string;
-  accountType: 'real' | 'demo';
+  accountType: "real" | "demo";
   balance: number;
   equity: number;
   margin: number;
@@ -29,53 +41,58 @@ interface TradingAccount {
 }
 
 export default function AccountPanel() {
-  const [selectedAccount, setSelectedAccount] = useState<string>('');
-  const [password, setPassword] = useState('');
-  const [investorPassword, setInvestorPassword] = useState('');
+  const [selectedAccount, setSelectedAccount] = useState<string>("");
+  const [password, setPassword] = useState("");
+  const [investorPassword, setInvestorPassword] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
-  
+
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const { data: accounts, isLoading } = useQuery({
-    queryKey: ['/api/trading-accounts'],
+    queryKey: ["/api/trading-accounts"],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   const connectAccountMutation = useMutation({
-    mutationFn: async ({ accountId, password, investorPassword }: { 
-      accountId: string, 
-      password: string, 
-      investorPassword?: string 
+    mutationFn: async ({
+      accountId,
+      password,
+      investorPassword,
+    }: {
+      accountId: string;
+      password: string;
+      investorPassword?: string;
     }) => {
-      return apiRequest('POST', `/api/trading-accounts/${accountId}/connect`, {
+      return apiRequest("POST", `/api/trading-accounts/${accountId}/connect`, {
         password,
-        investorPassword
+        investorPassword,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/trading-accounts'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/trading-accounts"] });
       toast({
         title: "Kết nối thành công",
         description: "Tài khoản đã được kết nối thành công",
       });
-      setPassword('');
-      setInvestorPassword('');
+      setPassword("");
+      setInvestorPassword("");
     },
     onError: () => {
       toast({
         title: "Lỗi kết nối",
-        description: "Không thể kết nối tài khoản. Vui lòng kiểm tra thông tin đăng nhập.",
+        description:
+          "Không thể kết nối tài khoản. Vui lòng kiểm tra thông tin đăng nhập.",
         variant: "destructive",
       });
     },
   });
 
   const syncAccountMutation = useMutation({
-    mutationFn: (accountId: string) => 
-      apiRequest('GET', `/api/trading-accounts/${accountId}/sync`),
+    mutationFn: (accountId: string) =>
+      apiRequest("GET", `/api/trading-accounts/${accountId}/sync`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/trading-accounts'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/trading-accounts"] });
       toast({
         title: "Đồng bộ thành công",
         description: "Dữ liệu tài khoản đã được cập nhật",
@@ -97,7 +114,7 @@ export default function AccountPanel() {
     await connectAccountMutation.mutateAsync({
       accountId: selectedAccount,
       password,
-      investorPassword: investorPassword || undefined
+      investorPassword: investorPassword || undefined,
     });
     setIsConnecting(false);
   };
@@ -129,7 +146,9 @@ export default function AccountPanel() {
             <div
               key={account.id}
               className={`p-4 border rounded-lg transition-colors ${
-                account.isActive ? 'border-green-500 bg-green-50' : 'border-gray-300'
+                account.isActive
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-300"
               }`}
             >
               <div className="flex justify-between items-start">
@@ -137,35 +156,59 @@ export default function AccountPanel() {
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold">#{account.accountNumber}</h3>
                     <Badge variant={account.isActive ? "default" : "secondary"}>
-                      {account.isActive ? 'Đã kết nối' : 'Chưa kết nối'}
+                      {account.isActive ? "Đã kết nối" : "Chưa kết nối"}
                     </Badge>
                     {account.isSecBotFree && (
-                      <Badge variant="outline" className="text-green-600 border-green-600">
+                      <Badge
+                        variant="outline"
+                        className="text-green-600 border-green-600"
+                      >
                         SecBot Free
                       </Badge>
                     )}
                     {account.isActive && (
-                      <Badge variant="outline" className="text-blue-600 border-blue-600">
+                      <Badge
+                        variant="outline"
+                        className="text-blue-600 border-blue-600"
+                      >
                         Signal Tracking
                       </Badge>
                     )}
                   </div>
-                  
+
                   <div className="text-sm text-gray-600 space-y-1">
-                    <div>Server: <span className="font-medium">{account.server}</span></div>
-                    <div>Broker: <span className="font-medium">{account.broker}</span></div>
-                    <div>Leverage: <span className="font-medium">1:{account.leverage}</span></div>
+                    <div>
+                      Server:{" "}
+                      <span className="font-medium">{account.server}</span>
+                    </div>
+                    <div>
+                      Broker:{" "}
+                      <span className="font-medium">{account.broker}</span>
+                    </div>
+                    <div>
+                      Leverage:{" "}
+                      <span className="font-medium">1:{account.leverage}</span>
+                    </div>
                     {account.isActive && (
                       <>
-                        <div>Balance: <span className="font-medium text-green-600">
-                          ${account.balance.toFixed(2)}
-                        </span></div>
-                        <div>Equity: <span className="font-medium">
-                          ${account.equity.toFixed(2)}
-                        </span></div>
-                        <div>Free Margin: <span className="font-medium">
-                          ${account.freeMargin.toFixed(2)}
-                        </span></div>
+                        <div>
+                          Balance:{" "}
+                          <span className="font-medium text-green-600">
+                            ${account.balance.toFixed(2)}
+                          </span>
+                        </div>
+                        <div>
+                          Equity:{" "}
+                          <span className="font-medium">
+                            ${account.equity.toFixed(2)}
+                          </span>
+                        </div>
+                        <div>
+                          Free Margin:{" "}
+                          <span className="font-medium">
+                            ${account.freeMargin.toFixed(2)}
+                          </span>
+                        </div>
                       </>
                     )}
                   </div>
@@ -175,8 +218,8 @@ export default function AccountPanel() {
                   {!account.isActive ? (
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           onClick={() => setSelectedAccount(account.id)}
                         >
                           Kết nối
@@ -184,9 +227,12 @@ export default function AccountPanel() {
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Kết nối tài khoản #{account.accountNumber}</DialogTitle>
+                          <DialogTitle>
+                            Kết nối tài khoản #{account.accountNumber}
+                          </DialogTitle>
                           <DialogDescription>
-                            Nhập thông tin đăng nhập để kết nối tài khoản MetaTrader 5
+                            Nhập thông tin đăng nhập để kết nối tài khoản
+                            MetaTrader 5
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4">
@@ -201,21 +247,25 @@ export default function AccountPanel() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="investorPassword">Mật khẩu Investor (tùy chọn)</Label>
+                            <Label htmlFor="investorPassword">
+                              Mật khẩu Investor (tùy chọn)
+                            </Label>
                             <Input
                               id="investorPassword"
                               type="password"
                               value={investorPassword}
-                              onChange={(e) => setInvestorPassword(e.target.value)}
+                              onChange={(e) =>
+                                setInvestorPassword(e.target.value)
+                              }
                               placeholder="Nhập mật khẩu investor (nếu có)"
                             />
                           </div>
-                          <Button 
+                          <Button
                             onClick={handleConnect}
                             disabled={isConnecting || !password}
                             className="w-full"
                           >
-                            {isConnecting ? 'Đang kết nối...' : 'Kết nối'}
+                            {isConnecting ? "Đang kết nối..." : "Kết nối"}
                           </Button>
                         </div>
                       </DialogContent>
@@ -227,7 +277,9 @@ export default function AccountPanel() {
                       onClick={() => syncAccountMutation.mutate(account.id)}
                       disabled={syncAccountMutation.isPending}
                     >
-                      {syncAccountMutation.isPending ? 'Đang đồng bộ...' : 'Đồng bộ'}
+                      {syncAccountMutation.isPending
+                        ? "Đang đồng bộ..."
+                        : "Đồng bộ"}
                     </Button>
                   )}
                 </div>
@@ -237,7 +289,9 @@ export default function AccountPanel() {
         </div>
 
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="font-semibold text-blue-800 mb-2">Thông tin tài khoản được cấu hình:</h4>
+          <h4 className="font-semibold text-blue-800 mb-2">
+            Thông tin tài khoản được cấu hình:
+          </h4>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• Tài khoản #405691964 - Exness-MT5Real8</li>
             <li>• Tài khoản #205251387 - Exness-MT5Real8</li>

@@ -1,11 +1,10 @@
-
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 
 export interface WebSocketStatus {
   providerId: string;
   name: string;
   url: string;
-  status: 'connected' | 'disconnected' | 'error' | 'connecting';
+  status: "connected" | "disconnected" | "error" | "connecting";
   lastConnected?: Date;
   lastError?: string;
   retryCount: number;
@@ -25,47 +24,51 @@ export class WebSocketStatusMonitor extends EventEmitter {
     providerId: string,
     name: string,
     url: string,
-    maxRetries: number = 5
+    maxRetries: number = 5,
   ): void {
     this.connections.set(providerId, {
       providerId,
       name,
       url,
-      status: 'disconnected',
+      status: "disconnected",
       retryCount: 0,
-      maxRetries
+      maxRetries,
     });
   }
 
   public updateStatus(
     providerId: string,
-    status: 'connected' | 'disconnected' | 'error' | 'connecting',
-    error?: string
+    status: "connected" | "disconnected" | "error" | "connecting",
+    error?: string,
   ): void {
     const connection = this.connections.get(providerId);
     if (!connection) return;
 
     connection.status = status;
-    
-    if (status === 'connected') {
+
+    if (status === "connected") {
       connection.lastConnected = new Date();
       connection.retryCount = 0;
       connection.lastError = undefined;
-    } else if (status === 'error') {
+    } else if (status === "error") {
       connection.lastError = error;
       connection.retryCount++;
-      
+
       // Handle DNS resolution errors
-      if (error?.includes('ENOTFOUND') || error?.includes('getaddrinfo')) {
-        console.log(`🔍 DNS Resolution failed for ${connection.name}, attempting fallback...`);
+      if (error?.includes("ENOTFOUND") || error?.includes("getaddrinfo")) {
+        console.log(
+          `🔍 DNS Resolution failed for ${connection.name}, attempting fallback...`,
+        );
         this.handleDNSFallback(connection);
       }
     }
 
     this.connections.set(providerId, connection);
-    this.emit('status_update', connection);
+    this.emit("status_update", connection);
 
-    console.log(`📊 WebSocket Status Update: ${connection.name} - ${status.toUpperCase()}`);
+    console.log(
+      `📊 WebSocket Status Update: ${connection.name} - ${status.toUpperCase()}`,
+    );
     if (error) {
       console.log(`❌ Error: ${error}`);
     }
@@ -73,20 +76,20 @@ export class WebSocketStatusMonitor extends EventEmitter {
 
   private handleDNSFallback(connection: WebSocketStatus): void {
     const dnsMapping: Record<string, string> = {
-      'ws.coingecko.com': '104.26.3.35',
-      'api.tradermade.com': '104.21.48.240',
-      'api.twelvedata.com': '172.67.74.226',
-      'rtapi-sg.excalls.mobi': '3.1.200.10'
+      "ws.coingecko.com": "104.26.3.35",
+      "api.tradermade.com": "104.21.48.240",
+      "api.twelvedata.com": "172.67.74.226",
+      "rtapi-sg.excalls.mobi": "3.1.200.10",
     };
 
     try {
       const url = new URL(connection.url);
       const fallbackIP = dnsMapping[url.hostname];
-      
+
       if (fallbackIP) {
         console.log(`🔄 Using fallback IP ${fallbackIP} for ${url.hostname}`);
         connection.url = connection.url.replace(url.hostname, fallbackIP);
-        this.emit('dns_fallback_applied', { connection, fallbackIP });
+        this.emit("dns_fallback_applied", { connection, fallbackIP });
       }
     } catch (error) {
       console.log(`❌ Failed to apply DNS fallback: ${error}`);
@@ -103,13 +106,13 @@ export class WebSocketStatusMonitor extends EventEmitter {
 
   public getHealthySessions(): WebSocketStatus[] {
     return Array.from(this.connections.values()).filter(
-      conn => conn.status === 'connected'
+      (conn) => conn.status === "connected",
     );
   }
 
   public getFailedSessions(): WebSocketStatus[] {
     return Array.from(this.connections.values()).filter(
-      conn => conn.status === 'error' || conn.retryCount >= conn.maxRetries
+      (conn) => conn.status === "error" || conn.retryCount >= conn.maxRetries,
     );
   }
 
@@ -120,31 +123,35 @@ export class WebSocketStatusMonitor extends EventEmitter {
       const failed = this.getFailedSessions().length;
 
       if (total > 0) {
-        console.log(`📊 WebSocket Health Report: ${healthy}/${total} connected, ${failed} failed`);
+        console.log(
+          `📊 WebSocket Health Report: ${healthy}/${total} connected, ${failed} failed`,
+        );
       }
 
       if (healthy === 0 && total > 0) {
-        console.log('⚠️ No WebSocket connections active - all providers failed');
-        this.emit('all_connections_failed');
+        console.log(
+          "⚠️ No WebSocket connections active - all providers failed",
+        );
+        this.emit("all_connections_failed");
       }
     }, 60000); // Check every 60 seconds
   }
 
   public generateReport(): any {
     const statuses = this.getAllStatuses();
-    
+
     return {
       total_connections: statuses.length,
       healthy_connections: this.getHealthySessions().length,
       failed_connections: this.getFailedSessions().length,
-      connection_details: statuses.map(conn => ({
+      connection_details: statuses.map((conn) => ({
         provider: conn.name,
         status: conn.status,
         last_connected: conn.lastConnected,
         retry_count: conn.retryCount,
-        last_error: conn.lastError
+        last_error: conn.lastError,
       })),
-      recommendations: this.generateRecommendations()
+      recommendations: this.generateRecommendations(),
     };
   }
 
@@ -153,14 +160,14 @@ export class WebSocketStatusMonitor extends EventEmitter {
     const failed = this.getFailedSessions();
 
     if (failed.length > 0) {
-      recommendations.push('Consider using alternative data providers');
-      recommendations.push('Check network connectivity and firewall settings');
-      recommendations.push('Verify API keys and authentication credentials');
+      recommendations.push("Consider using alternative data providers");
+      recommendations.push("Check network connectivity and firewall settings");
+      recommendations.push("Verify API keys and authentication credentials");
     }
 
     if (this.getHealthySessions().length === 0) {
-      recommendations.push('Switch to backup data sources');
-      recommendations.push('Enable offline mode with cached data');
+      recommendations.push("Switch to backup data sources");
+      recommendations.push("Enable offline mode with cached data");
     }
 
     return recommendations;

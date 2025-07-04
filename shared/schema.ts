@@ -31,8 +31,12 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  balance: decimal("balance", { precision: 15, scale: 2 }).notNull().default("10000.00"),
-  equity: decimal("equity", { precision: 15, scale: 2 }).notNull().default("10000.00"),
+  balance: decimal("balance", { precision: 15, scale: 2 })
+    .notNull()
+    .default("10000.00"),
+  equity: decimal("equity", { precision: 15, scale: 2 })
+    .notNull()
+    .default("10000.00"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -44,7 +48,9 @@ export const symbols = pgTable("symbols", {
   bid: decimal("bid", { precision: 10, scale: 5 }).notNull(),
   ask: decimal("ask", { precision: 10, scale: 5 }).notNull(),
   change: decimal("change", { precision: 10, scale: 5 }).notNull().default("0"),
-  changePercent: decimal("change_percent", { precision: 10, scale: 5 }).notNull().default("0"),
+  changePercent: decimal("change_percent", { precision: 10, scale: 5 })
+    .notNull()
+    .default("0"),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 

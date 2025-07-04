@@ -15,7 +15,7 @@ export interface BrokerAccount {
 export interface BrokerPosition {
   ticket: number;
   symbol: string;
-  type: 'buy' | 'sell';
+  type: "buy" | "sell";
   volume: number;
   openPrice: number;
   currentPrice: number;
@@ -25,22 +25,22 @@ export interface BrokerPosition {
 }
 
 export class BrokerIntegration {
-  private brokers = ['MetaTrader5', 'Exness', 'FTMO', 'TradingView'];
+  private brokers = ["MetaTrader5", "Exness", "FTMO", "TradingView"];
 
   async connectToBroker(broker: string, credentials: any): Promise<boolean> {
     console.log(`Connecting to ${broker}...`);
 
     // Simulate connection for demo
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     switch (broker) {
-      case 'MetaTrader5':
+      case "MetaTrader5":
         return this.connectToMT5(credentials);
-      case 'Exness':
+      case "Exness":
         return this.connectToExness(credentials);
-      case 'FTMO':
+      case "FTMO":
         return this.connectToFTMO(credentials);
-      case 'TradingView':
+      case "TradingView":
         return this.connectToTradingView(credentials);
       default:
         return false;
@@ -48,25 +48,25 @@ export class BrokerIntegration {
   }
 
   private async connectToMT5(credentials: any): Promise<boolean> {
-    console.log('Establishing MT5 connection...');
+    console.log("Establishing MT5 connection...");
     // Real implementation would use MT5 API
     return true;
   }
 
   private async connectToExness(credentials: any): Promise<boolean> {
-    console.log('Establishing Exness connection...');
+    console.log("Establishing Exness connection...");
     // Real implementation would use Exness API
     return true;
   }
 
   private async connectToFTMO(credentials: any): Promise<boolean> {
-    console.log('Establishing FTMO connection...');
+    console.log("Establishing FTMO connection...");
     // Real implementation would use FTMO challenge API
     return true;
   }
 
   private async connectToTradingView(credentials: any): Promise<boolean> {
-    console.log('Establishing TradingView connection...');
+    console.log("Establishing TradingView connection...");
     // Real implementation would use TradingView API
     return true;
   }
@@ -75,7 +75,7 @@ export class BrokerIntegration {
     // Mock data for demo
     return {
       broker,
-      accountId: '1234567',
+      accountId: "1234567",
       balance: 10000,
       equity: 10247.83,
       margin: 203.25,
@@ -84,16 +84,16 @@ export class BrokerIntegration {
       positions: [
         {
           ticket: 12345,
-          symbol: 'EURUSD',
-          type: 'buy',
+          symbol: "EURUSD",
+          type: "buy",
           volume: 0.1,
-          openPrice: 1.0850,
+          openPrice: 1.085,
           currentPrice: 1.0852,
           profit: 2.0,
           swap: -0.5,
-          commission: -1.0
-        }
-      ]
+          commission: -1.0,
+        },
+      ],
     };
   }
 

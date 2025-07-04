@@ -1,4 +1,3 @@
-
 # 🚨 HƯỚNG DẪN SỬ DỤNG HỆ THỐNG TẤN CÔNG VÀNG VIỆT NAM 🚨
 
 ## 📋 Tổng quan hệ thống
@@ -6,6 +5,7 @@
 Hệ thống tấn công vàng Việt Nam bao gồm các thành phần chính:
 
 ### 🛠️ Các script chính:
+
 - `vietnam-attack-arsenal.sh` - Kho vũ khí tấn công chính (20 lệnh)
 - `vietnam-gold-usdvnd-arsenal.sh` - Kho vũ khí USD/VND (20 lệnh)
 - `kill-spread-arsenal.sh` - Chuyên tiêu diệt spread (10 lệnh)
@@ -13,6 +13,7 @@ Hệ thống tấn công vàng Việt Nam bao gồm các thành phần chính:
 - `perfect-ai-gold-intervention.py` - AI intervention system
 
 ### 🎯 Các mục tiêu tấn công:
+
 - **SJC** - Mục tiêu chính
 - **DOJI** - Mục tiêu phụ
 - **PNJ** - Mục tiêu phụ
@@ -25,26 +26,31 @@ Hệ thống tấn công vàng Việt Nam bao gồm các thành phần chính:
 ## 🚀 HƯỚNG DẪN NHANH
 
 ### 1. Khởi chạy tấn công nhanh (30 giây):
+
 ```bash
 ./scripts/vietnam-attack-arsenal.sh quick_attack
 ```
 
 ### 2. Tấn công SJC chuyên biệt:
+
 ```bash
 ./scripts/vietnam-attack-arsenal.sh sjc_pressure EXTREME 600
 ```
 
 ### 3. Tiêu diệt spread cao:
+
 ```bash
 ./scripts/kill-spread-arsenal.sh rapid_killer 20000
 ```
 
 ### 4. Áp lực USD/VND:
+
 ```bash
 ./scripts/vietnam-gold-usdvnd-arsenal.sh usdvnd_pressure_boost HIGH
 ```
 
 ### 5. AI intervention:
+
 ```bash
 python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ```
@@ -56,6 +62,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ### 🥇 VIETNAM ATTACK ARSENAL (20 lệnh)
 
 #### Lệnh nhanh:
+
 ```bash
 # 1. Tấn công nhanh tổng hợp (6 vector đồng thời)
 ./scripts/vietnam-attack-arsenal.sh quick_attack
@@ -68,6 +75,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ```
 
 #### Lệnh áp lực:
+
 ```bash
 # 4. Áp lực SJC chuyên biệt
 ./scripts/vietnam-attack-arsenal.sh sjc_pressure [EXTREME|HIGH|MEDIUM] [duration_seconds]
@@ -83,6 +91,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ```
 
 #### Lệnh chuyên sâu:
+
 ```bash
 # 8. Khai thác chênh lệch thế giới
 ./scripts/vietnam-attack-arsenal.sh world_arbitrage
@@ -98,6 +107,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ```
 
 #### Lệnh burst:
+
 ```bash
 # 12. Tấn công burst sóng thần
 ./scripts/vietnam-attack-arsenal.sh burst_attack [bursts] [interval]
@@ -110,6 +120,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ```
 
 #### Lệnh giám sát:
+
 ```bash
 # 15. Giám sát tự động + tấn công
 ./scripts/vietnam-attack-arsenal.sh auto_monitor [threshold] [interval]
@@ -122,6 +133,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ```
 
 #### Lệnh hệ thống:
+
 ```bash
 # 18. Kiểm tra trạng thái
 ./scripts/vietnam-attack-arsenal.sh status
@@ -136,6 +148,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ### 💱 USD/VND ARSENAL (20 lệnh)
 
 #### Tấn công USD/VND:
+
 ```bash
 # 1. Tăng áp lực USD/VND
 ./scripts/vietnam-gold-usdvnd-arsenal.sh usdvnd_pressure_boost [MEDIUM|HIGH] [INCREASE|DECREASE]
@@ -151,6 +164,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ```
 
 #### Tấn công vàng thế giới:
+
 ```bash
 # 5. Đẩy vàng thế giới lên
 ./scripts/vietnam-gold-usdvnd-arsenal.sh world_gold_pump [target_price]
@@ -166,6 +180,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ```
 
 #### Tấn công SJC chuyên biệt:
+
 ```bash
 # 9. Nghiền nát premium SJC
 ./scripts/vietnam-gold-usdvnd-arsenal.sh sjc_premium_crusher
@@ -183,6 +198,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ### 💀 KILL SPREAD ARSENAL (10 lệnh)
 
 #### Tiêu diệt spread:
+
 ```bash
 # 1. Tiêu diệt nhanh
 ./scripts/kill-spread-arsenal.sh rapid_killer [target_spread]
@@ -201,6 +217,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ```
 
 #### Giám sát spread:
+
 ```bash
 # 6. Giám sát & tiêu diệt tự động
 ./scripts/kill-spread-arsenal.sh auto_monitor [threshold] [interval]
@@ -221,6 +238,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 60
 ### 🐍 PYTHON SCANNER
 
 #### Quét cơ bản:
+
 ```bash
 # Quét tổng hợp
 python3 scripts/vietnam-gold-pressure-scanner.py full
@@ -238,6 +256,7 @@ python3 scripts/vietnam-gold-pressure-scanner.py usdvnd
 ### 🤖 AI INTERVENTION
 
 #### Chế độ AI:
+
 ```bash
 # Can thiệp liên tục 60 phút
 python3 scripts/perfect-ai-gold-intervention.py continuous 60
@@ -257,6 +276,7 @@ python3 scripts/perfect-ai-gold-intervention.py report
 ## 🎯 CHIẾN LƯỢC TẤN CÔNG
 
 ### 🔥 Chiến lược Lightning (Chớp nhoáng):
+
 ```bash
 # Bước 1: Quét nhanh
 python3 scripts/vietnam-gold-pressure-scanner.py quick
@@ -269,6 +289,7 @@ python3 scripts/vietnam-gold-pressure-scanner.py quick
 ```
 
 ### ⚔️ Chiến lược Devastation (Tàn phá):
+
 ```bash
 # Bước 1: Phân tích toàn diện
 python3 scripts/vietnam-gold-pressure-scanner.py full
@@ -281,6 +302,7 @@ python3 scripts/vietnam-gold-pressure-scanner.py full
 ```
 
 ### 🧠 Chiến lược AI (Thông minh):
+
 ```bash
 # Khởi chạy AI liên tục
 python3 scripts/perfect-ai-gold-intervention.py continuous 120
@@ -290,6 +312,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 120
 ```
 
 ### 👤 Chiến lược Stealth (Âm thầm):
+
 ```bash
 # Thâm nhập âm thầm
 ./scripts/vietnam-attack-arsenal.sh stealth_infiltrate
@@ -303,6 +326,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 120
 ## 📊 GIÁM SÁT VÀ PHÂN TÍCH
 
 ### Theo dõi trạng thái:
+
 ```bash
 # Trạng thái tổng quát
 ./scripts/vietnam-attack-arsenal.sh status
@@ -315,6 +339,7 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 120
 ```
 
 ### Phân tích real-time:
+
 ```bash
 # Monitor arsenal
 ./scripts/vietnam-attack-arsenal.sh real_time_analysis
@@ -331,12 +356,14 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 120
 ## ⚠️ CẢNH BÁO AN TOÀN
 
 ### Mức độ nguy hiểm:
+
 - 🟢 **AN TOÀN**: quick_attack, vulnerability_scan, status
 - 🟡 **TRUNG BÌNH**: sjc_pressure, burst_attack, liquidity_drain
 - 🟠 **CAO**: devastation, tsunami_mode, nuclear_option
 - 🔴 **CỰC NGUY HIỂM**: emergency_crash, nuclear_option
 
 ### Lệnh dừng khẩn cấp:
+
 ```bash
 # Dừng tất cả ngay lập tức
 ./scripts/vietnam-attack-arsenal.sh emergency_stop
@@ -353,28 +380,33 @@ python3 scripts/perfect-ai-gold-intervention.py continuous 120
 ### Lỗi thường gặp:
 
 1. **Script không executable**:
+
 ```bash
 chmod +x scripts/*.sh
 ```
 
 2. **Python scanner lỗi**:
+
 ```bash
 pip3 install requests numpy pandas
 ```
 
 3. **API không phản hồi**:
+
 ```bash
 # Kiểm tra server
 curl -s http://localhost:5000/api/vietnam-gold/prices
 ```
 
 4. **Permission denied**:
+
 ```bash
 sudo chmod +x scripts/*.sh
 sudo chmod +x scripts/*.py
 ```
 
 ### Debug mode:
+
 ```bash
 # Chạy với debug
 bash -x scripts/vietnam-attack-arsenal.sh status
@@ -388,12 +420,14 @@ python3 -v scripts/vietnam-gold-pressure-scanner.py quick
 ## 📈 OPTIMIZATION TIPS
 
 ### Tối ưu hiệu suất:
+
 1. Chạy Python scanner trước khi tấn công
 2. Sử dụng AI intervention cho precision cao
 3. Kết hợp nhiều vector đồng thời
 4. Monitor liên tục để điều chỉnh
 
 ### Tối ưu stealth:
+
 1. Sử dụng chế độ stealth_infiltrate
 2. Khoảng cách thời gian ngẫu nhiên
 3. Thay đổi intensity theo patterns
@@ -404,6 +438,7 @@ python3 -v scripts/vietnam-gold-pressure-scanner.py quick
 ## 📞 SUPPORT
 
 ### Kiểm tra logs:
+
 ```bash
 # Logs chính
 tail -f vietnam_gold_attack.log
@@ -415,6 +450,7 @@ tail -f scripts/logs/*.log
 ```
 
 ### Test kết nối:
+
 ```bash
 # Test tất cả API
 ./scripts/vietnam-gold-commands.sh test

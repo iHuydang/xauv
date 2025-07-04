@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { BarChart3, TrendingUp, Shield, Globe } from "lucide-react";
 
 export default function Landing() {
@@ -12,11 +18,12 @@ export default function Landing() {
             Professional Trading Terminal
           </h1>
           <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Access real-time market data, advanced trading tools, and comprehensive analytics 
-            for Forex, commodities, and cryptocurrencies. Join thousands of professional traders.
+            Access real-time market data, advanced trading tools, and
+            comprehensive analytics for Forex, commodities, and
+            cryptocurrencies. Join thousands of professional traders.
           </p>
-          <Button 
-            onClick={() => window.location.href = '/api/login'}
+          <Button
+            onClick={() => (window.location.href = "/api/login")}
             size="lg"
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold"
           >
@@ -85,16 +92,21 @@ export default function Landing() {
               <div className="bg-blue-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <BarChart3 className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Professional Charts</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Professional Charts
+              </h3>
               <p className="text-gray-300">
-                Advanced charting tools with 100+ technical indicators and drawing tools
+                Advanced charting tools with 100+ technical indicators and
+                drawing tools
               </p>
             </div>
             <div className="text-center">
               <div className="bg-green-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <TrendingUp className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Smart Trading</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Smart Trading
+              </h3>
               <p className="text-gray-300">
                 Automated trading signals and algorithmic strategies
               </p>
@@ -103,7 +115,9 @@ export default function Landing() {
               <div className="bg-purple-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <Shield className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Secure & Reliable</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Secure & Reliable
+              </h3>
               <p className="text-gray-300">
                 Bank-grade security with 99.9% uptime guarantee
               </p>
@@ -118,10 +132,11 @@ export default function Landing() {
               Ready to Start Trading?
             </h3>
             <p className="text-gray-300 mb-6">
-              Join our community of professional traders and take your trading to the next level
+              Join our community of professional traders and take your trading
+              to the next level
             </p>
-            <Button 
-              onClick={() => window.location.href = '/api/login'}
+            <Button
+              onClick={() => (window.location.href = "/api/login")}
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold"
             >
