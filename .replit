@@ -1,10 +1,10 @@
-modules = ["nodejs-20", "web", "postgresql-16", "angular-node-20", "dotnet-8.0", "dotnet-7.0", "bash", "bun-1.2", "clojure-1.12", "deno-2", "elixir-1_17", "go-1.19", "haskell-ghc9.0", "hermit-0.38.2", "lua-5.2", "nodejs-23", "nodejs-22", "php-8.3", "php-8.2", "pyright-extended", "pyright", "vue-node-18", "vue-node-20", "swift-5.6", "swift-5.8", "svelte-kit-node-20", "rust-stable", "r-4.2", "r-4.4", "python-3.10", "python-base-3.11", "python-3.11", "python-3.12", "qbasic", "ruby-3.1", "typescript-language-server", "docker", "nodejs-14", "nix", "python-3.9", "python-3.8", "python-base-3.13", "haskell-ghc9.2", "haskell-ghc9.4", "java-graalvm22.3", "go-1.20", "go-1.23", "deno-1", "elixir-1_15", "clojure-1.11", "cpp-clang14", "c-clang14", "rust-nightly"]
+modules = ["nodejs-20", "web", "postgresql-16", "python-3.11"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["mailutils", "deepin.dwayland"]
+packages = ["mailutils"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -13,7 +13,7 @@ run = ["npm", "run", "start"]
 
 [[ports]]
 localPort = 5000
-externalPort = 5000
+externalPort = 5173
 
 [[ports]]
 localPort = 8080
@@ -32,19 +32,23 @@ localPort = 8083
 externalPort = 3001
 
 [[ports]]
-localPort = 8085
+localPort = 8084
 externalPort = 3002
 
 [[ports]]
-localPort = 8086
+localPort = 8085
 externalPort = 3003
 
 [[ports]]
-localPort = 8087
+localPort = 8086
 externalPort = 4200
 
+[[ports]]
+localPort = 8087
+externalPort = 5000
+
 [workflows]
-runButton = "Main Application"
+runButton = "Stable Server"
 
 [[workflows.workflow]]
 name = "Project"
@@ -76,10 +80,6 @@ mode = "sequential"
 task = "shell.exec"
 args = "npm run dev"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = '''npm run dev STOP_LOSS=8500000 && \ RESPONSE=$(curl -s https://sjc.com.vn/giavang/textContent.php) && \ LINE=$(echo "$RESPONSE" | grep -m1 "SJC") && \ SELL_PRICE=$(echo "$LINE" | awk -F '</td><td>' '{gsub(/[^0-9]/,"",$3); print $3}') && \ echo "⏰ $(date '+%Y-%m-%d %H:%M:%S') - SJC Sell Price: $SELL_PRICE VND" && \ if [ "$SELL_PRICE" -lt "$STOP_LOSS" ]; then \   echo "🚨 STOP LOSS HIT! Price $SELL_PRICE is below $STOP_LOSS"; \ else \   echo "✅ Gold price is safe. Stop loss not triggered."; \ fi'''
-
 [[workflows.workflow]]
 name = "Market News System"
 author = 44114932
@@ -93,10 +93,6 @@ args = "chmod +x scripts/market-commands.sh"
 task = "shell.exec"
 args = "source scripts/market-commands.sh"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = ""
-
 [[workflows.workflow]]
 name = "Market Trading System"
 author = 44114932
@@ -105,10 +101,6 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Vietnam Gold Attack"
 
 [[workflows.workflow]]
 name = "Liquidity Scanner"
@@ -249,6 +241,10 @@ args = "api/tradermade/sjc/coordinate-attack"
 task = "shell.exec"
 args = "fsapi-liquidity-drain"
 
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "/api/international-sjc/institutions"
+
 [[workflows.workflow]]
 name = "Start Server"
 author = 44173314
@@ -262,27 +258,14 @@ args = "npm run dev"
 task = "workflow.run"
 args = "Market Trading System"
 
-[[workflows.workflow]]
-name = "Run"
-author = 44604653
-mode = "sequential"
-
 [[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
+task = "workflow.run"
+args = "Market News System"
 
 [[workflows.workflow]]
-name = "Main Application"
-author = 44604653
+name = "Stable Server"
+author = 44442531
 mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"npm run dev\" || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 2"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
