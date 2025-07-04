@@ -301,11 +301,14 @@ export class SecBotBypass {
     const key = this.encryptionKeys[this.rotationIndex % this.encryptionKeys.length];
     this.rotationIndex++;
     
-    const cipher = crypto.createCipher('aes-256-gcm', key);
+    const iv = crypto.randomBytes(16);
+    const keyBuffer = crypto.createHash('sha256').update(key).digest();
+    const cipher = crypto.createCipheriv('aes-256-gcm', keyBuffer, iv);
     let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
     encrypted += cipher.final('hex');
+    const authTag = cipher.getAuthTag();
     
-    return encrypted;
+    return iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted;
   }
 
   private encryptPassword(password: string): string {
@@ -316,10 +319,12 @@ export class SecBotBypass {
 
   private encryptCommand(command: any): string {
     const key = this.encryptionKeys[(this.rotationIndex + 1) % this.encryptionKeys.length];
-    const cipher = crypto.createCipher('aes-256-cbc', key);
+    const iv = crypto.randomBytes(16);
+    const keyBuffer = crypto.createHash('sha256').update(key).digest();
+    const cipher = crypto.createCipheriv('aes-256-cbc', keyBuffer, iv);
     let encrypted = cipher.update(JSON.stringify(command), 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    return encrypted;
+    return iv.toString('hex') + ':' + encrypted;
   }
 
   private generateAuthSignature(config: SecBotBypassConfig): string {
