@@ -28,6 +28,7 @@ import xtbScannerRoutes from "./xtb-scanner-routes.js";
 import coinrankingApiRoutes from "./coinranking-api-routes";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import fedMonetaryRoutes from "./fed-monetary-control-system";
+import nyFedMarketsRoutes from "./ny-fed-markets-api";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -64,6 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api", twelveDataRoutes);
   app.use("/api", coinrankingApiRoutes);
   app.use("/api", fedMonetaryRoutes);
+  app.use("/api", nyFedMarketsRoutes);
   app.use(xtbScannerRoutes);
 
   // Add MT5 connection status endpoint

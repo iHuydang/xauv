@@ -13,6 +13,7 @@ import CoinrankingMarketMaker from "@/pages/CoinrankingMarketMaker";
 import SecBotBypassDashboard from "@/pages/SecBotBypassDashboard";
 import FederalReserveControl from "./pages/FederalReserveControl";
 import TwelveDataDashboard from "@/pages/TwelveDataDashboard";
+import NYFedMarketsPage from "@/pages/NYFedMarketsPage";
 import NotFound from "@/pages/not-found";
 import MarketCompliancePanel from './components/MarketCompliancePanel';
 import Landing from "@/pages/landing";
@@ -48,6 +49,7 @@ function Router() {
           <Route path="/coinranking" component={CoinrankingMarketMaker} />
           <Route path="/market-compliance" component={MarketCompliancePanel} />
           <Route path="/federal-reserve" component={FederalReserveControl} />
+          <Route path="/ny-fed-markets" component={NYFedMarketsPage} />
         </>
       )}
       <Route component={NotFound} />

@@ -178,6 +178,16 @@ export default function Home() {
                     FRED Gold Analysis
                   </Button>
                 </Link>
+                <Link href="/federal-reserve">
+                  <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700">
+                    Federal Reserve Control
+                  </Button>
+                </Link>
+                <Link href="/ny-fed-markets">
+                  <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700">
+                    NY Fed Markets API
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

@@ -103,6 +103,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 04, 2025 - New York Fed Markets API Integration
+
+- ✅ Integrated official New York Fed Markets API for Agency Mortgage-Backed Securities (AMBS) operations
+- ✅ Added support for both production and beta API endpoints with configurable switching
+- ✅ Implemented comprehensive AMBS operations fetching with date range filtering
+- ✅ Created Treasury auction results and Repo/Reverse Repo operations tracking
+- ✅ Built real-time monitoring system with configurable intervals for Fed operations
+- ✅ Developed liquidity analysis engine for AMBS market including acceptance ratios and dealer rankings
+- ✅ Created full frontend dashboard at /ny-fed-markets with interactive data visualization
+- ✅ Integrated with existing Federal Reserve control system for comprehensive monetary policy tools
+- ✅ API endpoints: /api/ny-fed/ambs/*, /api/ny-fed/treasury/*, /api/ny-fed/repo/*, /api/ny-fed/monitoring/*
+
 ### June 30, 2025 - Coinranking Market Maker Integration với Encrypted Trading System
 
 - ✓ Implemented comprehensive Coinranking API integration with API key: coinranking46318b67be4b6ae6bd776b982d0e9b852bc0776d6cee1174

@@ -123,7 +123,7 @@ export class CoinrankingMarketMaker extends EventEmitter {
 
       this.setupWebSocketHandlers();
 
-      // Fallback to REST API polling after 10 seconds if WebSocket fails
+      // Fallback to REST API polling after 5 seconds if WebSocket fails
       setTimeout(() => {
         if (!this.isConnected) {
           console.log(
@@ -131,9 +131,10 @@ export class CoinrankingMarketMaker extends EventEmitter {
           );
           this.startRestApiPolling();
         }
-      }, 10000);
+      }, 5000);
     } catch (error) {
       console.error("❌ Lỗi kết nối WebSocket:", error);
+      // Immediately start REST API polling on connection error
       this.startRestApiPolling();
     }
   }
@@ -172,12 +173,27 @@ export class CoinrankingMarketMaker extends EventEmitter {
     this.ws.onclose = (event) => {
       console.log(`🔌 WebSocket đóng kết nối: ${event.code} - ${event.reason}`);
       this.isConnected = false;
-      this.handleReconnect();
+      
+      // If we get a 403 or 401, don't try to reconnect WebSocket
+      if (event.code === 1002 || event.code === 1003 || event.code === 403 || event.code === 401) {
+        console.log("🔒 Authentication error detected, switching to REST API permanently");
+        if (!this.pollingInterval) {
+          this.startRestApiPolling();
+        }
+      } else {
+        this.handleReconnect();
+      }
     };
 
     this.ws.onerror = (error) => {
       console.error("❌ WebSocket lỗi:", error);
       this.isConnected = false;
+      
+      // Start REST API polling as backup
+      if (!this.pollingInterval) {
+        console.log("🔄 Starting REST API polling as backup");
+        this.startRestApiPolling();
+      }
     };
   }
 
