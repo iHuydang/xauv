@@ -274,3 +274,24 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
+
+[[workflows.workflow]]
+name = "Federal Reserve Control"
+author = 44604653
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x scripts/federal-reserve-commands.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"🏛️ Federal Reserve Monetary Control System\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo \"==========================================\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "scripts/federal-reserve-commands.sh status"
