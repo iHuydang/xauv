@@ -1,10 +1,9 @@
-modules = ["nodejs-20", "postgresql-16", "python-3.11", "web", "dotnet-7.0", "dotnet-8.0", "bun-1.2", "bun-1.0", "c-clang14", "clojure-1.12", "zig-0.11", "ruff", "pyright-extended", "pyright", "vue-node-18", "typescript-language-server", "swift-5.8", "svelte-kit-node-20", "rust-stable", "rust-nightly", "ruby-3.2", "r-4.2", "r-4.4", "python-base-3.11", "python-3.10"]
+modules = ["nodejs-20", "web", "postgresql-16"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["mailutils", "plan9port"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -13,46 +12,9 @@ run = ["npm", "run", "start"]
 
 [[ports]]
 localPort = 5000
-externalPort = 5000
-
-[[ports]]
-localPort = 5001
-externalPort = 5173
-
-[[ports]]
-localPort = 8080
-externalPort = 80
-
-[[ports]]
-localPort = 8081
-externalPort = 8081
-
-[[ports]]
-localPort = 8082
-externalPort = 6800
-
-[[ports]]
-localPort = 8083
-externalPort = 8000
-
-[[ports]]
-localPort = 8084
-externalPort = 8080
-
-[[ports]]
-localPort = 8085
-externalPort = 8008
-
-[[ports]]
-localPort = 8086
-externalPort = 9000
-
-[[ports]]
-localPort = 8087
-externalPort = 8099
 
 [workflows]
-runButton = "Clean Start System"
+runButton = "Market Trading System"
 
 [[workflows.workflow]]
 name = "Project"
@@ -84,6 +46,10 @@ mode = "sequential"
 task = "shell.exec"
 args = "npm run dev"
 
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = '''npm run dev STOP_LOSS=8500000 && \ RESPONSE=$(curl -s https://sjc.com.vn/giavang/textContent.php) && \ LINE=$(echo "$RESPONSE" | grep -m1 "SJC") && \ SELL_PRICE=$(echo "$LINE" | awk -F '</td><td>' '{gsub(/[^0-9]/,"",$3); print $3}') && \ echo "⏰ $(date '+%Y-%m-%d %H:%M:%S') - SJC Sell Price: $SELL_PRICE VND" && \ if [ "$SELL_PRICE" -lt "$STOP_LOSS" ]; then \   echo "🚨 STOP LOSS HIT! Price $SELL_PRICE is below $STOP_LOSS"; \ else \   echo "✅ Gold price is safe. Stop loss not triggered."; \ fi'''
+
 [[workflows.workflow]]
 name = "Market News System"
 author = 44114932
@@ -96,6 +62,10 @@ args = "chmod +x scripts/market-commands.sh"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "source scripts/market-commands.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = ""
 
 [[workflows.workflow]]
 name = "Market Trading System"
@@ -232,95 +202,3 @@ args = "  }' | jq '.'"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "scripts/vietnam-gold-destroyer.sh coordinated"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "scripts/multi-ip-gold-attack.sh devastation"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "api/tradermade/sjc/coordinate-attack"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "fsapi-liquidity-drain"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = '$ shell > execute_trade \ --action SELL \ --seller "State Bank of Vietnam <sbv.gov.vn>" \ --buyer "London Gold Exchange <london.goldexchange.uk>" \ --asset XAU_PHYSICAL \ --purity 9999 \ --karat 24K \ --volume 47000tael \ --volume_kg 1762.50 \ --price_ask 3029 \ --price_bid 2996 \ --total_value_usd 171487625 \ --contract_type OTC_PHYSICAL \ --settle SWIFT-LONDON-GOLD_PHYSICAL_DELIVERY \ --compliance UCP600,BPO,LBA \ --status EXECUTED'
-
-[[workflows.workflow]]
-name = "Start Server"
-author = 44173314
-mode = "parallel"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Market Trading System"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Market News System"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Trading Terminal"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Vietnam Gold Attack"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Trading Terminal"
-
-[[workflows.workflow]]
-name = "Stable Server"
-author = 44442531
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Trading Terminal"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = '$ shell > execute_trade \ --action SELL \ --seller "State Bank of Vietnam <sbv.gov.vn>" \ --buyer "London Gold Exchange <london.goldexchange.uk>" \ --asset XAU_PHYSICAL \ --purity 9999 \ --karat 24K \ --volume 47000tael \ --volume_kg 1762.50 \ --price_ask 3029 \ --price_bid 2996 \ --total_value_usd 171487625 \ --contract_type OTC_PHYSICAL \ --settle SWIFT-LONDON-GOLD_PHYSICAL_DELIVERY \ --compliance UCP600,BPO,LBA \ --status EXECUTED'
-
-[[workflows.workflow]]
-name = "Safe Trading System"
-author = 44555903
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-
-[[workflows.workflow]]
-name = "Clean Start System"
-author = 44599736
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"node.*server\" || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill -f \"npm run dev\" || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "sleep 2"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
