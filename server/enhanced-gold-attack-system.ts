@@ -283,7 +283,7 @@ export class EnhancedGoldAttackSystem extends EventEmitter {
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'apikey': '3PSWGkjX7GueCSY38keBikLd8JjizIiA'
+          'apikey': process.env.PNJ_API_KEY || ''
         },
         timeout: 8000
       });

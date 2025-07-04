@@ -81,7 +81,7 @@ scan_pnj_liquidity() {
     
     local api_response=$(curl -s -X POST "https://edge-api.pnj.io/ecom-frontend/v1/gia-vang" \
         -H "Content-Type: application/json" \
-        -H "apikey: 3PSWGkjX7GueCSY38keBikLd8JjizIiA" \
+        -H "apikey: $PNJ_API_KEY" \
         -d '{
             "ts": '$(date +%s000)',
             "tsj": '$(date +%s000)',
